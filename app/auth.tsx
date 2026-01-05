@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     },
 
     button: {
-        color: "#000000ff",
+        marginTop: 12,
     },
 
 });
