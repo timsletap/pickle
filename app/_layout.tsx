@@ -1,24 +1,34 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function RouteGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const isAuth = false;
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  useEffect(() => {
+    // delay was set to get over the error, error: 
+    // Attempted to navigate before mounting the Root Layout component
+    const timerId = setTimeout(() => {
+      if (!isAuth) {
+        router.replace("/auth");
+      }
+    }, 100); // 100 milliseconds = 0.1 second delay
+
+    // Cleanup function to clear the timeout
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, []);
+
+  return <>{children}</>;
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <RouteGuard>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </RouteGuard>
   );
 }

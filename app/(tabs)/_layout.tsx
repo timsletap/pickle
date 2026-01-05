@@ -1,35 +1,12 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";    //Tabs not Stack
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
+export default function TabsLayout() {
+  return (<Tabs screenOptions={{ tabBarInactiveBackgroundColor: "black" }}>
+    <Tabs.Screen name="chalktalk" options={{ title: "Chalk Talk", tabBarIcon: (color) => (<FontAwesome6 name="chalkboard-teacher" size={24} color={"lime"} />) }} />
+    <Tabs.Screen name="dugout" options={{ title: "Dugout", tabBarIcon: (color) => (<FontAwesome6 name="person-shelter" size={24} color={"lime"} />) }} />
+    <Tabs.Screen name="playball" options={{ title: "Play Ball", tabBarIcon: (color) => (<MaterialCommunityIcons name="baseball-bat" size={24} color={"lime"} />) }} />
+  </Tabs>);
 }
