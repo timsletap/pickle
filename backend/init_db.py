@@ -1,0 +1,10 @@
+import sqlite3
+
+with open("app/schema.sql") as f:
+    schema = f.read()
+
+conn = sqlite3.connect("pickle.db")
+conn.executescript(schema)
+conn.close()
+
+print("Database initialized.")
