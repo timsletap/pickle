@@ -1,24 +1,31 @@
 import { Stack, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect, useState } from "react";
+import { auth } from "../FirebaseConfig";
 
 function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const isAuth = false;
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // delay was set to get over the error, error: 
-    // Attempted to navigate before mounting the Root Layout component
-    const timerId = setTimeout(() => {
-      if (!isAuth) {
-        router.replace("/auth");
-      }
-    }, 100); // 100 milliseconds = 0.1 second delay
+    // Listen for Firebase auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuth(!!user);
+    });
 
-    // Cleanup function to clear the timeout
-    return () => {
-      clearTimeout(timerId);
-    };
+    return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    // When we know the auth state, redirect unauthenticated users
+    if (isAuth === null) return; // still loading
+    if (!isAuth) {
+      router.replace("/auth");
+    }
+  }, [isAuth, router]);
+
+  // Avoid rendering protected UI while we are checking auth state
+  if (isAuth === null) return null;
 
   return <>{children}</>;
 }
