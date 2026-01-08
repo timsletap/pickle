@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, View, StyleSheet } from "react-native";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { router } from "expo-router";
+import { auth } from "../FirebaseConfig";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
 export default function AuthScreen() {
 
     //State to track whether user is signing up or signing in
-    const [isSignUp, setIsSignUp] = useState<boolean>(false); 
+    const [isSignUp, setIsSignUp] = useState<boolean>(false);
     
     //States to hold email and password inputs
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
-    const [error, setError] = useState<string | null>("");
+    const [error, setError] = useState<string | null>(null);
 
     const theme = useTheme();
     
@@ -19,8 +22,10 @@ export default function AuthScreen() {
         setIsSignUp(!isSignUp);
     }
 
-    //Authentication logic will go here
+    //Authentication logic: sign in or sign up via Firebase
     const handleAuth = async() => {     
+        setError(null);
+
         if (!email || !password) {
             setError("One or more fields are currently empty");
             return;
@@ -31,12 +36,22 @@ export default function AuthScreen() {
             return;
         }
 
-        setError(null);
+        try {
+            if (isSignUp) {
+                await createUserWithEmailAndPassword(auth, email, password);
+            } else {
+                await signInWithEmailAndPassword(auth, email, password);
+            }
+            // On success navigate to tabs
+            router.replace("/(tabs)");
+        } catch (err: any) {
+            setError("Authentication failed: " + err.message);
+        }
     };
 
-    //So keyboard doesn't cover inputs
+    
     return (
-        <KeyboardAvoidingView
+        <KeyboardAvoidingView   //So keyboard doesn't cover inputs
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container} //Applies styling from below Stylesheet
         >
@@ -48,6 +63,7 @@ export default function AuthScreen() {
                     mode="outlined"
                     style={styles.input}
                     onChangeText={setEmail}
+                    value={email}
                 />
 
                 <TextInput label="Password" autoCapitalize="none"
@@ -55,17 +71,17 @@ export default function AuthScreen() {
                     secureTextEntry={true}
                     style={styles.input}
                     onChangeText={setPassword}
+                    value={password}
                 />
 
                 {/* Display error message if exists */}
                 {error ? <Text style={{ color: theme.colors.error, marginBottom: 8 }}>{error}</Text> : null}
 
                 <Button mode="contained" style={styles.biggerButton} onPress={handleAuth}>
-                    {isSignUp ? "Sign In" : "Sign Up"}
+                    {isSignUp ? "Sign Up" : "Sign In"}
                 </Button>
                 <Button mode="text" onPress={handleSwitchMode} style={styles.button}>
-                    {isSignUp ? "Don't have an account? Sign Up" :
-                        "Already have an account? Sign In"}
+                    {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
                 </Button>
 
             </View>
