@@ -1,9 +1,12 @@
-import { Text, View } from "react-native";
+import { SafeAreaView, Text, View } from "react-native";
 import { Link } from "expo-router";
+import {auth} from "../../FirebaseConfig";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"; 
+
 
 export default function Index() {
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: "center",
@@ -12,6 +15,6 @@ export default function Index() {
     >
       <Text>Edit app/index.tsx to edit this screen.</Text>
 
-    </View>
+    </SafeAreaView>
   );
 }
