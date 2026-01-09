@@ -1,6 +1,7 @@
-import { Tabs } from "expo-router";    //Tabs not Stack
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Tabs } from "expo-router"; //Tabs not Stack
+import * as React from 'react';
 
 
 export default function TabsLayout() {
