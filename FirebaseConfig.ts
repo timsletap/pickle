@@ -1,9 +1,15 @@
 // Import the functions you need from the SDKs you need
-import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import {Platform} from 'react-native';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
+
+//Firebase analytics (web only)
+let getAnalytics: typeof import("firebase/analytics").getAnalytics | undefined;
+if (Platform.OS === 'web') {
+  getAnalytics = require("firebase/analytics").getAnalytics;
+}
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -19,7 +25,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+let analytics;
+if (Platform.OS === 'web' && getAnalytics) {
+  analytics = getAnalytics(app);
+}
 
 // Initialize and export Firebase Auth instance for app-wide use
 export const auth = getAuth(app);
