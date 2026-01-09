@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS drills (
     title TEXT NOT NULL,
     description TEXT,
     skill_focus TEXT NOT NULL,
+    video_url TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER NOT NULL,
     FOREIGN KEY (created_by) REFERENCES users(id)
@@ -88,6 +89,18 @@ CREATE TABLE IF NOT EXISTS equipment (
     description TEXT,
     link TEXT,
     price REAL,
-    where_to_buy TEXT,  
+    where_to_buy TEXT,
+    image_url TEXT,
+    rating REAL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS equipment_favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    equipment_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (equipment_id) REFERENCES equipment(id),
+    UNIQUE(user_id, equipment_id)
 );

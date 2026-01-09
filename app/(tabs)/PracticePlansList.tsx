@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Modal, TextInput } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Modal, TextInput, ScrollView } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { API_BASE_URL } from "../../config/api";
 
@@ -9,11 +9,20 @@ export default function PracticePlansList() {
   const [modalVisible, setModalVisible] = useState(false);
   const [planName, setPlanName] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [drillModalVisible, setDrillModalVisible] = useState(false);
+  const [availableDrills, setAvailableDrills] = useState<any[]>([]);
+  const [drillFilter, setDrillFilter] = useState("");
   const userId = 1;
 
   useEffect(() => {
     fetchPlans();
   }, []);
+
+  useEffect(() => {
+    if (drillModalVisible) {
+      fetchAvailableDrills();
+    }
+  }, [drillFilter, drillModalVisible]);
 
   const fetchPlans = async () => {
     try {
@@ -59,6 +68,47 @@ export default function PracticePlansList() {
     }
   };
 
+  const fetchAvailableDrills = async () => {
+    try {
+      const url = drillFilter
+        ? `${API_BASE_URL}/api/drills?skill_focus=${drillFilter}`
+        : `${API_BASE_URL}/api/drills`;
+      const response = await fetch(url);
+      const data = await response.json();
+      setAvailableDrills(data);
+    } catch (error) {
+      console.error("Error fetching drills:", error);
+    }
+  };
+
+  const addDrillToPlan = async (drillId: number) => {
+    if (!selectedPlan) return;
+
+    const orderNumber = selectedPlan.drills ? selectedPlan.drills.length + 1 : 1;
+
+    try {
+      await fetch(
+        `${API_BASE_URL}/api/practice-plans/${selectedPlan.id}/drills/${drillId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order_number: orderNumber })
+        }
+      );
+
+      setDrillModalVisible(false);
+      viewPlanDetails(selectedPlan.id);
+    } catch (error) {
+      console.error("Error adding drill to plan:", error);
+      alert("Error adding drill to plan");
+    }
+  };
+
+  const openDrillSelector = () => {
+    fetchAvailableDrills();
+    setDrillModalVisible(true);
+  };
+
   if (selectedPlan) {
     return (
       <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -66,7 +116,15 @@ export default function PracticePlansList() {
           <TouchableOpacity onPress={() => setSelectedPlan(null)}>
             <Text style={{ fontSize: 16, color: "#007AFF", fontWeight: "600" }}>← Back</Text>
           </TouchableOpacity>
-          <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 10 }}>{selectedPlan.name}</Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+            <Text style={{ fontSize: 24, fontWeight: "bold" }}>{selectedPlan.name}</Text>
+            <TouchableOpacity
+              onPress={openDrillSelector}
+              style={{ backgroundColor: "#007AFF", padding: 10, borderRadius: 8 }}
+            >
+              <MaterialCommunityIcons name="plus" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <FlatList
@@ -83,7 +141,78 @@ export default function PracticePlansList() {
               </View>
             </View>
           )}
+          ListEmptyComponent={
+            <View style={{ padding: 20, alignItems: "center" }}>
+              <Text style={{ fontSize: 16, color: "#999", marginBottom: 10 }}>No drills added yet</Text>
+              <TouchableOpacity
+                onPress={openDrillSelector}
+                style={{ backgroundColor: "#007AFF", padding: 12, paddingHorizontal: 20, borderRadius: 8 }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>Add Your First Drill</Text>
+              </TouchableOpacity>
+            </View>
+          }
         />
+
+        <Modal visible={drillModalVisible} animationType="slide">
+          <View style={{ flex: 1, backgroundColor: "#fff" }}>
+            <View style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: "#e0e0e0" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <Text style={{ fontSize: 24, fontWeight: "bold" }}>Add Drill</Text>
+                <TouchableOpacity onPress={() => setDrillModalVisible(false)}>
+                  <MaterialCommunityIcons name="close" size={28} color="#000" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <TouchableOpacity
+                  onPress={() => setDrillFilter("")}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 15,
+                    marginRight: 10,
+                    backgroundColor: drillFilter === "" ? "#007AFF" : "#f0f0f0",
+                    borderRadius: 20
+                  }}
+                >
+                  <Text style={{ color: drillFilter === "" ? "#fff" : "#000" }}>All</Text>
+                </TouchableOpacity>
+                {["hitting", "fielding", "pitching", "baserunning"].map((skill) => (
+                  <TouchableOpacity
+                    key={skill}
+                    onPress={() => setDrillFilter(skill)}
+                    style={{
+                      paddingVertical: 8,
+                      paddingHorizontal: 15,
+                      marginRight: 10,
+                      backgroundColor: drillFilter === skill ? "#007AFF" : "#f0f0f0",
+                      borderRadius: 20
+                    }}
+                  >
+                    <Text style={{ color: drillFilter === skill ? "#fff" : "#000", textTransform: "capitalize" }}>
+                      {skill}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            <FlatList
+              data={availableDrills}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => addDrillToPlan(item.id)}
+                  style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: "#e0e0e0" }}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 5 }}>{item.title}</Text>
+                  <Text style={{ fontSize: 12, color: "#666", marginBottom: 5 }}>{item.description}</Text>
+                  <Text style={{ fontSize: 12, color: "#007AFF", textTransform: "capitalize" }}>{item.skill_focus}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Modal>
       </View>
     );
   }
