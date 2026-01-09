@@ -1,6 +1,6 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 //@ts-ignore
-import { initializeAuth, getReactNativePersistence } from "@firebase/auth";
+import { initializeAuth, getReactNativePersistence, getAuth } from "@firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
@@ -14,13 +14,21 @@ const firebaseConfig = {
   measurementId: "G-D02L7K2K57"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase - only if not already initialized
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
 // Initialize Auth with proper persistence for React Native
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-});
+// Check if auth is already initialized to avoid the error
+let auth;
+try {
+  auth = getAuth(app);
+} catch {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
+}
+
+export { auth };
 
 // Initialize Analytics only on web platform where it's supported
 if (Platform.OS === "web" && typeof window !== "undefined") {
