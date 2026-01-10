@@ -78,9 +78,19 @@ CREATE TABLE IF NOT EXISTS practice_plan_drills (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     practice_plan_id INTEGER NOT NULL,
     drill_id INTEGER NOT NULL,
-    order_number INTEGER,  
+    order_number INTEGER,
     FOREIGN KEY (practice_plan_id) REFERENCES practice_plans(id),
     FOREIGN KEY (drill_id) REFERENCES drills(id)
+);
+
+CREATE TABLE IF NOT EXISTS practice_plan_favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    practice_plan_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (practice_plan_id) REFERENCES practice_plans(id),
+    UNIQUE(user_id, practice_plan_id)
 );
 
 CREATE TABLE IF NOT EXISTS equipment (

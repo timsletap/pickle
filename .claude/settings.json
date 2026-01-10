@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python clear_and_repopulate.py:*)"
+    ]
+  }
+}

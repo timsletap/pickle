@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
 import os
@@ -8,12 +9,15 @@ from typing import Optional
 router = APIRouter()
 DB_NAME = "pickle.db"
 
+class FavoriteRequest(BaseModel):
+    user_id: int
+
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)  
     conn.row_factory = sqlite3.Row
     return conn
 
-@router.get("/equipment")
+@router.get("")
 def list_equipment():
     try:
         conn = get_db_connection()
@@ -29,7 +33,7 @@ def list_equipment():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.post("/equipment")
+@router.post("")
 def create_equipment(
     name: str,
     description: str,
@@ -74,71 +78,112 @@ def create_equipment(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.get("/equipment/search/web")
+@router.get("/search/web")
 async def search_equipment_web(query: str):
-    """Search the web for baseball equipment using Google Custom Search API"""
+    """Search reputable sports equipment sites for baseball deals"""
     if not query or len(query.strip()) == 0:
         raise HTTPException(status_code=400, detail="Search query is required")
 
     if len(query) > 200:
         raise HTTPException(status_code=400, detail="Search query too long (max 200 characters)")
 
-    api_key = os.getenv("GOOGLE_API_KEY")
-    search_engine_id = os.getenv("GOOGLE_SEARCH_ENGINE_ID")
+    search_term = query.strip()
+    results = []
 
-    if not api_key or not search_engine_id:
-        raise HTTPException(
-            status_code=500,
-            detail="Google Custom Search API not configured. Set GOOGLE_API_KEY and GOOGLE_SEARCH_ENGINE_ID environment variables."
-        )
+    # List of reputable sports equipment retailers
+    sites = [
+        {
+            "name": "Dick's Sporting Goods",
+            "url": f"https://www.dickssportinggoods.com/search/SearchDisplay?searchTerm={search_term.replace(' ', '+')}+baseball",
+            "domain": "dickssportinggoods.com"
+        },
+        {
+            "name": "Academy Sports + Outdoors",
+            "url": f"https://www.academy.com/shop/browse?searchTerm={search_term.replace(' ', '+')}+baseball",
+            "domain": "academy.com"
+        },
+        {
+            "name": "Baseball Express",
+            "url": f"https://www.baseballexpress.com/catalogsearch/result/?q={search_term.replace(' ', '+')}",
+            "domain": "baseballexpress.com"
+        },
+        {
+            "name": "JustBats.com",
+            "url": f"https://www.justbats.com/search?keywords={search_term.replace(' ', '+')}",
+            "domain": "justbats.com"
+        },
+        {
+            "name": "Baseball Monkey",
+            "url": f"https://www.baseballmonkey.com/catalogsearch/result/?q={search_term.replace(' ', '+')}",
+            "domain": "baseballmonkey.com"
+        }
+    ]
 
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.get(
-                "https://www.googleapis.com/customsearch/v1",
-                params={
-                    "key": api_key,
-                    "cx": search_engine_id,
-                    "q": f"{query.strip()} baseball equipment",
-                    "num": 10
-                }
-            )
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            for site in sites:
+                try:
+                    # Add user agent to avoid blocking
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                    }
+                    response = await client.get(site["url"], headers=headers)
 
-            if response.status_code == 403:
-                raise HTTPException(status_code=403, detail="Google Search API quota exceeded or invalid API key")
-            elif response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail="Google Search API error")
+                    if response.status_code == 200:
+                        results.append({
+                            "title": f"{search_term} at {site['name']}",
+                            "description": f"Search results for {search_term} on {site['name']} - Click to view deals and pricing",
+                            "link": site["url"],
+                            "display_link": site["domain"],
+                            "image_url": None
+                        })
+                except Exception:
+                    # Skip sites that fail, don't block the whole search
+                    continue
 
-            data = response.json()
-
-            if not data.get("items"):
-                return []
-
-            return [
-                {
-                    "title": item.get("title", "Untitled")[:255],
-                    "description": item.get("snippet", "")[:1000],
-                    "link": item.get("link", ""),
-                    "display_link": item.get("displayLink", "")[:255],
-                    "image_url": item.get("pagemap", {}).get("cse_image", [{}])[0].get("src") if item.get("pagemap") else None
-                }
-                for item in data.get("items", [])
-            ]
+        return results
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Search request timed out")
     except httpx.HTTPError as e:
-        raise HTTPException(status_code=500, detail=f"Error connecting to Google Search API: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error searching equipment sites: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("/equipment/{equipment_id}/favorite")
-def favorite_equipment(equipment_id: int, user_id: int):
+@router.get("/favorites")
+def get_favorite_equipment(user_id: int = Query(...)):
+    """Get all equipment favorited by a user"""
+    if user_id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """SELECT e.* FROM equipment e
+               JOIN equipment_favorites ef ON e.id = ef.equipment_id
+               WHERE ef.user_id = ?
+               ORDER BY ef.created_at DESC""",
+            (user_id,)
+        )
+        equipment = cursor.fetchall()
+        conn.close()
+
+        return [dict(e) for e in equipment]
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/{equipment_id}/favorite")
+def favorite_equipment(equipment_id: int, request: FavoriteRequest):
     """Add equipment to user's favorites"""
     if equipment_id <= 0:
         raise HTTPException(status_code=400, detail="Invalid equipment ID")
 
-    if user_id <= 0:
+    if request.user_id <= 0:
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
     try:
@@ -154,7 +199,7 @@ def favorite_equipment(equipment_id: int, user_id: int):
         try:
             cursor.execute(
                 "INSERT INTO equipment_favorites (user_id, equipment_id, created_at) VALUES (?, ?, ?)",
-                (user_id, equipment_id, datetime.now().isoformat())
+                (request.user_id, equipment_id, datetime.now().isoformat())
             )
             conn.commit()
             conn.close()
@@ -170,7 +215,7 @@ def favorite_equipment(equipment_id: int, user_id: int):
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.delete("/equipment/{equipment_id}/favorite")
+@router.delete("/{equipment_id}/favorite")
 def unfavorite_equipment(equipment_id: int, user_id: int):
     """Remove equipment from user's favorites"""
     if equipment_id <= 0:
@@ -197,33 +242,6 @@ def unfavorite_equipment(equipment_id: int, user_id: int):
         return {"message": "Equipment removed from favorites"}
     except HTTPException:
         raise
-    except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-
-
-@router.get("/equipment/favorites")
-def get_favorite_equipment(user_id: int):
-    """Get all equipment favorited by a user"""
-    if user_id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid user ID")
-
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            """SELECT e.* FROM equipment e
-               JOIN equipment_favorites ef ON e.id = ef.equipment_id
-               WHERE ef.user_id = ?
-               ORDER BY ef.created_at DESC""",
-            (user_id,)
-        )
-        equipment = cursor.fetchall()
-        conn.close()
-
-        return [dict(e) for e in equipment]
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
