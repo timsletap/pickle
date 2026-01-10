@@ -186,3 +186,8 @@ vite.config.ts.timestamp-*
 # Database files
 backend/pickle.db
 
+# Python
+__pycache__/
+*.pyc
+
+
