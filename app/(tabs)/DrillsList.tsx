@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, Image, Linking, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, Linking, Modal, ScrollView, Text, TextInput, TouchableOpacity, View, Dimensions, Platform } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { API_BASE_URL } from "../../config/api";
 
@@ -14,10 +14,15 @@ export default function DrillsList() {
   const [selectedVideo, setSelectedVideo] = useState<any>(null);
   const [drillSkillFocus, setDrillSkillFocus] = useState("");
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [videoModalVisible, setVideoModalVisible] = useState(false);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const userId = 1;
 
   useEffect(() => {
     fetchDrills();
+    fetchFavorites();
   }, [skillFilter]);
 
   const fetchDrills = async () => {
@@ -46,31 +51,81 @@ export default function DrillsList() {
     }
   };
 
-  const favoriteDrill = async (drillId: any) => {
-    if (!drillId) {
-      alert("Invalid drill");
-      return;
-    }
-
+  const fetchFavorites = async () => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/drills/${drillId}/favorite`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId }),
-          signal: AbortSignal.timeout(10000)
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/drills/favorites?user_id=${userId}`, {
+        signal: AbortSignal.timeout(10000)
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      alert("Drill favorited successfully!");
+      const data = await response.json();
+      const ids = Array.isArray(data) ? data.map((d: any) => d.id).filter(id => id != null) : [];
+      setFavorites(new Set(ids));
     } catch (error) {
-      console.error("Error favoriting drill:", error);
-      alert("Failed to favorite drill. Please try again.");
+      console.error("Error fetching favorites:", error);
+    }
+  };
+
+  const toggleFavorite = async (drillId: any) => {
+    if (!drillId) {
+      alert("Invalid drill");
+      return;
+    }
+
+    const isFavorited = favorites.has(drillId);
+
+    // Optimistically update UI
+    if (isFavorited) {
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(drillId);
+        return newSet;
+      });
+    } else {
+      setFavorites(prev => new Set(prev).add(drillId));
+    }
+
+    try {
+      if (isFavorited) {
+        const response = await fetch(`${API_BASE_URL}/api/drills/${drillId}/favorite?user_id=${userId}`, {
+          method: "DELETE",
+          signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      } else {
+        const response = await fetch(
+          `${API_BASE_URL}/api/drills/${drillId}/favorite`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId }),
+            signal: AbortSignal.timeout(10000)
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      // Revert optimistic update on error
+      if (isFavorited) {
+        setFavorites(prev => new Set(prev).add(drillId));
+      } else {
+        setFavorites(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(drillId);
+          return newSet;
+        });
+      }
+      alert("Failed to update favorite. Please try again.");
     }
   };
 
@@ -177,24 +232,34 @@ export default function DrillsList() {
       return;
     }
 
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        alert("Unable to open this video.");
+    const videoId = getYouTubeVideoId(url);
+    if (videoId) {
+      // Open in-app video player
+      setCurrentVideoUrl(`https://www.youtube.com/embed/${videoId}`);
+      setVideoModalVisible(true);
+    } else {
+      // Fallback to external browser
+      try {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url);
+        } else {
+          alert("Unable to open this video.");
+        }
+      } catch (error) {
+        console.error("Error opening video:", error);
+        alert("Failed to open video. Please try again.");
       }
-    } catch (error) {
-      console.error("Error opening video:", error);
-      alert("Failed to open video. Please try again.");
     }
   };
 
   const getYouTubeVideoId = (url: string) => {
-    if (!url) return null;
+    if (!url || typeof url !== 'string') return null;
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
     return match ? match[1] : null;
   };
+
+  const filteredDrills = showFavoritesOnly ? drills.filter((d: any) => favorites.has(d.id)) : drills;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
@@ -285,6 +350,24 @@ export default function DrillsList() {
             <Text style={{ color: skillFilter === "pitching" ? "#000" : "#00ff41", fontWeight: "700", fontSize: 13 }}>PITCHING</Text>
           </TouchableOpacity>
         </ScrollView>
+
+        <TouchableOpacity
+          onPress={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          style={{
+            paddingVertical: 10,
+            paddingHorizontal: 18,
+            marginTop: 12,
+            backgroundColor: showFavoritesOnly ? "#00ff41" : "rgba(0, 255, 65, 0.1)",
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: showFavoritesOnly ? "#00ff41" : "rgba(0, 255, 65, 0.3)",
+            alignSelf: "flex-start"
+          }}
+        >
+          <Text style={{ color: showFavoritesOnly ? "#000" : "#00ff41", fontWeight: "700", fontSize: 13 }}>
+            {showFavoritesOnly ? "★ FAVORITES" : "☆ SHOW FAVORITES"}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -292,9 +375,16 @@ export default function DrillsList() {
           <MaterialCommunityIcons name="loading" size={40} color="#00ff41" />
           <Text style={{ color: "#00ff41", marginTop: 12, fontSize: 16, fontWeight: "600" }}>Loading drills...</Text>
         </View>
+      ) : filteredDrills.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+          <MaterialCommunityIcons name="run" size={60} color="rgba(0, 255, 65, 0.2)" />
+          <Text style={{ fontSize: 18, color: "#666", marginTop: 16, textAlign: "center" }}>
+            {showFavoritesOnly ? "No favorite drills yet" : "No drills yet"}
+          </Text>
+        </View>
       ) : (
         <FlatList
-          data={drills}
+          data={filteredDrills}
           keyExtractor={(item: { id: { toString: () => any; }; }) => item.id.toString()}
           contentContainerStyle={{ padding: 16 }}
           renderItem={({ item }: { item: any }) => {
@@ -387,16 +477,16 @@ export default function DrillsList() {
                       </View>
                     </View>
                     <TouchableOpacity
-                      onPress={() => favoriteDrill(item.id)}
+                      onPress={() => toggleFavorite(item.id)}
                       style={{
-                        backgroundColor: "rgba(255, 193, 7, 0.1)",
+                        backgroundColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.2)" : "rgba(255, 193, 7, 0.1)",
                         padding: 10,
                         borderRadius: 12,
                         borderWidth: 1,
-                        borderColor: "rgba(255, 193, 7, 0.3)"
+                        borderColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.3)"
                       }}
                     >
-                      <Text style={{ fontSize: 22, color: "#FFC107" }}>★</Text>
+                      <Text style={{ fontSize: 22, color: "#FFC107" }}>{favorites.has(item.id) ? "★" : "☆"}</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -690,6 +780,80 @@ export default function DrillsList() {
               }
             />
           )}
+        </View>
+      </Modal>
+
+      {/* In-App Video Player Modal */}
+      <Modal
+        visible={videoModalVisible}
+        animationType="slide"
+        onRequestClose={() => {
+          setVideoModalVisible(false);
+          setCurrentVideoUrl(null);
+        }}
+      >
+        <View style={{ flex: 1, backgroundColor: "#000" }}>
+          <View style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: 16,
+            backgroundColor: "#0a0a0a",
+            borderBottomWidth: 1,
+            borderBottomColor: "rgba(0, 255, 65, 0.2)"
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: "#fff" }}>Drill Video</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setVideoModalVisible(false);
+                setCurrentVideoUrl(null);
+              }}
+              style={{
+                backgroundColor: "rgba(0, 255, 65, 0.1)",
+                padding: 10,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "rgba(0, 255, 65, 0.3)"
+              }}
+            >
+              <MaterialCommunityIcons name="close" size={24} color="#00ff41" />
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" }}>
+            {currentVideoUrl && Platform.OS === 'web' ? (
+              <iframe
+                src={currentVideoUrl}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none'
+                }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : currentVideoUrl ? (
+              <View style={{
+                width: Dimensions.get('window').width,
+                height: Dimensions.get('window').width * (9/16),
+                backgroundColor: '#000',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(currentVideoUrl.replace('/embed/', '/watch?v='))}
+                  style={{
+                    backgroundColor: 'rgba(255, 0, 0, 0.9)',
+                    padding: 20,
+                    borderRadius: 50,
+                    alignItems: 'center'
+                  }}
+                >
+                  <MaterialCommunityIcons name="youtube" size={48} color="#fff" />
+                  <Text style={{ color: '#fff', marginTop: 8, fontWeight: '700' }}>Open in YouTube</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
         </View>
       </Modal>
     </View>
