@@ -1,9 +1,7 @@
 import { router } from "expo-router";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
-import { auth } from "../config/FirebaseConfig";
 import { useAuth } from "./auth-context";
 
 export default function AuthScreen() {
@@ -23,7 +21,9 @@ export default function AuthScreen() {
         setIsSignUp(!isSignUp);
     }
 
-    //Authentication logic: sign in or sign up via Firebase
+    //Authentication logic: sign in or sign up via Firebase (using AuthContext)
+    const { signUp, signIn } = useAuth();
+
     const handleAuth = async() => {     
         setError(null);
 
@@ -39,9 +39,17 @@ export default function AuthScreen() {
 
         try {
             if (isSignUp) {
-                await createUserWithEmailAndPassword(auth, email, password);
+                const errMsg = await signUp(email, password);
+                if (errMsg) {
+                    setError("Sign up failed: " + errMsg);
+                    return;
+                }
             } else {
-                await signInWithEmailAndPassword(auth, email, password);
+                const errMsg = await signIn(email, password);
+                if (errMsg) {
+                    setError("Sign in failed: " + errMsg);
+                    return;
+                }
             }
             // On success navigate to tabs
             router.replace("/(tabs)");
