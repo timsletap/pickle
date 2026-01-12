@@ -9,9 +9,10 @@ export default function AuthScreen() {
     //State to track whether user is signing up or signing in
     const [isSignUp, setIsSignUp] = useState<boolean>(false);
     
-    //States to hold email and password inputs
+    //States to hold email, username and password inputs
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const [username, setUsername] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
 
     const theme = useTheme();
@@ -27,7 +28,7 @@ export default function AuthScreen() {
     const handleAuth = async() => {     
         setError(null);
 
-        if (!email || !password) {
+        if (!email || !password || (isSignUp && !username)) {
             setError("One or more fields are currently empty");
             return;
         }
@@ -39,7 +40,7 @@ export default function AuthScreen() {
 
         try {
             if (isSignUp) {
-                const errMsg = await signUp(email, password);
+                const errMsg = await signUp(email, password, username);
                 if (errMsg) {
                     setError("Sign up failed: " + errMsg);
                     return;
@@ -74,6 +75,15 @@ export default function AuthScreen() {
                     onChangeText={setEmail}
                     value={email}
                 />
+
+                {isSignUp ? (
+                    <TextInput label="Username" autoCapitalize="none"
+                        mode="outlined"
+                        style={styles.input}
+                        onChangeText={setUsername}
+                        value={username}
+                    />
+                ) : null}
 
                 <TextInput label="Password" autoCapitalize="none"
                     keyboardType="default" mode="outlined"

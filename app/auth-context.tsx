@@ -12,7 +12,7 @@ import { auth, writeUserData } from "../config/FirebaseConfig";
 type AuthContextType = {
     user: User | null,
     loading: boolean,
-    signUp: (email: string, password: string) => Promise<string | null>,
+    signUp: (email: string, password: string, username: string) => Promise<string | null>,
     signIn: (email: string, password: string) => Promise<string | null>,
     signOut: () => Promise<void>,
 };
@@ -34,14 +34,14 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
         return unsubscribe;
     }, []);
     
-    const signUp = async (email: string, password: string) => {
+    const signUp = async (email: string, password: string, username: string) => {
         // Implement sign-up logic here
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const uid = userCredential.user.uid;
             // store uid and email in Realtime DB so app can fetch user data by uid later
             try {
-                await writeUserData(uid, '', email);
+                await writeUserData(uid, username, email);
             } catch (err) {
                 console.error('Failed to write user data for uid', uid, err);
             }
