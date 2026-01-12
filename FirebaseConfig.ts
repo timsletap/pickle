@@ -23,7 +23,7 @@ const firebaseConfig = {
   measurementId: "G-D02L7K2K57"
 };
 
-// Initialize Firebase
+// Initialize Firebase and check if it is web or mobile
 const app = initializeApp(firebaseConfig);
 let analytics;
 if (Platform.OS === 'web' && getAnalytics) {
