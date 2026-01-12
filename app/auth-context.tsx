@@ -1,11 +1,16 @@
-import {createContext, useContext, useState, useEffect} from "react";
-import { User, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-signOut as firebaseSignOut, onAuthStateChanged } from "firebase/auth";
-import { auth } from "../config/FirebaseConfig";
+import type { User } from "firebase/auth";
+import {
+    createUserWithEmailAndPassword,
+    signOut as firebaseSignOut,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+} from "firebase/auth";
+import { createContext, useContext, useEffect, useState } from "react";
+import { auth, writeUserData } from "../config/FirebaseConfig";
 
 
 type AuthContextType = {
-  //  user: User | null,
+    user: User | null,
     loading: boolean,
     signUp: (email: string, password: string) => Promise<string | null>,
     signIn: (email: string, password: string) => Promise<string | null>,
@@ -17,11 +22,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({children}: {children: React.ReactNode}) {
     
     const [loading, setLoading] = useState<boolean>(true);
+    const [user, setUser] = useState<User | null>(null);
     
     // Listen to auth state changes
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            // You can set user state here if needed
+        const unsubscribe = onAuthStateChanged(auth, (u) => {
+            setUser(u);
             setLoading(false);
         });
 
@@ -31,9 +37,14 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     const signUp = async (email: string, password: string) => {
         // Implement sign-up logic here
         try {
-            //generate unique id from firebase
-            await createUserWithEmailAndPassword(auth, email, password);
-            await signIn(email, password)
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const uid = userCredential.user.uid;
+            // store uid and email in Realtime DB so app can fetch user data by uid later
+            try {
+                await writeUserData(uid, '', email);
+            } catch (err) {
+                console.error('Failed to write user data for uid', uid, err);
+            }
             return null;
         } catch (error) {
             if (error instanceof Error) {
@@ -62,7 +73,7 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     
     return (
         //Includes user state when needed later
-        <AuthContext.Provider value={{loading, signUp, signIn, signOut }}>
+        <AuthContext.Provider value={{loading, user, signUp, signIn, signOut }}>
             {children}
         </AuthContext.Provider>
     );
