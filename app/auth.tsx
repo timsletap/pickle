@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { KeyboardAvoidingView, Platform, View, StyleSheet } from "react-native";
-import { Button, Text, TextInput, useTheme } from "react-native-paper";
 import { router } from "expo-router";
-import { auth } from "../FirebaseConfig";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import React, { useState } from "react";
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { auth } from "../config/FirebaseConfig";
 
 export default function AuthScreen() {
 
