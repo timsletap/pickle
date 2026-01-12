@@ -2,9 +2,10 @@ import { Stack, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { auth } from "../config/FirebaseConfig";
+import { AuthProvider } from "./auth-context";
 
 function RouteGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const router = useRouter();  //Object used to redirect user
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -32,10 +33,12 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   return (
-    <RouteGuard>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </RouteGuard>
+    <AuthProvider>
+      <RouteGuard>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </RouteGuard>
+    </AuthProvider>
   );
 }

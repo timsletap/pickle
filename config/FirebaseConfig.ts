@@ -1,12 +1,17 @@
-import { initializeApp, getApps } from "firebase/app";
+import { getApps, initializeApp } from "firebase/app";
+// Use firebase/auth types and functions. Some RN setups require @firebase/auth runtime helpers;
+// keep the runtime import but provide the Auth type from the official package for correct typing.
+import type { Auth } from "firebase/auth";
+import { getDatabase, ref, set } from "firebase/database";
 //@ts-ignore
-import { initializeAuth, getReactNativePersistence, getAuth } from "@firebase/auth";
+import { getAuth, getReactNativePersistence, initializeAuth } from "@firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA4qT1x2OMofiDoQwMhmWvf4ddrbiXXVDo",
   authDomain: "pickle-cab2c.firebaseapp.com",
+  databaseURL: "https://pickle-cab2c-default-rtdb.firebaseio.com/",
   projectId: "pickle-cab2c",
   storageBucket: "pickle-cab2c.firebasestorage.app",
   messagingSenderId: "1082279199176",
@@ -19,13 +24,14 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 
 // Initialize Auth with proper persistence for React Native
 // Check if auth is already initialized to avoid the error
-let auth;
+let auth: Auth;
 try {
-  auth = getAuth(app);
+  // getAuth may throw if native persistence isn't set up; fall back to initializeAuth
+  auth = getAuth(app) as Auth;
 } catch {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage)
-  });
+  }) as Auth;
 }
 
 export { auth };
@@ -39,4 +45,16 @@ if (Platform.OS === "web" && typeof window !== "undefined") {
       }
     });
   });
+}
+
+export async function writeUserData(userId: string, name: string, email: string) {
+  const db = getDatabase(app);
+  const reference = ref(db, 'users/' + userId);
+
+  await set(reference, {
+    username: name,
+    email: email
+  });
+
+  console.log('Realtime DB write succeeded for user', userId);
 }
