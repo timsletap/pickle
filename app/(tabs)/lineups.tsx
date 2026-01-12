@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Divider, Provider as PaperProvider, Text } from 'react-native-paper';
 

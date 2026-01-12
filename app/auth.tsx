@@ -1,9 +1,8 @@
 import { router } from "expo-router";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import React, { useState } from "react";
+import { useState } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
-import { auth } from "../config/FirebaseConfig";
+import { useAuth } from "./auth-context";
 
 export default function AuthScreen() {
 
@@ -22,7 +21,9 @@ export default function AuthScreen() {
         setIsSignUp(!isSignUp);
     }
 
-    //Authentication logic: sign in or sign up via Firebase
+    //Authentication logic: sign in or sign up via Firebase (using AuthContext)
+    const { signUp, signIn } = useAuth();
+
     const handleAuth = async() => {     
         setError(null);
 
@@ -38,9 +39,17 @@ export default function AuthScreen() {
 
         try {
             if (isSignUp) {
-                await createUserWithEmailAndPassword(auth, email, password);
+                const errMsg = await signUp(email, password);
+                if (errMsg) {
+                    setError("Sign up failed: " + errMsg);
+                    return;
+                }
             } else {
-                await signInWithEmailAndPassword(auth, email, password);
+                const errMsg = await signIn(email, password);
+                if (errMsg) {
+                    setError("Sign in failed: " + errMsg);
+                    return;
+                }
             }
             // On success navigate to tabs
             router.replace("/(tabs)");
@@ -52,11 +61,11 @@ export default function AuthScreen() {
     
     return (
         <KeyboardAvoidingView   //So keyboard doesn't cover inputs
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}    //Makes room for keyboard
             style={styles.container} //Applies styling from below Stylesheet
         >
             <View style={styles.content}>
-                <Text style={styles.title} variant="headlineMedium">User Login</Text>
+                <Text style={styles.title} variant="headlineMedium">{isSignUp ? "Create Account" : "User Login"}</Text>
 
                 <TextInput label="Email" autoCapitalize="none"
                     keyboardType="email-address" placeholder="example@email.com"
@@ -68,13 +77,13 @@ export default function AuthScreen() {
 
                 <TextInput label="Password" autoCapitalize="none"
                     keyboardType="default" mode="outlined"
-                    secureTextEntry={true}
+                    secureTextEntry
                     style={styles.input}
                     onChangeText={setPassword}
                     value={password}
                 />
 
-                {/* Display error message if exists */}
+                {/* Style & Display error message if exists */}
                 {error ? <Text style={{ color: theme.colors.error, marginBottom: 8 }}>{error}</Text> : null}
 
                 <Button mode="contained" style={styles.biggerButton} onPress={handleAuth}>
