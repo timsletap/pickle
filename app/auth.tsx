@@ -1,9 +1,10 @@
 import { router } from "expo-router";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import React, { useState } from "react";
+import { useState } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
 import { auth } from "../config/FirebaseConfig";
+import { useAuth } from "./auth-context";
 
 export default function AuthScreen() {
 
@@ -52,11 +53,11 @@ export default function AuthScreen() {
     
     return (
         <KeyboardAvoidingView   //So keyboard doesn't cover inputs
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}    //Makes room for keyboard
             style={styles.container} //Applies styling from below Stylesheet
         >
             <View style={styles.content}>
-                <Text style={styles.title} variant="headlineMedium">User Login</Text>
+                <Text style={styles.title} variant="headlineMedium">{isSignUp ? "Create Account" : "User Login"}</Text>
 
                 <TextInput label="Email" autoCapitalize="none"
                     keyboardType="email-address" placeholder="example@email.com"
@@ -74,7 +75,7 @@ export default function AuthScreen() {
                     value={password}
                 />
 
-                {/* Display error message if exists */}
+                {/* Style & Display error message if exists */}
                 {error ? <Text style={{ color: theme.colors.error, marginBottom: 8 }}>{error}</Text> : null}
 
                 <Button mode="contained" style={styles.biggerButton} onPress={handleAuth}>
