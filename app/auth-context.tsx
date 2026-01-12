@@ -1,50 +1,99 @@
-import type { User } from "firebase/auth";
 import {
     createUserWithEmailAndPassword,
+    deleteUser,
     signOut as firebaseSignOut,
     onAuthStateChanged,
     signInWithEmailAndPassword,
 } from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, writeUserData } from "../config/FirebaseConfig";
+import { auth, deleteUserData, readUserData, writeUserData } from "../config/FirebaseConfig";
 
+export type AppUser = {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    username: string | null;
+};
 
 type AuthContextType = {
-    user: User | null,
-    loading: boolean,
-    signUp: (email: string, password: string, username: string) => Promise<string | null>,
-    signIn: (email: string, password: string) => Promise<string | null>,
-    signOut: () => Promise<void>,
+    user: AppUser | null;
+    loading: boolean;
+    signUp: (email: string, password: string, username: string) => Promise<string | null>;
+    signIn: (email: string, password: string) => Promise<string | null>;
+    signOut: () => Promise<void>;
+    deleteAccount: () => Promise<string | null>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({children}: {children: React.ReactNode}) {
-    
+export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState<boolean>(true);
-    const [user, setUser] = useState<User | null>(null);
-    
-    // Listen to auth state changes
+    const [user, setUser] = useState<AppUser | null>(null);
+
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (u) => {
-            setUser(u);
-            setLoading(false);
+        let cancelled = false;
+
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            if (cancelled) return;
+
+            if (!firebaseUser) {
+                setUser(null);
+                setLoading(false);
+                return;
+            }
+
+            setLoading(true);
+
+            const baseUser: AppUser = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName,
+                username: null,
+            };
+
+            setUser(baseUser);
+
+            (async () => {
+                try {
+                    const data = await readUserData(firebaseUser.uid);
+                    const nameFromDb = typeof data?.username === "string" ? data.username.trim() : "";
+                    const nameFromAuth = typeof firebaseUser.displayName === "string" ? firebaseUser.displayName.trim() : "";
+                    const resolvedUsername = nameFromDb || nameFromAuth || null;
+
+                    if (!cancelled) {
+                        setUser({ ...baseUser, username: resolvedUsername });
+                    }
+                } catch (err) {
+                    console.error("Failed to read user data for uid", firebaseUser.uid, err);
+                    const nameFromAuth = typeof firebaseUser.displayName === "string" ? firebaseUser.displayName.trim() : "";
+                    if (!cancelled) {
+                        setUser({ ...baseUser, username: nameFromAuth || null });
+                    }
+                } finally {
+                    if (!cancelled) {
+                        setLoading(false);
+                    }
+                }
+            })();
         });
 
-        return unsubscribe;
+        return () => {
+            cancelled = true;
+            unsubscribe();
+        };
     }, []);
-    
+
     const signUp = async (email: string, password: string, username: string) => {
-        // Implement sign-up logic here
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const uid = userCredential.user.uid;
-            // store uid and email in Realtime DB so app can fetch user data by uid later
+
             try {
                 await writeUserData(uid, username, email);
             } catch (err) {
-                console.error('Failed to write user data for uid', uid, err);
+                console.error("Failed to write user data for uid", uid, err);
             }
+
             return null;
         } catch (error) {
             if (error instanceof Error) {
@@ -55,7 +104,6 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     };
 
     const signIn = async (email: string, password: string) => {
-        // Implement sign-in logic here
         try {
             await signInWithEmailAndPassword(auth, email, password);
             return null;
@@ -70,10 +118,34 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     const signOut = async () => {
         await firebaseSignOut(auth);
     };
-    
+
+    const deleteAccount = async (): Promise<string | null> => {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) {
+            return "No signed-in user.";
+        }
+
+        try {
+            // Best effort cleanup of app profile record first.
+            try {
+                await deleteUserData(firebaseUser.uid);
+            } catch (err) {
+                console.error("Failed to delete user data for uid", firebaseUser.uid, err);
+            }
+
+            await deleteUser(firebaseUser);
+            return null;
+        } catch (error) {
+            if (error instanceof Error) {
+                // Common Firebase error here is requires-recent-login.
+                return error.message;
+            }
+            return "Failed to delete account.";
+        }
+    };
+
     return (
-        //Includes user state when needed later
-        <AuthContext.Provider value={{loading, user, signUp, signIn, signOut }}>
+        <AuthContext.Provider value={{ loading, user, signUp, signIn, signOut, deleteAccount }}>
             {children}
         </AuthContext.Provider>
     );
