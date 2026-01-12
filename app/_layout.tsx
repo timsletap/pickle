@@ -1,7 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { auth } from "../FirebaseConfig";
+import { auth } from "../config/FirebaseConfig";
 
 function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
