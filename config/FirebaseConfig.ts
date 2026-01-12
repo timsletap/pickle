@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "firebase/app";
 // Use firebase/auth types and functions. Some RN setups require @firebase/auth runtime helpers;
 // keep the runtime import but provide the Auth type from the official package for correct typing.
 import type { Auth } from "firebase/auth";
-import { getDatabase, ref, set } from "firebase/database";
+import { get, getDatabase, ref, remove, set } from "firebase/database";
 //@ts-ignore
 import { getAuth, getReactNativePersistence, initializeAuth } from "@firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -57,4 +57,18 @@ export async function writeUserData(userId: string, name: string, email: string)
   });
 
   console.log('Realtime DB write succeeded for user', userId);
+}
+
+export async function readUserData(userId: string): Promise<{ username?: string; email?: string } | null> {
+  const db = getDatabase(app);
+  const snapshot = await get(ref(db, 'users/' + userId));
+  if (snapshot.exists()) {
+    return snapshot.val() as { username?: string; email?: string };
+  }
+  return null;
+}
+
+export async function deleteUserData(userId: string): Promise<void> {
+  const db = getDatabase(app);
+  await remove(ref(db, 'users/' + userId));
 }
