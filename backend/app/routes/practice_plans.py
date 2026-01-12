@@ -1,13 +1,16 @@
 import datetime
-from app.db import db
 from fastapi import APIRouter, HTTPException, Query, Body
 from pydantic import BaseModel
 import sqlite3
-from app.db import get_db
 
 
 router = APIRouter()
 DB_NAME = "pickle.db"
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 class AddDrillRequest(BaseModel):
     order_number: int
@@ -22,15 +25,19 @@ def create_practice_plan(
     name: str,
 ):
     """Create a new practice plan"""
-    db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         """INSERT INTO practice_plans (user_id, name, created_at)
            VALUES (?, ?, ?)""",
         (user_id, name, datetime.datetime.now().isoformat())
     )
-    db.commit()
+    conn.commit()
+    plan_id = cursor.lastrowid
+    conn.close()
 
-    new_plan = db.execute("SELECT last_insert_rowid()").fetchone()
-    return {"id": new_plan[0], "message": "Practice plan created"}
+    return {"id": plan_id, "message": "Practice plan created"}
 
 @router.post("/{plan_id}/drills/{drill_id}")
 def add_drill_to_plan(
@@ -39,22 +46,31 @@ def add_drill_to_plan(
     request: AddDrillRequest
 ):
     """Add a drill to a practice plan"""
-    db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         """INSERT INTO practice_plan_drills (practice_plan_id, drill_id, order_number)
            VALUES (?, ?, ?)""",
         (plan_id, drill_id, request.order_number)
     )
-    db.commit()
+    conn.commit()
+    conn.close()
     return {"message": "Drill added to practice plan"}
 
 
 @router.get("/user/{user_id}")
 def get_user_practice_plans(user_id: int):
     """Get all practice plans for a specific user"""
-    plans = db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         "SELECT * FROM practice_plans WHERE user_id = ? ORDER BY created_at DESC",
         (user_id,)
-    ).fetchall()
+    )
+    plans = cursor.fetchall()
+    conn.close()
 
     return [
         {
@@ -70,13 +86,18 @@ def get_user_practice_plans(user_id: int):
 @router.get("/favorites")
 def get_favorite_practice_plans(user_id: int = Query(...)):
     """Get all practice plans favorited by a user"""
-    plans = db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         """SELECT p.* FROM practice_plans p
            JOIN practice_plan_favorites pf ON p.id = pf.practice_plan_id
            WHERE pf.user_id = ?
            ORDER BY p.created_at DESC""",
         (user_id,)
-    ).fetchall()
+    )
+    plans = cursor.fetchall()
+    conn.close()
 
     return [
         {
@@ -92,21 +113,28 @@ def get_favorite_practice_plans(user_id: int = Query(...)):
 @router.get("/{plan_id}")
 def get_practice_plan(plan_id: int):
     """Get a practice plan with all its drills"""
-    plan = db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         "SELECT * FROM practice_plans WHERE id = ?",
         (plan_id,)
-    ).fetchone()
+    )
+    plan = cursor.fetchone()
 
     if not plan:
+        conn.close()
         raise HTTPException(status_code=404, detail="Practice plan not found")
 
-    drills = db.execute(
+    cursor.execute(
         """SELECT d.* FROM drills d
            JOIN practice_plan_drills ppd ON d.id = ppd.drill_id
            WHERE ppd.practice_plan_id = ?
            ORDER BY ppd.order_number""",
         (plan_id,)
-    ).fetchall()
+    )
+    drills = cursor.fetchall()
+    conn.close()
 
     return {
         "id": plan[0],
@@ -135,20 +163,27 @@ def favorite_practice_plan(plan_id: int, request: FavoriteRequest):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
         # Check if plan exists
-        plan = db.execute("SELECT id FROM practice_plans WHERE id = ?", (plan_id,)).fetchone()
+        cursor.execute("SELECT id FROM practice_plans WHERE id = ?", (plan_id,))
+        plan = cursor.fetchone()
         if not plan:
+            conn.close()
             raise HTTPException(status_code=404, detail="Practice plan not found")
 
         try:
-            db.execute(
+            cursor.execute(
                 """INSERT INTO practice_plan_favorites (user_id, practice_plan_id, created_at)
                    VALUES (?, ?, ?)""",
                 (request.user_id, plan_id, datetime.datetime.now().isoformat())
             )
-            db.commit()
+            conn.commit()
+            conn.close()
             return {"message": "Practice plan favorited"}
         except sqlite3.IntegrityError:
+            conn.close()
             raise HTTPException(status_code=400, detail="Practice plan already favorited")
     except HTTPException:
         raise
@@ -161,10 +196,14 @@ def favorite_practice_plan(plan_id: int, request: FavoriteRequest):
 @router.delete("/{plan_id}/favorite")
 def unfavorite_practice_plan(plan_id: int, user_id: int):
     """Remove a practice plan from user's favorites"""
-    db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         """DELETE FROM practice_plan_favorites
            WHERE user_id = ? AND practice_plan_id = ?""",
         (user_id, plan_id)
     )
-    db.commit()
+    conn.commit()
+    conn.close()
     return {"message": "Practice plan removed from favorites"}

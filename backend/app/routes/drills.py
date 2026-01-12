@@ -1,5 +1,4 @@
 from datetime import datetime
-from app.db import db
 from fastapi import APIRouter, HTTPException, Query, Body
 from pydantic import BaseModel
 import sqlite3
@@ -9,6 +8,11 @@ import httpx
 
 router = APIRouter()
 DB_NAME = "pickle.db"
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 class FavoriteRequest(BaseModel):
     user_id: int
@@ -40,12 +44,17 @@ def add_drill(name: str, description: str = None):
 @router.get("/favorites")
 def get_favorite_drills(user_id: int = Query(...)):
     """Get all drills favorited by a user"""
-    drills = db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         """SELECT d.* FROM drills d
            JOIN drill_favorites df ON d.id = df.drill_id
            WHERE df.user_id = ?""",
         (user_id,)
-    ).fetchall()
+    )
+    drills = cursor.fetchall()
+    conn.close()
 
     return [
         {
@@ -131,6 +140,9 @@ def list_drills(
 ):
     """Get all drills, optionally filtered by skill focus"""
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
         query = "SELECT * FROM drills WHERE 1=1"
         params = []
 
@@ -144,7 +156,9 @@ def list_drills(
 
         query += " ORDER BY created_at DESC"
 
-        drills = db.execute(query, params).fetchall()
+        cursor.execute(query, params)
+        drills = cursor.fetchall()
+        conn.close()
 
         return [
             {
@@ -174,19 +188,19 @@ def create_drill(
     user_id: int,
 ):
     """Create a new drill"""
-    db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         """INSERT INTO drills (title, description, skill_focus, created_by, created_at)
            VALUES (?, ?, ?, ?, ?)""",
         (title, description, skill_focus, user_id, datetime.now().isoformat())
     )
-    db.commit()
+    conn.commit()
+    drill_id = cursor.lastrowid
+    conn.close()
 
-
-    new_drill = db.execute(
-        "SELECT last_insert_rowid()"
-    ).fetchone()
-
-    return {"id": new_drill[0], "message": "Drill created successfully"}
+    return {"id": drill_id, "message": "Drill created successfully"}
 
 
 @router.post("/{drill_id}/favorite")
@@ -199,21 +213,29 @@ def favorite_drill(drill_id: int, request: FavoriteRequest):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
         # Check if drill exists
-        drill = db.execute("SELECT id FROM drills WHERE id = ?", (drill_id,)).fetchone()
+        cursor.execute("SELECT id FROM drills WHERE id = ?", (drill_id,))
+        drill = cursor.fetchone()
         if not drill:
+            conn.close()
             raise HTTPException(status_code=404, detail="Drill not found")
 
         try:
-            db.execute(
+            cursor.execute(
                 """INSERT INTO drill_favorites (user_id, drill_id, created_at)
                    VALUES (?, ?, ?)""",
                 (request.user_id, drill_id, datetime.now().isoformat())
             )
-            db.commit()
+            conn.commit()
+            conn.close()
             return {"message": "Drill favorited"}
         except sqlite3.IntegrityError:
-            raise HTTPException(status_code=400, detail="Drill already favorited")
+            # Already favorited - return success anyway (idempotent operation)
+            conn.close()
+            return {"message": "Drill favorited"}
     except HTTPException:
         raise
     except sqlite3.Error as e:
@@ -225,69 +247,90 @@ def favorite_drill(drill_id: int, request: FavoriteRequest):
 @router.delete("/{drill_id}/favorite")
 def unfavorite_drill(drill_id: int, user_id: int):
     """Remove a drill from user's favorites"""
-    db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         """DELETE FROM drill_favorites
            WHERE user_id = ? AND drill_id = ?""",
         (user_id, drill_id)
     )
-    db.commit()
+    conn.commit()
+    conn.close()
     return {"message": "Drill removed from favorites"}
 
 
+class CreateDrillRequest(BaseModel):
+    video_id: str
+    title: str
+    description: str
+    skill_focus: str
+    user_id: int
+
 @router.post("/create-from-youtube")
-async def create_drill_from_youtube(
-    video_id: str,
-    title: str,
-    description: str,
-    skill_focus: str,
-    user_id: int,
-):
+async def create_drill_from_youtube(drill: CreateDrillRequest):
     """Create a new drill from a YouTube video"""
     # Input validation
-    if not video_id or len(video_id.strip()) == 0:
+    if not drill.video_id or len(drill.video_id.strip()) == 0:
         raise HTTPException(status_code=400, detail="Video ID is required")
 
-    if not title or len(title.strip()) == 0:
+    if not drill.title or len(drill.title.strip()) == 0:
         raise HTTPException(status_code=400, detail="Title is required")
 
-    if len(title) > 255:
+    if len(drill.title) > 255:
         raise HTTPException(status_code=400, detail="Title too long (max 255 characters)")
 
-    if len(description) > 1000:
+    if len(drill.description) > 1000:
         raise HTTPException(status_code=400, detail="Description too long (max 1000 characters)")
 
     valid_skills = ["hitting", "fielding", "pitching", "baserunning"]
-    if skill_focus not in valid_skills:
+    if drill.skill_focus not in valid_skills:
         raise HTTPException(status_code=400, detail=f"Invalid skill focus. Must be one of: {', '.join(valid_skills)}")
 
-    if user_id <= 0:
+    if drill.user_id <= 0:
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
     try:
-        db.execute(
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
             """INSERT INTO drills (title, description, skill_focus, created_by, created_at, video_url)
                VALUES (?, ?, ?, ?, ?, ?)""",
-            (title.strip(), description, skill_focus, user_id, datetime.now().isoformat(), f"https://youtube.com/watch?v={video_id.strip()}")
+            (drill.title.strip(), drill.description, drill.skill_focus, drill.user_id, datetime.now().isoformat(), f"https://youtube.com/watch?v={drill.video_id.strip()}")
         )
-        db.commit()
+        conn.commit()
+        drill_id = cursor.lastrowid
+        conn.close()
 
-        new_drill = db.execute("SELECT last_insert_rowid()").fetchone()
-
-        return {"id": new_drill[0], "message": "Drill created successfully from YouTube video"}
+        return {"id": drill_id, "message": "Drill created successfully from YouTube video"}
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+class TestRequest(BaseModel):
+    test_field: str
+
+@router.post("/test-endpoint")
+def test_endpoint(data: TestRequest):
+    return {"received": data.test_field}
+
+
 # GET /api/drills/{drill_id} - must come last to avoid conflicts
 @router.get("/{drill_id}")
 def get_drill(drill_id: int):
     """Get a single drill by its ID"""
-    drill = db.execute(
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
         "SELECT * FROM drills WHERE id = ?",
         (drill_id,)
-    ).fetchone()
+    )
+    drill = cursor.fetchone()
+    conn.close()
 
     if not drill:
         raise HTTPException(status_code=404, detail="Drill not found")
