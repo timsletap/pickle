@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Body
 from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
@@ -33,39 +33,29 @@ def list_equipment():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+class CreateEquipmentRequest(BaseModel):
+    title: str
+    link: str
+
 @router.post("")
-def create_equipment(
-    name: str,
-    description: str,
-    link: str,
-    price: float,
-    where_to_buy: str,
-    image_url: Optional[str] = None,
-    rating: Optional[float] = None
-):
+def create_equipment(equipment: CreateEquipmentRequest):
     # Input validation
-    if not name or len(name.strip()) == 0:
-        raise HTTPException(status_code=400, detail="Equipment name is required")
+    if not equipment.title or len(equipment.title.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Equipment title is required")
 
-    if len(name) > 255:
-        raise HTTPException(status_code=400, detail="Equipment name too long (max 255 characters)")
+    if len(equipment.title) > 500:
+        raise HTTPException(status_code=400, detail="Equipment title too long (max 500 characters)")
 
-    if len(description) > 1000:
-        raise HTTPException(status_code=400, detail="Description too long (max 1000 characters)")
-
-    if price < 0:
-        raise HTTPException(status_code=400, detail="Price must be non-negative")
-
-    if rating is not None and (rating < 0 or rating > 5):
-        raise HTTPException(status_code=400, detail="Rating must be between 0 and 5")
+    if not equipment.link or len(equipment.link.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Equipment link is required")
 
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute(
-            "INSERT INTO equipment (name, description, link, price, where_to_buy, image_url, rating, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (name.strip(), description, link, price, where_to_buy, image_url, rating, datetime.now().isoformat())
+            "INSERT INTO equipment (title, link, created_at) VALUES (?, ?, ?)",
+            (equipment.title.strip(), equipment.link.strip(), datetime.now().isoformat())
         )
         conn.commit()
         equipment_id = cursor.lastrowid
@@ -205,8 +195,9 @@ def favorite_equipment(equipment_id: int, request: FavoriteRequest):
             conn.close()
             return {"message": "Equipment favorited"}
         except sqlite3.IntegrityError:
+            # Already favorited - return success anyway (idempotent operation)
             conn.close()
-            raise HTTPException(status_code=400, detail="Equipment already favorited")
+            return {"message": "Equipment favorited"}
     except HTTPException:
         raise
     except sqlite3.Error as e:
