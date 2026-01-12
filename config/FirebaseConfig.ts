@@ -1,6 +1,9 @@
-import { initializeApp, getApps } from "firebase/app";
+import { getApps, initializeApp } from "firebase/app";
+// Use firebase/auth types and functions. Some RN setups require @firebase/auth runtime helpers;
+// keep the runtime import but provide the Auth type from the official package for correct typing.
+import type { Auth } from "firebase/auth";
 //@ts-ignore
-import { initializeAuth, getReactNativePersistence, getAuth } from "@firebase/auth";
+import { getAuth, getReactNativePersistence, initializeAuth } from "@firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
@@ -19,13 +22,14 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 
 // Initialize Auth with proper persistence for React Native
 // Check if auth is already initialized to avoid the error
-let auth;
+let auth: Auth;
 try {
-  auth = getAuth(app);
+  // getAuth may throw if native persistence isn't set up; fall back to initializeAuth
+  auth = getAuth(app) as Auth;
 } catch {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage)
-  });
+  }) as Auth;
 }
 
 export { auth };
