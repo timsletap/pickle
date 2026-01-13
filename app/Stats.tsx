@@ -1,0 +1,221 @@
+import { useEffect, useState } from "react";
+import { StyleSheet, View, } from "react-native";
+import { ActivityIndicator, Button, Dialog, Portal, Text, TextInput, } from "react-native-paper";
+import { observePlayers, updatePlayerStats } from "../config/FirebaseConfig";
+import { useAuth } from "./auth-context";
+import type { Player } from './types';
+
+import FilterSheet from './FilterSheet';
+import StatsList from './StatsList';
+
+export default function StatsScreen() {
+  const { user } = useAuth();
+
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    setLoading(true);
+    const unsub = observePlayers(user.uid, (data) => {
+      if (!data) {
+        setPlayers([]);
+        setLoading(false);
+        return;
+      }
+
+      const arr = Object.entries(data).map(([id, val]) => {
+        const v = val as any;
+        return { id, name: v.name, positions: v.positions || [], jerseyNumber: v.jerseyNumber ?? undefined, stats: v.stats || {} } as Player;
+      });
+      arr.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+      setPlayers(arr);
+      setLoading(false);
+    });
+
+    return () => unsub && unsub();
+  }, [user]);
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text>Please sign in to manage players.</Text>
+      </View>
+    );
+  }
+
+  // Stats editor state
+  const [statsDialogVisible, setStatsDialogVisible] = useState(false);
+  const [editingStatsId, setEditingStatsId] = useState<string | null>(null);
+  const [editingPlayerName, setEditingPlayerName] = useState<string | null>(null);
+  const [avgText, setAvgText] = useState("");
+  const [obpText, setObpText] = useState("");
+  const [slgText, setSlgText] = useState("");
+  const [rbiText, setRbiText] = useState("");
+  const [gamesText, setGamesText] = useState("");
+  const [qabText, setQabText] = useState("");
+
+  const openStatsEditor = (p: Player) => {
+    setEditingStatsId(p.id);
+    setEditingPlayerName(p.name ?? null);
+    const s = p.stats ?? {};
+    setAvgText(s.avg != null ? String(s.avg) : "");
+    setObpText(s.obp != null ? String(s.obp) : "");
+    setSlgText(s.slg != null ? String(s.slg) : "");
+    setRbiText(s.rbi != null ? String(s.rbi) : "");
+    setGamesText(s.games != null ? String(s.games) : "");
+    setQabText(s.qab_pct != null ? String(s.qab_pct) : "");
+    setStatsDialogVisible(true);
+    
+  };
+
+  // Selected stat (single choice). null = none (default alphabetical).
+  const [selectedStat, setSelectedStat] = useState<string | null>(null);
+
+  const toggleFilter = (key: string) => {
+    if (selectedStat === key) setSelectedStat(null);
+    else setSelectedStat(key);
+  };
+
+  const clearFilters = () => setSelectedStat(null);
+
+  const statKeyMap: Record<string, string> = { avg: 'avg', obp: 'obp', slg: 'slg', rbi: 'rbi', games: 'games', qab: 'qab_pct' };
+
+  // Compute displayed players based on the single selected stat.
+  const filteredPlayers = (() => {
+    if (!selectedStat) {
+      // default: alphabetical
+      return players.slice().sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    }
+
+    if (selectedStat === 'none') {
+      // show only players with no stats set
+      const statKeys = Object.values(statKeyMap);
+      return players.filter((p) => !statKeys.some((sk) => p.stats && p.stats[sk] != null)).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    }
+
+    const sk = statKeyMap[selectedStat];
+    // sort by selected stat (missing -> 0), descending
+    return players.slice().sort((a, b) => {
+      const va = a.stats && a.stats[sk] != null ? Number(a.stats[sk]) : 0;
+      const vb = b.stats && b.stats[sk] != null ? Number(b.stats[sk]) : 0;
+      if (vb !== va) return vb - va;
+      return (a.name ?? '').localeCompare(b.name ?? '');
+    });
+  })();
+
+  const closeStatsDialog = () => setStatsDialogVisible(false);
+
+  const handleSaveStats = async () => {
+    if (!user || !editingStatsId) return;
+    const stats: Record<string, any> = {};
+    const parse = (v: string) => (v === "" ? null : Number(v));
+    if (avgText !== "") stats.avg = parse(avgText);
+    if (obpText !== "") stats.obp = parse(obpText);
+    if (slgText !== "") stats.slg = parse(slgText);
+    if (rbiText !== "") stats.rbi = parse(rbiText);
+    if (gamesText !== "") stats.games = parse(gamesText);
+    if (qabText !== "") stats.qab_pct = parse(qabText);
+
+    try {
+      await updatePlayerStats(user.uid, editingStatsId, stats);
+      closeStatsDialog();
+    } catch (err) {
+      console.error("Failed to save stats", err);
+      closeStatsDialog();
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      {loading ? (
+        <ActivityIndicator animating size="large" />
+      ) : players.length === 0 ? (
+        <View style={styles.empty}>
+          <Text>No players yet.</Text>
+        </View>
+      ) : (
+        <StatsList players={filteredPlayers} selectedStat={selectedStat} openStatsEditor={openStatsEditor} statKeyMap={statKeyMap} />
+      )}
+
+      <Portal>
+        <Dialog visible={statsDialogVisible} onDismiss={closeStatsDialog}>
+          <Dialog.Title>{editingPlayerName ? `Edit Stats — ${editingPlayerName}` : 'Edit Stats'}</Dialog.Title>
+          <Dialog.Content>
+            <TextInput label="Batting Average (BA)" value={avgText} onChangeText={setAvgText} keyboardType="numeric" returnKeyType="done"/>
+            <TextInput label="On-Base % (OBP)" value={obpText} onChangeText={setObpText} keyboardType="numeric" returnKeyType="done"/>
+            <TextInput label="Slugging % (SLG)" value={slgText} onChangeText={setSlgText} keyboardType="numeric" returnKeyType="done"/>
+            <TextInput label="RBI" value={rbiText} onChangeText={setRbiText} keyboardType="numeric" returnKeyType="done"/>
+            <TextInput label="Games" value={gamesText} onChangeText={setGamesText} keyboardType="numeric" returnKeyType="done"/>
+            <TextInput label="Quality At-Bat % (QAB%)" value={qabText} onChangeText={setQabText} keyboardType="numeric" returnKeyType="done"/>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={closeStatsDialog}>Cancel</Button>
+            <Button onPress={handleSaveStats}>Save</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      <FilterSheet selectedStat={selectedStat} onSelectStat={toggleFilter} clear={clearFilters} />
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  
+  empty: {
+    marginTop: 24,
+    alignItems: "center",
+  },
+  fab: {
+    position: "absolute",
+    right: 16,
+    bottom: 24,
+  },
+  toggleButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 10,
+    zIndex: 40,
+  },
+  sheet: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 320,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    elevation: 6,
+    zIndex: 20,
+  },
+  backdrop: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    zIndex: 10,
+  },
+  arrow: { fontSize: 22, fontWeight: '700' },
+  sheetHandleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  
+});
+
