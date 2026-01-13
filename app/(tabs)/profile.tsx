@@ -91,6 +91,16 @@ export default function Profile() {
              { borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline },
            ]}
         />
+        <List.Item
+          title="Stats"
+          description="View your team statistics"
+          right={(props) => <List.Icon {...props} icon="arrow-right" />}
+          onPress={() => router.push("/Stats")}
+          style={[
+            styles.listItem,
+            { borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline },
+          ]}
+        />
       </List.Section>
       </View>
 

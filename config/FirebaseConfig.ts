@@ -107,6 +107,13 @@ export async function updatePlayer(userId: string, playerId: string, player: { n
   });
 }
 
+// Stats helpers
+export async function updatePlayerStats(userId: string, playerId: string, stats: Record<string, any>): Promise<void> {
+  const db = getDatabase(app);
+  // write the stats sub-node for the player
+  await set(ref(db, `players/${userId}/${playerId}/stats`), stats);
+}
+
 export async function deletePlayer(userId: string, playerId: string): Promise<void> {
   const db = getDatabase(app);
   await remove(ref(db, `players/${userId}/${playerId}`));
