@@ -52,8 +52,8 @@ export default function AuthScreen() {
                     return;
                 }
             }
-            // On success navigate to tabs
-            router.replace("/(tabs)");
+            // On success navigate to Profile
+            router.replace("/profile");
         } catch (err: any) {
             setError("Authentication failed: " + err.message);
         }
