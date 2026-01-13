@@ -1,6 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
+import { Provider as PaperProvider } from "react-native-paper";
 import { auth } from "../config/FirebaseConfig";
 import { AuthProvider } from "./auth-context";
 
@@ -33,12 +34,14 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RouteGuard>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </RouteGuard>
-    </AuthProvider>
+    <PaperProvider>
+      <AuthProvider>
+        <RouteGuard>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </RouteGuard>
+      </AuthProvider>
+    </PaperProvider>
   );
 }

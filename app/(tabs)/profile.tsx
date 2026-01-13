@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { Alert, StyleSheet, View } from "react-native";
-import { Avatar, Button, Text, useTheme } from "react-native-paper";
+import { Avatar, Button, List, Text, useTheme } from "react-native-paper";
 import { useAuth } from "../auth-context";
 
 function getInitials(name: string) {
@@ -62,7 +62,8 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
+      <View>
+        <View style={styles.headerRow}>
         <Avatar.Text
           size={88}
           label={initials}
@@ -78,19 +79,35 @@ export default function Profile() {
           </Text>
         </View>
       </View>
+      
+        <List.Section>
+        <List.Item
+          title="Team"
+          description="Manage your team"
+          right={(props) => <List.Icon {...props} icon="arrow-right" />}
+           onPress={() => router.push("/Teams")}
+           style={[
+             styles.listItem,
+             { borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline },
+           ]}
+        />
+      </List.Section>
+      </View>
 
-      <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
-        Logout
-      </Button>
+      <View style={styles.footer}>
+        <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
+          Logout
+        </Button>
 
-      <Button
-        mode="outlined"
-        onPress={handleDeleteAccount}
-        style={[styles.deleteButton, { borderColor: theme.colors.error }]}
-        textColor={theme.colors.error}
-      >
-        Delete account
-      </Button>
+        <Button
+          mode="outlined"
+          onPress={handleDeleteAccount}
+          style={[styles.deleteButton, { borderColor: theme.colors.error }]}
+          textColor={theme.colors.error}
+        >
+          Delete account
+        </Button>
+      </View>
     </View>
   );
 }
@@ -98,7 +115,7 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
     padding: 16,
   },
   headerRow: {
@@ -123,5 +140,12 @@ const styles = StyleSheet.create({
   deleteButton: {
     alignSelf: "flex-start",
     marginTop: 12,
+  },
+   listItem: {
+     borderTopWidth: StyleSheet.hairlineWidth,
+     borderBottomWidth: StyleSheet.hairlineWidth,
+   },
+  footer: {
+    alignItems: "flex-start",
   },
 });
