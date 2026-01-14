@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import styles from './styles';
 import type { Player } from './types';
@@ -44,10 +43,10 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
         const assignedPos = assignedEntry ? assignedEntry[0] : null;
         return (
           <View key={p.id} style={styles.playerCard}>
+            <Text style={styles.playerName} numberOfLines={1}>{p.first_name} {p.last_name}</Text>
             <Pressable onPress={() => openStats(p)} style={({ pressed }) => [styles.playerIcon, pressed ? styles.pressed : null]}>
               <Text style={styles.playerNumber}>{p.jersey ?? ''}</Text>
             </Pressable>
-            <Text style={styles.playerName} numberOfLines={1}>{p.last_name}</Text>
             {renderMetric(p)}
             {assignedPos ? <Text style={styles.assignedText}>{posById(assignedPos).label}</Text> : null}
           </View>

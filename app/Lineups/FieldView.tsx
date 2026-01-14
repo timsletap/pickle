@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import styles from './styles';
 import type { Player, Position } from './types';
