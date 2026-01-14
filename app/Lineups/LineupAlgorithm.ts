@@ -17,7 +17,7 @@ export type PlayerScores = {
   slotScores: { [k: string]: number };
 };
 
-function computeRawMetrics(players: Player[]): Map<string | number, Metrics> {
+export function computeRawMetrics(players: Player[]): Map<string | number, Metrics> {
   const map = new Map<string | number, Metrics>();
   players.forEach((p) => {
     const s = p.stats ?? {};

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { Button, Divider, Provider as PaperProvider, Text } from 'react-native-paper';
 
-import { observePlayers } from '../../config/FirebaseConfig';
+import { observePlayers, updatePlayerStats } from '../../config/FirebaseConfig';
 import BattingOrder from '../Lineups/BattingOrder';
 import FieldView from '../Lineups/FieldView';
 import PickerDialog from '../Lineups/PickerDialog';
@@ -135,10 +135,25 @@ export default function Lineups() {
             setSortMode={setSortMode}
             openStats={openStats}
             battingOrder={battingOrder ?? undefined}
-            onAutoGenerate={() => {
+            onAutoGenerate={async () => {
               // lazy import algorithm to keep file clear; always brute (default)
-              const { generateOptimalLineup } = require('../Lineups/LineupAlgorithm') as typeof import('../Lineups/LineupAlgorithm');
-              const result = generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length)});
+              const alg = require('../Lineups/LineupAlgorithm') as typeof import('../Lineups/LineupAlgorithm');
+              const result = alg.generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length)});
+              // compute raw metrics (rcv) and persist per-player so batting order can read stored values
+              try {
+                const raw = alg.computeRawMetrics(roster);
+                await Promise.all(roster.map(async (p) => {
+                  const rcv = raw.get(p.id)?.rcv ?? 0;
+                  const merged = { ...(p.stats ?? {}), rcv };
+                  try {
+                    await updatePlayerStats(user!.uid, String(p.id), merged);
+                  } catch (e) {
+                    // ignore per-player write errors
+                  }
+                }));
+              } catch (e) {
+                // ignore persistence errors
+              }
               setBattingOrder(result.lineup);
             }}
             onClearOrder={() => setBattingOrder(null)}
@@ -150,27 +165,29 @@ export default function Lineups() {
         <View style={styles.rosterContainer}>
           <Text variant="titleMedium" style={{ marginBottom: 6 }}>Players</Text>
           <View style={styles.sortRow}>
-            <Button mode={sortMode === 'name' ? 'contained' : 'outlined'} onPress={() => setSortMode('name')} compact>
-              Name
-            </Button>
-            <Button mode={sortMode === 'ba' ? 'contained' : 'outlined'} onPress={() => setSortMode('ba')} compact style={{ marginLeft: 8 }}>
-              BA
-            </Button>
-            <Button mode={sortMode === 'obp' ? 'contained' : 'outlined'} onPress={() => setSortMode('obp')} compact style={{ marginLeft: 8 }}>
-              OBP
-            </Button>
-            <Button mode={sortMode === 'slg' ? 'contained' : 'outlined'} onPress={() => setSortMode('slg')} compact style={{ marginLeft: 8 }}>
-              SLG
-            </Button>
-            <Button mode={sortMode === 'rbi' ? 'contained' : 'outlined'} onPress={() => setSortMode('rbi')} compact style={{ marginLeft: 8 }}>
-              RBI
-            </Button>
-            <Button mode={sortMode === 'games' ? 'contained' : 'outlined'} onPress={() => setSortMode('games')} compact style={{ marginLeft: 8 }}>
-              Games
-            </Button>
-            <Button mode={sortMode === 'qab_pct' ? 'contained' : 'outlined'} onPress={() => setSortMode('qab_pct')} compact style={{ marginLeft: 8 }}>
-              QAB%
-            </Button>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 4 }}>
+              <Button mode={sortMode === 'name' ? 'contained' : 'outlined'} onPress={() => setSortMode('name')} compact>
+                Name
+              </Button>
+              <Button mode={sortMode === 'ba' ? 'contained' : 'outlined'} onPress={() => setSortMode('ba')} compact style={{ marginLeft: 8 }}>
+                BA
+              </Button>
+              <Button mode={sortMode === 'obp' ? 'contained' : 'outlined'} onPress={() => setSortMode('obp')} compact style={{ marginLeft: 8 }}>
+                OBP
+              </Button>
+              <Button mode={sortMode === 'slg' ? 'contained' : 'outlined'} onPress={() => setSortMode('slg')} compact style={{ marginLeft: 8 }}>
+                SLG
+              </Button>
+              <Button mode={sortMode === 'rbi' ? 'contained' : 'outlined'} onPress={() => setSortMode('rbi')} compact style={{ marginLeft: 8 }}>
+                RBI
+              </Button>
+              <Button mode={sortMode === 'games' ? 'contained' : 'outlined'} onPress={() => setSortMode('games')} compact style={{ marginLeft: 8 }}>
+                Games
+              </Button>
+              <Button mode={sortMode === 'qab_pct' ? 'contained' : 'outlined'} onPress={() => setSortMode('qab_pct')} compact style={{ marginLeft: 8 }}>
+                QAB
+              </Button>
+            </ScrollView>
           </View>
 
           <RosterScroller sortedRoster={sortedRoster} metricMode={sortMode} assignments={assignments} posById={posById} openStats={openStats} />

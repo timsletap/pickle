@@ -11,6 +11,7 @@ export type Player = {
     rbi?: number;
     games?: number;
     qab_pct?: number;
+    rcv?: number;
   };
 };
 
