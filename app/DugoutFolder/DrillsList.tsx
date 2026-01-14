@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { FlatList, Image, Linking, Modal, ScrollView, Text, TextInput, TouchableOpacity, View, Dimensions, Platform } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useEffect, useState } from "react";
+import { Dimensions, FlatList, Image, Linking, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { API_BASE_URL } from "../../config/api";
 
 export default function DrillsList() {

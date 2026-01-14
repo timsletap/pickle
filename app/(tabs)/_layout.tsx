@@ -9,5 +9,6 @@ export default function TabsLayout() {
     <Tabs.Screen name="chalktalk" options={{ title: "Chalk Talk", tabBarIcon: (color) => (<FontAwesome6 name="chalkboard-teacher" size={24} color={"lime"} />) }} />
     <Tabs.Screen name="dugout" options={{ title: "Dugout", tabBarIcon: (color) => (<FontAwesome6 name="person-shelter" size={24} color={"lime"} />) }} />
     <Tabs.Screen name="playball" options={{ title: "Play Ball", tabBarIcon: (color) => (<MaterialCommunityIcons name="baseball-bat" size={24} color={"lime"} />) }} />
+    <Tabs.Screen name="index" options={{ href: null }} /> {/*Hides index tab*/}
   </Tabs>);
 }
