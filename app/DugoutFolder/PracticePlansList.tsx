@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Modal, TextInput, ScrollView } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useEffect, useState } from "react";
+import { FlatList, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { API_BASE_URL } from "../../config/api";
 
 export default function PracticePlansList() {

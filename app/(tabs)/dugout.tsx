@@ -1,11 +1,10 @@
-import * as React from "react";
-import { useState, useRef } from "react";
-import { Text, TouchableOpacity, View, Animated, useWindowDimensions } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import DrillsList from "./DrillsList";
-import EquipmentList from "./EquipmentList";
-import PracticePlansList from "./PracticePlansList";
+import { LinearGradient } from "expo-linear-gradient";
+import { useState } from "react";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
+import DrillsList from "../DugoutFolder/DrillsList";
+import EquipmentList from "../DugoutFolder/EquipmentList";
+import PracticePlansList from "../DugoutFolder/PracticePlansList";
 
 export default function Dugout() {
   const [activeTab, setActiveTab] = useState("drills");
