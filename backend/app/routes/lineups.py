@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 import sqlite3
+from app.db import DB_NAME
 
 router = APIRouter()
-DB_NAME = "pickle.db"
 
 @router.post("/")
 def create_lineup(team_id: int, game_date: str, is_optimal: int = 0):
