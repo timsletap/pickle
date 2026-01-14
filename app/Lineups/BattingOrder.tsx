@@ -28,7 +28,7 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
           <List.Item
             key={p.id}
             title={`${index + 1}. ${p.first_name} ${p.last_name}`}
-            description={`#${p.jersey ?? '-'} — BA ${p.stats?.ba?.toFixed(2) ?? '-'}`}
+            description={`#${p.jersey ?? '-'} — RCV ${p.stats?.rcv?.toFixed(2) ?? '-'}`}
             onPress={() => openStats(p)}
             left={(props) => <List.Icon {...props} icon="account" />}
           />
