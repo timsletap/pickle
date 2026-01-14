@@ -1,15 +1,39 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Animated, Text, TouchableOpacity, View, Alert } from "react-native";
 import DrillsList from "../DugoutFolder/DrillsList";
 import EquipmentList from "../DugoutFolder/EquipmentList";
 import PracticePlansList from "../DugoutFolder/PracticePlansList";
+import { checkApiHealth, getSetupInstructions } from "../../config/apiHealth";
+import { API_BASE_URL } from "../../config/api";
 
 export default function Dugout() {
   const [activeTab, setActiveTab] = useState("drills");
   const [animation] = useState(new Animated.Value(0));
   const [tabWidth, setTabWidth] = useState(0);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+
+  useEffect(() => {
+    // Check API health on mount
+    checkApiHealth().then(result => {
+      setApiStatus(result.isHealthy ? 'connected' : 'disconnected');
+      if (!result.isHealthy) {
+        console.error('[API Health]', result.message);
+        // Show alert with setup instructions after a short delay
+        setTimeout(() => {
+          Alert.alert(
+            'Backend Connection Failed',
+            result.message + '\n\nSee console for setup instructions.',
+            [
+              { text: 'View Instructions', onPress: () => Alert.alert('Setup Instructions', getSetupInstructions()) },
+              { text: 'Continue Anyway', style: 'cancel' }
+            ]
+          );
+        }, 1000);
+      }
+    });
+  }, []);
 
   const handleTabChange = (tab: string) => {
     Animated.spring(animation, {
@@ -28,6 +52,16 @@ export default function Dugout() {
       case "equipment": return "baseball-bat";
       default: return "circle";
     }
+  };
+
+  const recheckConnection = async () => {
+    setApiStatus('checking');
+    const result = await checkApiHealth();
+    setApiStatus(result.isHealthy ? 'connected' : 'disconnected');
+    Alert.alert(
+      result.isHealthy ? 'Connected' : 'Connection Failed',
+      result.message
+    );
   };
 
   return (
@@ -50,15 +84,45 @@ export default function Dugout() {
           elevation: 8
         }}
       >
-        <Text style={{
-          fontSize: 36,
-          fontWeight: "900",
-          color: "#fff",
-          letterSpacing: 1,
-          marginBottom: 8
-        }}>
-          DUGOUT
-        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <Text style={{
+            fontSize: 36,
+            fontWeight: "900",
+            color: "#fff",
+            letterSpacing: 1
+          }}>
+            DUGOUT
+          </Text>
+          {/* Connection Status Indicator */}
+          <TouchableOpacity
+            onPress={recheckConnection}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: apiStatus === 'connected' ? "rgba(0, 255, 65, 0.1)" : apiStatus === 'disconnected' ? "rgba(255, 0, 0, 0.1)" : "rgba(255, 165, 0, 0.1)",
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: apiStatus === 'connected' ? "rgba(0, 255, 65, 0.3)" : apiStatus === 'disconnected' ? "rgba(255, 0, 0, 0.3)" : "rgba(255, 165, 0, 0.3)"
+            }}
+          >
+            <View style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: apiStatus === 'connected' ? "#00ff41" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
+              marginRight: 6
+            }} />
+            <Text style={{
+              fontSize: 11,
+              fontWeight: "700",
+              color: apiStatus === 'connected' ? "#00ff41" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500"
+            }}>
+              {apiStatus === 'connected' ? 'API' : apiStatus === 'disconnected' ? 'OFFLINE' : 'CHECKING'}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <Text style={{
           fontSize: 14,
           color: "#00ff41",

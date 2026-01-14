@@ -1,17 +1,36 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useEffect, useState } from "react";
-import { Dimensions, FlatList, Image, Linking, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Dimensions, FlatList, Image, Linking, Modal, Platform, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { API_BASE_URL } from "../../config/api";
 
+interface Drill {
+  id: number;
+  title: string;
+  description: string;
+  skill_focus: string;
+  video_url: string;
+  created_at: string;
+  created_by: number;
+}
+
+interface YouTubeVideo {
+  video_id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  channel_title: string;
+}
+
 export default function DrillsList() {
-  const [drills, setDrills] = useState([]);
+  const [drills, setDrills] = useState<Drill[]>([]);
   const [skillFilter, setSkillFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [youtubeSearchQuery, setYoutubeSearchQuery] = useState("");
-  const [youtubeResults, setYoutubeResults] = useState([]);
+  const [youtubeResults, setYoutubeResults] = useState<YouTubeVideo[]>([]);
   const [searchingYoutube, setSearchingYoutube] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null);
   const [drillSkillFocus, setDrillSkillFocus] = useState("");
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
@@ -19,10 +38,24 @@ export default function DrillsList() {
   const [videoModalVisible, setVideoModalVisible] = useState(false);
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const userId = 1;
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     fetchDrills();
     fetchFavorites();
+
+    // Cleanup abort controller on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [skillFilter]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([fetchDrills(), fetchFavorites()]);
+    setRefreshing(false);
   }, [skillFilter]);
 
   const fetchDrills = async () => {
@@ -349,6 +382,21 @@ export default function DrillsList() {
           >
             <Text style={{ color: skillFilter === "pitching" ? "#000" : "#00ff41", fontWeight: "700", fontSize: 13 }}>PITCHING</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setSkillFilter(skillFilter === "baserunning" ? "" : "baserunning")}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 18,
+              marginHorizontal: 4,
+              backgroundColor: skillFilter === "baserunning" ? "#00ff41" : "rgba(0, 255, 65, 0.1)",
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: skillFilter === "baserunning" ? "#00ff41" : "rgba(0, 255, 65, 0.3)"
+            }}
+          >
+            <Text style={{ color: skillFilter === "baserunning" ? "#000" : "#00ff41", fontWeight: "700", fontSize: 13 }}>BASERUNNING</Text>
+          </TouchableOpacity>
         </ScrollView>
 
         <TouchableOpacity
@@ -387,6 +435,14 @@ export default function DrillsList() {
           data={filteredDrills}
           keyExtractor={(item: { id: { toString: () => any; }; }) => item.id.toString()}
           contentContainerStyle={{ padding: 16 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#00ff41"
+              colors={["#00ff41"]}
+            />
+          }
           renderItem={({ item }: { item: any }) => {
             const videoId = getYouTubeVideoId(item.video_url);
             const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
