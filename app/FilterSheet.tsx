@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button, Checkbox, List, Text } from 'react-native-paper';
 
 type Props = {
@@ -38,13 +38,15 @@ export default function FilterSheet({ selectedStat, onSelectStat, clear }: Props
           <Text style={{ fontWeight: '600' }}>Filter Players</Text>
           <Button compact onPress={clear}>Clear</Button>
         </View>
-        <List.Item title="Batting Average (BA)" onPress={() => toggle('avg')} left={() => <Checkbox status={selectedStat === 'avg' ? 'checked' : 'unchecked'} />} />
-        <List.Item title="On-Base % (OBP)" onPress={() => toggle('obp')} left={() => <Checkbox status={selectedStat === 'obp' ? 'checked' : 'unchecked'} />} />
-        <List.Item title="Slugging % (SLG)" onPress={() => toggle('slg')} left={() => <Checkbox status={selectedStat === 'slg' ? 'checked' : 'unchecked'} />} />
-        <List.Item title="RBI" onPress={() => toggle('rbi')} left={() => <Checkbox status={selectedStat === 'rbi' ? 'checked' : 'unchecked'} />} />
-        <List.Item title="Games" onPress={() => toggle('games')} left={() => <Checkbox status={selectedStat === 'games' ? 'checked' : 'unchecked'} />} />
-        <List.Item title="Quality At-Bat % (QAB%)" onPress={() => toggle('qab')} left={() => <Checkbox status={selectedStat === 'qab' ? 'checked' : 'unchecked'} />} />
-        <List.Item title="None (no stats set)" onPress={() => toggle('none')} left={() => <Checkbox status={selectedStat === 'none' ? 'checked' : 'unchecked'} />} />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
+          <List.Item title="Batting Average (BA)" onPress={() => toggle('ba')} left={() => <Checkbox status={selectedStat === 'ba' ? 'checked' : 'unchecked'} />} />
+          <List.Item title="On-Base % (OBP)" onPress={() => toggle('obp')} left={() => <Checkbox status={selectedStat === 'obp' ? 'checked' : 'unchecked'} />} />
+          <List.Item title="Slugging % (SLG)" onPress={() => toggle('slg')} left={() => <Checkbox status={selectedStat === 'slg' ? 'checked' : 'unchecked'} />} />
+          <List.Item title="RBI" onPress={() => toggle('rbi')} left={() => <Checkbox status={selectedStat === 'rbi' ? 'checked' : 'unchecked'} />} />
+          <List.Item title="Games" onPress={() => toggle('games')} left={() => <Checkbox status={selectedStat === 'games' ? 'checked' : 'unchecked'} />} />
+          <List.Item title="Quality At-Bat % (QAB%)" onPress={() => toggle('qab_pct')} left={() => <Checkbox status={selectedStat === 'qab_pct' ? 'checked' : 'unchecked'} />} />
+          <List.Item title="None (no stats set)" onPress={() => toggle('none')} left={() => <Checkbox status={selectedStat === 'none' ? 'checked' : 'unchecked'} />} />
+        </ScrollView>
       </Animated.View>
     </>
   );

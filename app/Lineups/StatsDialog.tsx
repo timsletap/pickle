@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Dialog, List } from 'react-native-paper';
 import type { Player } from './types';
 
@@ -14,11 +13,12 @@ export default function StatsDialog({ visible, player, closeStats }: Props) {
       <Dialog.Title>{player ? `${player.first_name} ${player.last_name}` : ''}</Dialog.Title>
       <Dialog.Content>
         <List.Item title={`Jersey: ${player?.jersey ?? '-'}`} />
-        <List.Item title={`AVG: ${player?.stats ? player.stats.avg.toFixed(3) : '-'}`} />
-        <List.Item title={`Hits: ${player?.stats?.hits ?? '-'}`} />
-        <List.Item title={`RBI: ${player?.stats?.rbi ?? '-'}`} />
-        <List.Item title={`Games: ${player?.stats?.games ?? '-'}`} />
+        <List.Item title={`BA: ${player?.stats?.ba ?? '-'}`} />
+
         <List.Item title={`OBP: ${player?.stats?.obp ?? '-'}`} />
+        <List.Item title={`SLG: ${player?.stats?.slg ?? '-'}`} />
+        <List.Item title={`Games: ${player?.stats?.games ?? '-'}`} />
+        <List.Item title={`QAB%: ${player?.stats?.qab_pct ?? '-'}`} />
       </Dialog.Content>
       <Dialog.Actions>
         <Button onPress={closeStats}>Close</Button>

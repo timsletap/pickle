@@ -1,17 +1,10 @@
 export type Stats = {
-  avg?: number;
+  ba?: number;
   obp?: number;
   slg?: number;
   rbi?: number;
   games?: number;
   qab_pct?: number;
-  pa?: number;
-  h?: number;
-  bb?: number;
-  so?: number;
-  xbh?: number;
-  roe?: number;
-  spd?: number;
   [key: string]: any;
 };
 

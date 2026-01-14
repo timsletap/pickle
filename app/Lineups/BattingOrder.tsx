@@ -1,4 +1,3 @@
-import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { Button, List, Text } from 'react-native-paper';
 import styles from './styles';
@@ -6,8 +5,8 @@ import type { Player } from './types';
 
 type Props = {
   roster: Player[]; // unfiltered roster used for default batting order (name-sorted)
-  sortMode: 'name' | 'obr' | 'bip' | 'pwr' | 'spd';
-  setSortMode: (m: 'name' | 'obr' | 'bip' | 'pwr' | 'spd') => void;
+  sortMode: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct';
+  setSortMode: (m: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct') => void;
   openStats: (p: Player) => void;
   battingOrder?: Player[];
   onAutoGenerate?: () => void;
@@ -29,7 +28,7 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
           <List.Item
             key={p.id}
             title={`${index + 1}. ${p.first_name} ${p.last_name}`}
-            description={`#${p.jersey ?? '-'} — AVG ${p.stats?.avg?.toFixed(3) ?? '-'}`}
+            description={`#${p.jersey ?? '-'} — BA ${p.stats?.ba?.toFixed(2) ?? '-'}`}
             onPress={() => openStats(p)}
             left={(props) => <List.Icon {...props} icon="account" />}
           />

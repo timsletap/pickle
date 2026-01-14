@@ -4,7 +4,7 @@ import type { Player } from './types';
 
 type Props = {
   sortedRoster: Player[];
-  metricMode?: 'name' | 'obr' | 'bip' | 'pwr' | 'spd';
+  metricMode?: 'name' | 'obp' | 'slg' | 'ba' | 'rbi' | 'games' | 'qab_pct';
   assignments: Record<string, Player | null>;
   posById: (id: string) => { id: string; label: string; name: string };
   openStats: (p: Player) => void;
@@ -13,27 +13,30 @@ type Props = {
 export default function RosterScroller({ sortedRoster, metricMode = 'name', assignments, posById, openStats }: Props) {
   const getMetric = (p: Player, mode: string) => {
     const s = p.stats ?? {};
-    const PA = s.pa ?? 0;
-    const H = s.h ?? 0;
-    const BB = s.bb ?? 0;
-    const SO = s.so ?? 0;
-    const XBH = s.xbh ?? 0;
-    const ROE = s.roe ?? 0;
-    const SPD = s.spd ?? 0;
+    const ba = Number(s.ba ?? 0);
+    const obp = Number(s.obp ?? 0);
+    const slg = Number(s.slg ?? 0);
+    const rbi = Number(s.rbi ?? 0);
+    const games = Number(s.games ?? 0);
+    const qab_pct = Number(s.qab_pct ?? 0);
 
-    if (mode === 'obr') return PA > 0 ? (H + BB + ROE) / PA : 0;
-    if (mode === 'bip') return PA > 0 ? 1 - SO / PA : 0;
-    if (mode === 'pwr') return PA > 0 ? XBH / PA : 0;
-    if (mode === 'spd') return SPD; // 0-10
-    // name -> show AVG
-    return s.avg ?? 0;
+    if (mode === 'RCV') return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab_pct;
+    if (mode === 'name') return ba;
+    if (mode === 'ba') return ba;
+    if (mode === 'obp') return obp;
+    if (mode === 'slg') return slg;
+    if (mode === 'rbi') return rbi;
+    if (mode === 'games') return games;
+    if (mode === 'qab_pct') return qab_pct;
+    return 0;
   };
 
   const renderMetric = (p: Player) => {
     const val = getMetric(p, metricMode ?? 'name');
-    const label = metricMode === 'name' ? 'AVG' : metricMode?.toUpperCase();
-    const formatted = metricMode === 'spd' ? `${Math.round(val)}` : `${(val ?? 0).toFixed(3)}`;
-    return <Text style={{ fontSize: 11, color: '#333', marginTop: 4 }}>{label}: {formatted}</Text>;
+    const formatted = (metricMode === 'rbi' || metricMode === 'games')
+      ? `${Math.round(val ?? 0)}`
+      : `${(val ?? 0).toFixed(2)}`;
+    return <Text style={{ fontSize: 11, color: '#333', marginTop: 4 }}>{formatted}</Text>;
   };
 
   return (

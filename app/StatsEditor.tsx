@@ -3,13 +3,13 @@ import { Button, Dialog, Portal, TextInput } from 'react-native-paper';
 type Props = {
   visible: boolean;
   playerName: string | null;
-  avgText: string;
+  baText: string;
   obpText: string;
   slgText: string;
   rbiText: string;
   gamesText: string;
   qabText: string;
-  setAvgText: (s: string) => void;
+  setBaText: (s: string) => void;
   setObpText: (s: string) => void;
   setSlgText: (s: string) => void;
   setRbiText: (s: string) => void;
@@ -19,13 +19,13 @@ type Props = {
   onClose: () => void;
 };
 
-export default function StatsEditor({ visible, playerName, avgText, obpText, slgText, rbiText, gamesText, qabText, setAvgText, setObpText, setSlgText, setRbiText, setGamesText, setQabText, onSave, onClose }: Props) {
+export default function StatsEditor({ visible, playerName, baText, obpText, slgText, rbiText, gamesText, qabText, setBaText, setObpText, setSlgText, setRbiText, setGamesText, setQabText, onSave, onClose }: Props) {
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onClose}>
         <Dialog.Title>{playerName ? `Edit Stats — ${playerName}` : 'Edit Stats'}</Dialog.Title>
         <Dialog.Content>
-          <TextInput label="Batting Average (BA)" value={avgText} onChangeText={setAvgText} keyboardType="numeric" returnKeyType="done" />
+          <TextInput label="Batting Average (BA)" value={baText} onChangeText={setBaText} keyboardType="numeric" returnKeyType="done" />
           <TextInput label="On-Base % (OBP)" value={obpText} onChangeText={setObpText} keyboardType="numeric" returnKeyType="done" />
           <TextInput label="Slugging % (SLG)" value={slgText} onChangeText={setSlgText} keyboardType="numeric" returnKeyType="done" />
           <TextInput label="RBI" value={rbiText} onChangeText={setRbiText} keyboardType="numeric" returnKeyType="done" />
