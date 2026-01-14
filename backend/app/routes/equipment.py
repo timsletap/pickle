@@ -5,9 +5,9 @@ from datetime import datetime
 import os
 import httpx
 from typing import Optional
+from app.db import DB_NAME
 
 router = APIRouter()
-DB_NAME = "pickle.db"
 
 class FavoriteRequest(BaseModel):
     user_id: int

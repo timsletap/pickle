@@ -2,10 +2,10 @@ import datetime
 from fastapi import APIRouter, HTTPException, Query, Body
 from pydantic import BaseModel
 import sqlite3
+from app.db import DB_NAME
 
 
 router = APIRouter()
-DB_NAME = "pickle.db"
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
