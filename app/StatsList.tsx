@@ -24,10 +24,10 @@ export default function StatsList({ players, selectedStat, openStatsEditor, stat
             if (selectedStat === 'none') return <Text>-</Text>;
             const sk = statKeyMap[selectedStat];
             const raw = p.stats && p.stats[sk] != null ? Number(p.stats[sk]) : 0;
-            if (selectedStat === 'avg' || selectedStat === 'obp' || selectedStat === 'slg') {
-              return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{raw.toFixed(3)}</Text>;
+            if (selectedStat === 'ba' || selectedStat === 'obp' || selectedStat === 'slg') {
+              return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{raw.toFixed(2)}</Text>;
             }
-            if (selectedStat === 'qab') {
+            if (selectedStat === 'qab_pct') {
               return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{raw.toFixed(1)}%</Text>;
             }
             return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{Math.round(raw)}</Text>;

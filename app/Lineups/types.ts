@@ -5,19 +5,12 @@ export type Player = {
   jersey?: number;
   // raw per-player stats (mock)
   stats?: {
-    pa?: number; // plate appearances
-    h?: number; // hits
-    bb?: number; // walks
-    so?: number; // strikeouts
-    xbh?: number; // extra-base hits
-    roe?: number; // reached on error
-    spd?: number; // 0-10 speed
-    // convenience metrics
-    avg?: number; // batting average H/PA
-    hits?: number;
+    ba?: number; // batting average
+    obp?: number;
+    slg?: number;
     rbi?: number;
     games?: number;
-    obp?: number;
+    qab_pct?: number;
   };
 };
 

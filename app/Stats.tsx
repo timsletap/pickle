@@ -49,7 +49,7 @@ export default function StatsScreen() {
   const [statsDialogVisible, setStatsDialogVisible] = useState(false);
   const [editingStatsId, setEditingStatsId] = useState<string | null>(null);
   const [editingPlayerName, setEditingPlayerName] = useState<string | null>(null);
-  const [avgText, setAvgText] = useState("");
+  const [baText, setBaText] = useState("");
   const [obpText, setObpText] = useState("");
   const [slgText, setSlgText] = useState("");
   const [rbiText, setRbiText] = useState("");
@@ -60,7 +60,7 @@ export default function StatsScreen() {
     setEditingStatsId(p.id);
     setEditingPlayerName(p.name ?? null);
     const s = p.stats ?? {};
-    setAvgText(s.avg != null ? String(s.avg) : "");
+    setBaText(s.ba != null ? String(s.ba) : "");
     setObpText(s.obp != null ? String(s.obp) : "");
     setSlgText(s.slg != null ? String(s.slg) : "");
     setRbiText(s.rbi != null ? String(s.rbi) : "");
@@ -80,7 +80,17 @@ export default function StatsScreen() {
 
   const clearFilters = () => setSelectedStat(null);
 
-  const statKeyMap: Record<string, string> = { avg: 'avg', obp: 'obp', slg: 'slg', rbi: 'rbi', games: 'games', qab: 'qab_pct' };
+  const statKeyMap: Record<string, string> = { ba: 'ba', obp: 'obp', slg: 'slg', rbi: 'rbi', games: 'games', qab: 'qab_pct', rcv: 'rcv' };
+
+  const computeRcv = (s: any) => {
+    const ba = Number(s.ba ?? 0);
+    const obp = Number(s.obp ?? 0);
+    const slg = Number(s.slg ?? 0);
+    const rbi = Number(s.rbi ?? 0);
+    const games = Number(s.games ?? 0);
+    const qab_pct = Number(s.qab_pct ?? 0);
+    return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab_pct;
+  };
 
   // Compute displayed players based on the single selected stat.
   const filteredPlayers = (() => {
@@ -90,9 +100,18 @@ export default function StatsScreen() {
     }
 
     if (selectedStat === 'none') {
-      // show only players with no stats set
-      const statKeys = Object.values(statKeyMap);
+      // show only players with no stats set (exclude computed `rcv`)
+      const statKeys = Object.values(statKeyMap).filter((k) => k !== 'rcv');
       return players.filter((p) => !statKeys.some((sk) => p.stats && p.stats[sk] != null)).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    }
+
+    if (selectedStat === 'rcv') {
+      return players.slice().sort((a, b) => {
+        const va = a.stats ? computeRcv(a.stats) : 0;
+        const vb = b.stats ? computeRcv(b.stats) : 0;
+        if (vb !== va) return vb - va;
+        return (a.name ?? '').localeCompare(b.name ?? '');
+      });
     }
 
     const sk = statKeyMap[selectedStat];
@@ -111,7 +130,7 @@ export default function StatsScreen() {
     if (!user || !editingStatsId) return;
     const stats: Record<string, any> = {};
     const parse = (v: string) => (v === "" ? null : Number(v));
-    if (avgText !== "") stats.avg = parse(avgText);
+    if (baText !== "") stats.ba = parse(baText);
     if (obpText !== "") stats.obp = parse(obpText);
     if (slgText !== "") stats.slg = parse(slgText);
     if (rbiText !== "") stats.rbi = parse(rbiText);
@@ -143,7 +162,7 @@ export default function StatsScreen() {
         <Dialog visible={statsDialogVisible} onDismiss={closeStatsDialog}>
           <Dialog.Title>{editingPlayerName ? `Edit Stats — ${editingPlayerName}` : 'Edit Stats'}</Dialog.Title>
           <Dialog.Content>
-            <TextInput label="Batting Average (BA)" value={avgText} onChangeText={setAvgText} keyboardType="numeric" returnKeyType="done"/>
+            <TextInput label="Batting Average (BA)" value={baText} onChangeText={setBaText} keyboardType="numeric" returnKeyType="done"/>
             <TextInput label="On-Base % (OBP)" value={obpText} onChangeText={setObpText} keyboardType="numeric" returnKeyType="done"/>
             <TextInput label="Slugging % (SLG)" value={slgText} onChangeText={setSlgText} keyboardType="numeric" returnKeyType="done"/>
             <TextInput label="RBI" value={rbiText} onChangeText={setRbiText} keyboardType="numeric" returnKeyType="done"/>

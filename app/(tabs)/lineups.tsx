@@ -57,7 +57,7 @@ export default function Lineups() {
       }
     };
   }, [user]);
-  const [sortMode, setSortMode] = useState<'name' | 'obr' | 'bip' | 'pwr' | 'spd'>('name');
+  const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
   const [battingOrder, setBattingOrder] = useState<any[] | null>(null);
@@ -87,27 +87,30 @@ export default function Lineups() {
 
   const getMetric = (p: any, mode: string) => {
     const s = p.stats ?? {};
-    const PA = s.pa ?? 0;
-    const H = s.h ?? 0;
-    const BB = s.bb ?? 0;
-    const SO = s.so ?? 0;
-    const XBH = s.xbh ?? 0;
-    const ROE = s.roe ?? 0;
-    const SPD = s.spd ?? 0;
+    const ba = s.ba ?? 0;
+    const obp = s.obp ?? 0;
+    const slg = s.slg ?? 0;
+    const rbi = s.rbi ?? 0;
+    const games = s.games ?? 0;
+    const qab_pct = s.qab_pct ?? 0;
 
-    if (mode === 'obr') return PA > 0 ? (H + BB + ROE) / PA : 0;
-    if (mode === 'bip') return PA > 0 ? 1 - SO / PA : 0;
-    if (mode === 'pwr') return PA > 0 ? XBH / PA : 0;
-    if (mode === 'spd') return SPD; // 0-10
+    if (mode === 'ba') return ba;
+    if (mode === 'obp') return obp;
+    if (mode === 'slg') return slg;
+    if (mode === 'rbi') return rbi;
+    if (mode === 'games') return games;
+    if (mode === 'qab_pct') return qab_pct;
     return 0;
   };
 
   const sortedRoster = [...roster].sort((a: any, b: any) => {
     if (sortMode === 'name') return a.last_name.localeCompare(b.last_name);
-    if (sortMode === 'obr') return getMetric(b, 'obr') - getMetric(a, 'obr');
-    if (sortMode === 'bip') return getMetric(b, 'bip') - getMetric(a, 'bip');
-    if (sortMode === 'pwr') return getMetric(b, 'pwr') - getMetric(a, 'pwr');
-    if (sortMode === 'spd') return getMetric(b, 'spd') - getMetric(a, 'spd');
+    if (sortMode === 'ba') return getMetric(b, 'ba') - getMetric(a, 'ba');
+    if (sortMode === 'obp') return getMetric(b, 'obp') - getMetric(a, 'obp');
+    if (sortMode === 'slg') return getMetric(b, 'slg') - getMetric(a, 'slg');
+    if (sortMode === 'rbi') return getMetric(b, 'rbi') - getMetric(a, 'rbi');
+    if (sortMode === 'games') return getMetric(b, 'games') - getMetric(a, 'games');
+    if (sortMode === 'qab_pct') return getMetric(b, 'qab_pct') - getMetric(a, 'qab_pct');
     return 0;
   });
 
@@ -135,7 +138,7 @@ export default function Lineups() {
             onAutoGenerate={() => {
               // lazy import algorithm to keep file clear; always brute (default)
               const { generateOptimalLineup } = require('../Lineups/LineupAlgorithm') as typeof import('../Lineups/LineupAlgorithm');
-              const result = generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length), strategy: 'brute' });
+              const result = generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length)});
               setBattingOrder(result.lineup);
             }}
             onClearOrder={() => setBattingOrder(null)}
@@ -150,17 +153,23 @@ export default function Lineups() {
             <Button mode={sortMode === 'name' ? 'contained' : 'outlined'} onPress={() => setSortMode('name')} compact>
               Name
             </Button>
-            <Button mode={sortMode === 'obr' ? 'contained' : 'outlined'} onPress={() => setSortMode('obr')} compact style={{ marginLeft: 8 }}>
-              OBR
+            <Button mode={sortMode === 'ba' ? 'contained' : 'outlined'} onPress={() => setSortMode('ba')} compact style={{ marginLeft: 8 }}>
+              BA
             </Button>
-            <Button mode={sortMode === 'bip' ? 'contained' : 'outlined'} onPress={() => setSortMode('bip')} compact style={{ marginLeft: 8 }}>
-              BIP
+            <Button mode={sortMode === 'obp' ? 'contained' : 'outlined'} onPress={() => setSortMode('obp')} compact style={{ marginLeft: 8 }}>
+              OBP
             </Button>
-            <Button mode={sortMode === 'pwr' ? 'contained' : 'outlined'} onPress={() => setSortMode('pwr')} compact style={{ marginLeft: 8 }}>
-              PWR
+            <Button mode={sortMode === 'slg' ? 'contained' : 'outlined'} onPress={() => setSortMode('slg')} compact style={{ marginLeft: 8 }}>
+              SLG
             </Button>
-            <Button mode={sortMode === 'spd' ? 'contained' : 'outlined'} onPress={() => setSortMode('spd')} compact style={{ marginLeft: 8 }}>
-              SPD
+            <Button mode={sortMode === 'rbi' ? 'contained' : 'outlined'} onPress={() => setSortMode('rbi')} compact style={{ marginLeft: 8 }}>
+              RBI
+            </Button>
+            <Button mode={sortMode === 'games' ? 'contained' : 'outlined'} onPress={() => setSortMode('games')} compact style={{ marginLeft: 8 }}>
+              Games
+            </Button>
+            <Button mode={sortMode === 'qab_pct' ? 'contained' : 'outlined'} onPress={() => setSortMode('qab_pct')} compact style={{ marginLeft: 8 }}>
+              QAB%
             </Button>
           </View>
 
