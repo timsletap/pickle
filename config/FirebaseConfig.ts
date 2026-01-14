@@ -87,7 +87,20 @@ export async function createPlayer(userId: string, player: { name: string; posit
   return newRef.key as string;
 }
 
-export function observePlayers(userId: string, callback: (players: Record<string, { name: string; positions?: string[]; jerseyNumber?: number }> | null) => void) {
+export function observePlayers(
+  userId: string,
+  callback: (
+    players: Record<
+      string,
+      {
+        name: string;
+        positions?: string[];
+        jerseyNumber?: number;
+        stats?: Record<string, any>;
+      }
+    > | null
+  ) => void
+) {
   const db = getDatabase(app);
   const playersRef = ref(db, `players/${userId}`);
   const unsubscribe = onValue(playersRef, (snapshot) => {

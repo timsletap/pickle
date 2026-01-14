@@ -1,5 +1,5 @@
 export type Player = {
-  id: number;
+  id: string | number;
   first_name: string;
   last_name: string;
   jersey?: number;
@@ -41,6 +41,7 @@ export const POSITIONS: Position[] = [
   { id: "RF", label: "RF", name: "Right Field", top: "7.5%", left: "75%" },
 ];
 
+{/*}
 export const SAMPLE_ROSTER: Player[] = [
   { id: 1, first_name: "Ava", last_name: "Smith", jersey: 12, stats: { pa: 60, h: 27, bb: 6, so: 8, xbh: 8, roe: 2, spd: 7, avg: 0.375, hits: 27 } },
   { id: 2, first_name: "Bella", last_name: "Jones", jersey: 4, stats: { pa: 64, h: 20, bb: 8, so: 10, xbh: 6, roe: 1, spd: 5, avg: 0.312, hits: 20 } },
@@ -52,3 +53,4 @@ export const SAMPLE_ROSTER: Player[] = [
   { id: 8, first_name: "Hannah", last_name: "Moore", jersey: 6, stats: { pa: 63, h: 21, bb: 9, so: 7, xbh: 7, roe: 0, spd: 9, avg: 0.333, hits: 21 } },
   { id: 9, first_name: "Ivy", last_name: "Taylor", jersey: 18, stats: { pa: 50, h: 14, bb: 3, so: 15, xbh: 1, roe: 1, spd: 8, avg: 0.280, hits: 14 } },
 ];
+*/}

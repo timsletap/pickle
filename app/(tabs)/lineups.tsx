@@ -1,17 +1,62 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Divider, Provider as PaperProvider, Text } from 'react-native-paper';
 
+import { observePlayers } from '../../config/FirebaseConfig';
 import BattingOrder from '../Lineups/BattingOrder';
 import FieldView from '../Lineups/FieldView';
 import PickerDialog from '../Lineups/PickerDialog';
 import RosterScroller from '../Lineups/RosterScroller';
 import StatsDialog from '../Lineups/StatsDialog';
 import styles from '../Lineups/styles';
-import { POSITIONS, SAMPLE_ROSTER } from '../Lineups/types';
+import { POSITIONS, Player } from '../Lineups/types';
+import { useAuth } from '../auth-context';
 
 export default function Lineups() {
-  const [roster] = useState(SAMPLE_ROSTER);
+  const [roster, setRoster] = useState<Player[]>([]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) {
+      setRoster([]);
+      return;
+    }
+
+    const unsub = observePlayers(user.uid, (playersRecord) => {
+      if (!playersRecord) {
+        setRoster([]);
+        return;
+      }
+
+      const players: Player[] = Object.entries(playersRecord).map(([key, value], idx) => {
+        const fullName = (value.name || "").trim();
+        const parts = fullName.split(/\s+/);
+        const first_name = parts.shift() || "";
+        const last_name = parts.join(' ');
+
+        // Attempt to coerce numeric ids when possible, otherwise keep string keys
+        const id: string | number = /^[0-9]+$/.test(key) ? parseInt(key, 10) : key;
+
+        return {
+          id,
+          first_name,
+          last_name,
+          jersey: value.jerseyNumber ?? undefined,
+          stats: value.stats ?? undefined,
+        } as Player;
+      });
+
+      setRoster(players);
+    });
+
+    return () => {
+      try {
+        unsub();
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, [user]);
   const [sortMode, setSortMode] = useState<'name' | 'obr' | 'bip' | 'pwr' | 'spd'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });

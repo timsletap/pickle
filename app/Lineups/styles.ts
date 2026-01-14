@@ -76,9 +76,15 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
   playerName: {
-    marginTop: 6,
+    marginBottom: 6,
     fontSize: 12,
     textAlign: 'center',
+  },
+  posLabelTop: {
+    marginBottom: 6,
+    fontSize: 12,
+    textAlign: 'center',
+    width: 90,
   },
   assignedText: {
     fontSize: 11,
