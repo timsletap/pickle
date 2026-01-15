@@ -11,7 +11,6 @@ import { auth, deleteUserData, readUserData, writeUserData } from "../config/Fir
 export type AppUser = {
     uid: string;
     email: string | null;
-    displayName: string | null;
     username: string | null;
 };
 
@@ -47,7 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const baseUser: AppUser = {
                 uid: firebaseUser.uid,
                 email: firebaseUser.email,
-                displayName: firebaseUser.displayName,
                 username: null,
             };
 
@@ -57,17 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 try {
                     const data = await readUserData(firebaseUser.uid);
                     const nameFromDb = typeof data?.username === "string" ? data.username.trim() : "";
-                    const nameFromAuth = typeof firebaseUser.displayName === "string" ? firebaseUser.displayName.trim() : "";
-                    const resolvedUsername = nameFromDb || nameFromAuth || null;
+                    const resolvedUsername = nameFromDb || null;
 
                     if (!cancelled) {
                         setUser({ ...baseUser, username: resolvedUsername });
                     }
                 } catch (err) {
                     console.error("Failed to read user data for uid", firebaseUser.uid, err);
-                    const nameFromAuth = typeof firebaseUser.displayName === "string" ? firebaseUser.displayName.trim() : "";
                     if (!cancelled) {
-                        setUser({ ...baseUser, username: nameFromAuth || null });
+                        setUser({ ...baseUser, username: null });
                     }
                 } finally {
                     if (!cancelled) {

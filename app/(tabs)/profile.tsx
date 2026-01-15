@@ -1,8 +1,8 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from "expo-router";
 import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, Button, List, Text, useTheme } from "react-native-paper";
 import { useAuth } from "../auth-context";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
 function getInitials(name: string) {
