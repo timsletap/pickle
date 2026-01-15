@@ -5,9 +5,9 @@ import sqlite3
 import os
 from typing import Optional
 import httpx
+from app.db import DB_NAME
 
 router = APIRouter()
-DB_NAME = "pickle.db"
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)

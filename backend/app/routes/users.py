@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 import sqlite3
+from app.db import DB_NAME
 
 router = APIRouter()
-DB_NAME = "pickle.db"
 
 @router.post("/")
 def create_user(email: str, password_hash: str, first_name: str = None, last_name: str = None, role: str = None):
