@@ -1,8 +1,16 @@
+// import necessary Firebase modules
 import { getApps, initializeApp } from "firebase/app";
-import { getAuth, Auth } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
 import { Platform } from "react-native";
 
+// analytics import helper
+let getAnalytics: typeof import("firebase/analytics").getAnalytics | undefined;
+if (Platform.OS === 'web') {
+  getAnalytics = require("firebase/analytics").getAnalytics;
+}
+
+// configuration for Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyA4qT1x2OMofiDoQwMhmWvf4ddrbiXXVDo",
   authDomain: "pickle-cab2c.firebaseapp.com",
@@ -14,24 +22,18 @@ const firebaseConfig = {
   measurementId: "G-D02L7K2K57"
 };
 
-// Initialize Firebase - only if not already initialized
+// initialize Firebase app
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize Auth - simple initialization that works across all platforms
-const auth = getAuth(app);
-
-export { auth };
-
 // Initialize Analytics only on web platform where it's supported
-if (Platform.OS === "web" && typeof window !== "undefined") {
-  import("firebase/analytics").then(({ getAnalytics, isSupported }) => {
-    isSupported().then((supported) => {
-      if (supported) {
-        getAnalytics(app);
-      }
-    });
-  });
+let analytics;
+if (Platform.OS === "web" && getAnalytics) {
+  analytics = getAnalytics ? getAnalytics(app) : null;
 }
+
+// initialize and export Firebase Auth instance for app-wide use
+const auth = getAuth(app);
+export { auth };
 
 export async function writeUserData(userId: string, name: string, email: string) {
   const db = getDatabase(app);
