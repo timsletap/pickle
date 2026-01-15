@@ -1,9 +1,8 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from "expo-router";
-import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, Button, List, Text, useTheme } from "react-native-paper";
 import { useAuth } from "../auth-context";
-
 
 function getInitials(name: string) {
   const cleaned = (name || "").trim();
@@ -18,49 +17,10 @@ function getInitials(name: string) {
 
 export default function Profile() {
   const theme = useTheme();
-  const { signOut, deleteAccount, user } = useAuth();
+  const { user, deleteAccount, signOut } = useAuth();
 
   const displayName = (user?.username || "").trim() || "Unknown";
   const initials = getInitials(displayName);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      // Navigation will happen automatically when user becomes null
-      // Or you can manually navigate:
-      router.replace("/auth");
-    } catch (error) {
-      Alert.alert("Error", "Failed to sign out");
-    }
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete account?",
-      "This will permanently delete your account and profile data.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            const err = await deleteAccount();
-            if (err) {
-              Alert.alert(
-                "Could not delete account",
-                err.includes("requires-recent-login")
-                  ? "For security, please sign out and sign in again, then try deleting your account."
-                  : err
-              );
-              return;
-            }
-
-            router.replace("/auth");
-          },
-        },
-      ]
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -106,7 +66,7 @@ export default function Profile() {
         </List.Section>
       </View>
       <TouchableOpacity
-        onPress={handleSignOut}
+        onPress={signOut}
         style={{
           marginTop: 20,
           paddingVertical: 12,
@@ -128,7 +88,7 @@ export default function Profile() {
 
         <Button
           mode="outlined"
-          onPress={handleDeleteAccount}
+          onPress={deleteAccount}
           style={[styles.deleteButton, { borderColor: theme.colors.error }]}
           textColor={theme.colors.error}
         >
