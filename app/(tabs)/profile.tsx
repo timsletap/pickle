@@ -1,6 +1,5 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from "expo-router";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Avatar, Button, List, Text, useTheme } from "react-native-paper";
 import { useAuth } from "../auth-context";
 
@@ -65,26 +64,16 @@ export default function Profile() {
           />
         </List.Section>
       </View>
-      <TouchableOpacity
-        onPress={signOut}
-        style={{
-          marginTop: 20,
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          backgroundColor: "#00ff41",
-          borderRadius: 20,
-          borderWidth: 1,
-          justifyContent: "center",
-          width: 140,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <MaterialCommunityIcons name="logout" size={18} color="black" style={{ marginRight: 8 }} />
-        <Text style={{ color: "black", fontSize: 16, fontWeight: "700", letterSpacing: 0.5 }}>
+      
+      <View style={styles.actions}>
+         <Button
+          mode="outlined"
+          onPress={signOut}
+          style={[styles.logoutButton, { borderColor: "#00ff41" }]}
+          textColor="#00ff41"
+        >
           Logout
-        </Text>
-      </TouchableOpacity>
+        </Button>
 
         <Button
           mode="outlined"
@@ -95,6 +84,7 @@ export default function Profile() {
           Delete account
         </Button>
       </View>
+    </View>
   );
 }
 
@@ -121,13 +111,23 @@ const styles = StyleSheet.create({
     opacity: 0.75,
     marginTop: 4,
   },
-  deleteButton: {
-    alignSelf: "flex-start",
-    marginTop: 12,
-  },
   listItem: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  logoutButton: {
+    alignSelf: "flex-start",
+    marginTop: 12,
+    width: "50%",
+  },
+  deleteButton: {
+    alignSelf: "flex-start",
+    marginTop: 12,
+    width: "50%",
+  },
+  actions: {
+    gap: 12,
+    paddingBottom: 8,
   },
   footer: {
     alignItems: "flex-start",
