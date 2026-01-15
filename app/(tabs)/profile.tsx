@@ -1,7 +1,9 @@
 import { router } from "expo-router";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, Button, List, Text, useTheme } from "react-native-paper";
 import { useAuth } from "../auth-context";
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
 
 function getInitials(name: string) {
   const cleaned = (name || "").trim();
@@ -64,50 +66,65 @@ export default function Profile() {
     <View style={styles.container}>
       <View>
         <View style={styles.headerRow}>
-        <Avatar.Text
-          size={88}
-          label={initials}
-          style={[styles.avatar, { backgroundColor: theme.colors.primaryContainer }]}
-          labelStyle={{ color: theme.colors.onPrimaryContainer }}
-        />
-        <View style={styles.headerText}>
-          <Text variant="headlineLarge" numberOfLines={1}>
-            {displayName}
-          </Text>
-          <Text variant="bodyMedium" style={styles.subtitle}>
-            Signed in
-          </Text>
+          <Avatar.Text
+            size={88}
+            label={initials}
+            style={[styles.avatar, { backgroundColor: theme.colors.primaryContainer }]}
+            labelStyle={{ color: theme.colors.onPrimaryContainer }}
+          />
+          <View style={styles.headerText}>
+            <Text variant="headlineLarge" numberOfLines={1}>
+              {displayName}
+            </Text>
+            <Text variant="bodyMedium" style={styles.subtitle}>
+              Signed in
+            </Text>
+          </View>
         </View>
-      </View>
-      
-        <List.Section>
-        <List.Item
-          title="Team"
-          description="Manage your team"
-          right={(props) => <List.Icon {...props} icon="arrow-right" />}
-           onPress={() => router.push("/Teams")}
-           style={[
-             styles.listItem,
-             { borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline },
-           ]}
-        />
-        <List.Item
-          title="Stats"
-          description="View your team statistics"
-          right={(props) => <List.Icon {...props} icon="arrow-right" />}
-          onPress={() => router.push("/Stats")}
-          style={[
-            styles.listItem,
-            { borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline },
-          ]}
-        />
-      </List.Section>
-      </View>
 
-      <View style={styles.footer}>
-        <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
+        <List.Section>
+          <List.Item
+            title="Team"
+            description="Manage your team"
+            right={(props) => <List.Icon {...props} icon="arrow-right" />}
+            onPress={() => router.push("/Teams")}
+            style={[
+              styles.listItem,
+              { borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline },
+            ]}
+          />
+          <List.Item
+            title="Stats"
+            description="View your team statistics"
+            right={(props) => <List.Icon {...props} icon="arrow-right" />}
+            onPress={() => router.push("/Stats")}
+            style={[
+              styles.listItem,
+              { borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline },
+            ]}
+          />
+        </List.Section>
+      </View>
+      <TouchableOpacity
+        onPress={handleSignOut}
+        style={{
+          marginTop: 20,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          backgroundColor: "#00ff41",
+          borderRadius: 20,
+          borderWidth: 1,
+          justifyContent: "center",
+          width: 140,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <MaterialCommunityIcons name="logout" size={18} color="black" style={{ marginRight: 8 }} />
+        <Text style={{ color: "black", fontSize: 16, fontWeight: "700", letterSpacing: 0.5 }}>
           Logout
-        </Button>
+        </Text>
+      </TouchableOpacity>
 
         <Button
           mode="outlined"
@@ -118,7 +135,6 @@ export default function Profile() {
           Delete account
         </Button>
       </View>
-    </View>
   );
 }
 
@@ -127,6 +143,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     padding: 16,
+    backgroundColor: "#000",
   },
   headerRow: {
     flexDirection: "row",
@@ -144,17 +161,14 @@ const styles = StyleSheet.create({
     opacity: 0.75,
     marginTop: 4,
   },
-  logoutButton: {
-    alignSelf: "flex-start",
-  },
   deleteButton: {
     alignSelf: "flex-start",
     marginTop: 12,
   },
-   listItem: {
-     borderTopWidth: StyleSheet.hairlineWidth,
-     borderBottomWidth: StyleSheet.hairlineWidth,
-   },
+  listItem: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
   footer: {
     alignItems: "flex-start",
   },

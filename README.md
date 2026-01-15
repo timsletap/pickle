@@ -1,53 +1,126 @@
-# Welcome to your Expo app 👋
+# Pickle - Baseball Team Management App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive React Native app for managing baseball teams, lineups, drills, practice plans, and equipment.
 
-## Get started
+## 🚀 Quick Start for Team Members
 
-1. Install dependencies
+📖 **See [SETUP.md](SETUP.md) for detailed setup instructions**
 
+### Setup in 5 Steps
+
+1. **Install dependencies**
    ```bash
    npm install
+   cd backend && pip install -r requirements.txt && cd ..
    ```
 
-2. Start the app
+2. **Configure environment**
+   ```bash
+   copy .env.example .env
+   # Edit .env with your machine's IP address (find it with: ipconfig)
+   ```
 
+3. **Start backend** (Terminal 1)
+   ```bash
+   cd backend
+   python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+4. **Start app** (Terminal 2)
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+5. **Test connection**
+   - Look for green "API" indicator in Dugout tab
+   - If red, see [SETUP.md](SETUP.md) troubleshooting
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## ✨ Features
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- **Lineups**: Create optimized batting orders with visual field management
+- **Drills**: Browse and add baseball drills with YouTube integration
+- **Practice Plans**: Organize training sessions with custom drill sequences
+- **Equipment**: Search and save baseball equipment recommendations
+- **Teams & Players**: Manage rosters with stats tracking
 
-## Get a fresh project
+## 🛠️ Tech Stack
 
-When you're ready, run:
+- Frontend: React Native + Expo
+- Backend: Python FastAPI
+- Database: SQLite
+- Auth: Firebase
 
-```bash
-npm run reset-project
+## 📡 Connection Status
+
+The app shows a connection indicator in the Dugout tab:
+- 🟢 **Green "API"** = Connected to backend
+- 🔴 **Red "OFFLINE"** = Cannot reach backend
+- 🟠 **Orange "CHECKING"** = Testing connection
+
+Tap the indicator to recheck the connection.
+
+## 🐛 Troubleshooting
+
+### "Failed to load" or Red indicator
+
+1. **Is backend running?**
+   ```bash
+   curl http://localhost:8000/api/teams/
+   # Should return: []
+   ```
+
+2. **Check your .env file**
+   - Must have your computer's IP (not localhost)
+   - Find IP: `ipconfig` (Windows) or `ifconfig` (Mac/Linux)
+
+3. **Same network?**
+   - Computer and phone must be on same WiFi
+
+4. **Firewall blocking port 8000?**
+   - Windows: Allow port 8000 through firewall
+   - Test from phone browser: `http://YOUR_IP:8000/api/teams/`
+
+See [SETUP.md](SETUP.md) for complete troubleshooting guide.
+
+## 📁 Project Structure
+
+```
+pickle/
+├── app/                    # React Native screens
+│   ├── (tabs)/            # Main tabs (Dugout, Lineups, etc.)
+│   ├── DugoutFolder/      # Drills, Equipment, Practice Plans
+│   └── Lineups/           # Lineup management
+├── backend/               # FastAPI backend
+│   ├── app/
+│   │   ├── main.py       # API entry point
+│   │   ├── db.py         # Database config
+│   │   └── routes/       # API endpoints
+│   └── pickle.db         # SQLite database
+├── config/               # App configuration
+│   ├── api.ts           # API URL setup
+│   └── FirebaseConfig.ts # Firebase config
+├── .env.example          # Environment template
+└── SETUP.md             # Detailed setup guide
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🔌 API Endpoints
 
-## Learn more
+Backend API (docs at `http://localhost:8000/docs`):
+- `/api/teams/` - Team management
+- `/api/players/` - Player management
+- `/api/lineups/` - Lineup creation
+- `/api/drills/` - Drill library
+- `/api/practice-plans/` - Practice plans
+- `/api/equipment/` - Equipment recommendations
 
-To learn more about developing your project with Expo, look at the following resources:
+## 💡 Tips for Team Development
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. **Each person needs their own .env** with their machine's IP
+2. **Everyone runs backend locally** (or share one backend server)
+3. **Clear Expo cache** if having issues: `npx expo start -c`
+4. **Check connection indicator** in app to verify backend connectivity
+5. **Port 8000 must be open** on your firewall
 
-## Join the community
+## 📝 License
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-
-# Pickle
-Pickle is a specialized app designed to assist travel softball and baseball coaches by streamlining lineup management through a handheld device and statistical batting order optimization.
+[Your License Here]

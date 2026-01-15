@@ -10,4 +10,5 @@ export default function TabsIndex() {
   }, [router]);
 
   return null;
-}
+  
+} 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 import sqlite3
+from app.db import DB_NAME
 
 router = APIRouter()
-DB_NAME = "pickle.db"
 
 @router.post("/")
 def create_team(name: str, sport: str = None, age_group: str = None, coach_id: int = None):
