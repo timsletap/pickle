@@ -2,13 +2,6 @@
 import { getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
-import { Platform } from "react-native";
-
-// analytics import helper
-let getAnalytics: typeof import("firebase/analytics").getAnalytics | undefined;
-if (Platform.OS === 'web') {
-  getAnalytics = require("firebase/analytics").getAnalytics;
-}
 
 // configuration for Firebase
 const firebaseConfig = {
@@ -25,10 +18,12 @@ const firebaseConfig = {
 // initialize Firebase app
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize Analytics only on web platform where it's supported
-let analytics;
-if (Platform.OS === "web" && getAnalytics) {
-  analytics = getAnalytics ? getAnalytics(app) : null;
+// Initialize Analytics only on client-side
+let analytics: ReturnType<typeof import("firebase/analytics").getAnalytics> | null = null;
+if (typeof window !== "undefined") {
+  import("firebase/analytics").then(({ getAnalytics }) => {
+    analytics = getAnalytics(app);
+  });
 }
 
 // initialize and export Firebase Auth instance for app-wide use
