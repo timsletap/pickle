@@ -52,7 +52,7 @@ export default function Profile() {
             title="Team"
             description="Manage your team"
             right={(props) => <List.Icon {...props} icon="arrow-right" />}
-            onPress={() => router.push("/Teams")}
+            onPress={() => router.push("/Team")}
             titleStyle={styles.listTitle}
             descriptionStyle={styles.listDescription}
             style={[
