@@ -1,6 +1,6 @@
 # Pickle - Softball Team Management App
 
-A comprehensive React Native app for managing baseball teams, lineups, drills, practice plans, and equipment.
+A comprehensive React Native app for managing softball teams, lineups, drills, practice plans, and equipment.
 
 ## 🚀 Quick Start for Team Members
 
