@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, Chip, Dialog, FAB, List, Portal, Text, TextInput, useTheme } from "react-native-paper";
-import { createPlayer, deletePlayer, observePlayers, updatePlayer } from "../config/FirebaseConfig";
+import { deletePlayer } from "../config/FirebaseConfig";
 import { useAuth } from "./auth-context";
+import { fetchPlayerInfo, savePlayerInfo } from "./realtimeDb";
 
 export default function TeamsScreen() {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ export default function TeamsScreen() {
     if (!user) return;
 
     setLoading(true);
-    const unsub = observePlayers(user.uid, (data) => {
+    fetchPlayerInfo(user.uid, (data) => {
       if (!data) {
         setPlayers([]);
         setLoading(false);
@@ -48,7 +49,7 @@ export default function TeamsScreen() {
       setLoading(false);
     });
 
-    return () => unsub && unsub();
+    return () => {};
   }, [user]);
 
   if (!user) {
@@ -85,11 +86,7 @@ export default function TeamsScreen() {
     Keyboard.dismiss();
 
     try {
-      if (editingId) {
-        await updatePlayer(user.uid, editingId, { name: trimmed, positions: positionsArr, jerseyNumber: jersey });
-      } else {
-        await createPlayer(user.uid, { name: trimmed, positions: positionsArr, jerseyNumber: jersey });
-      }
+      await savePlayerInfo(user.uid, { name: trimmed, positions: positionsArr, jerseyNumber: jersey }, editingId ?? undefined);
       closeDialog();
     } catch (err) {
       console.error("Failed to save player", err);

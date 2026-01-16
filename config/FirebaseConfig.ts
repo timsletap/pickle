@@ -1,7 +1,7 @@
 // import necessary Firebase modules
 import { getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
+import { get, getDatabase, ref, remove, set } from "firebase/database";
 
 // configuration for Firebase
 const firebaseConfig = {
@@ -15,10 +15,11 @@ const firebaseConfig = {
   measurementId: "G-D02L7K2K57"
 };
 
-// initialize Firebase app
+// initialize and export Firebase app for app-wide use
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+export { app };
 
-// Initialize Analytics only on client-side
+// initialize Analytics only on client-side
 let analytics: ReturnType<typeof import("firebase/analytics").getAnalytics> | null = null;
 if (typeof window !== "undefined") {
   import("firebase/analytics").then(({ getAnalytics }) => {
@@ -54,53 +55,6 @@ export async function readUserData(userId: string): Promise<{ username?: string;
 export async function deleteUserData(userId: string): Promise<void> {
   const db = getDatabase(app);
   await remove(ref(db, 'users/' + userId));
-}
-
-// Players helpers
-export async function createPlayer(userId: string, player: { name: string; positions: string[]; jerseyNumber?: number }): Promise<string> {
-  const db = getDatabase(app);
-  const playersRef = ref(db, `players/${userId}`);
-  const newRef = push(playersRef);
-  await set(newRef, {
-    name: player.name,
-    positions: player.positions || [],
-    jerseyNumber: player.jerseyNumber ?? null,
-    createdAt: Date.now(),
-  });
-  return newRef.key as string;
-}
-
-export function observePlayers(
-  userId: string,
-  callback: (
-    players: Record<
-      string,
-      {
-        name: string;
-        positions?: string[];
-        jerseyNumber?: number;
-        stats?: Record<string, any>;
-      }
-    > | null
-  ) => void
-) {
-  const db = getDatabase(app);
-  const playersRef = ref(db, `players/${userId}`);
-  const unsubscribe = onValue(playersRef, (snapshot) => {
-    callback(snapshot.exists() ? (snapshot.val() as Record<string, { name: string; positions?: string[]; jerseyNumber?: number }>) : null);
-  });
-
-  return () => unsubscribe();
-}
-
-export async function updatePlayer(userId: string, playerId: string, player: { name: string; positions: string[]; jerseyNumber?: number }): Promise<void> {
-  const db = getDatabase(app);
-  await set(ref(db, `players/${userId}/${playerId}`), {
-    name: player.name,
-    positions: player.positions || [],
-    jerseyNumber: player.jerseyNumber ?? null,
-    updatedAt: Date.now(),
-  });
 }
 
 // Stats helpers
