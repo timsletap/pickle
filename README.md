@@ -38,9 +38,9 @@ A comprehensive React Native app for managing softball teams, lineups, drills, p
 ## ✨ Features
 
 - **Lineups**: Create optimized batting orders with visual field management
-- **Drills**: Browse and add baseball drills with YouTube integration
+- **Drills**: Browse and add softball drills with YouTube integration
 - **Practice Plans**: Organize training sessions with custom drill sequences
-- **Equipment**: Search and save baseball equipment recommendations
+- **Equipment**: Search and save softball equipment recommendations
 - **Teams & Players**: Manage rosters with stats tracking
 
 ## 🛠️ Tech Stack
