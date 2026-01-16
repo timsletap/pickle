@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Button, Divider, Provider as PaperProvider, Text } from 'react-native-paper';
 
-import { observePlayers, updatePlayerStats } from '../../config/FirebaseConfig';
+import { updatePlayerStats } from '../../config/FirebaseConfig';
 import BattingOrder from '../Lineups/BattingOrder';
 import FieldView from '../Lineups/FieldView';
 import PickerDialog from '../Lineups/PickerDialog';
@@ -11,6 +11,7 @@ import StatsDialog from '../Lineups/StatsDialog';
 import styles from '../Lineups/styles';
 import { POSITIONS, Player } from '../Lineups/types';
 import { useAuth } from '../auth-context';
+import { fetchPlayerInfo } from '../realtimeDb';
 
 export default function Lineups() {
   const [roster, setRoster] = useState<Player[]>([]);
@@ -22,7 +23,7 @@ export default function Lineups() {
       return;
     }
 
-    const unsub = observePlayers(user.uid, (playersRecord) => {
+    const unsub = fetchPlayerInfo(user.uid, (playersRecord) => {
       if (!playersRecord) {
         setRoster([]);
         return;

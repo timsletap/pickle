@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Keyboard, StyleSheet, View } from "react-native";
+import { Dimensions, Keyboard, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, Chip, Dialog, FAB, List, Portal, Text, TextInput, useTheme } from "react-native-paper";
-import { deletePlayer } from "../config/FirebaseConfig";
+import Carousel from "react-native-reanimated-carousel";
 import { useAuth } from "./auth-context";
-import { fetchPlayerInfo, savePlayerInfo } from "./realtimeDb";
+import { deletePlayer, fetchPlayerInfo, savePlayerInfo } from "./realtimeDb";
 
 export default function TeamsScreen() {
   const { user } = useAuth();
@@ -17,6 +17,11 @@ export default function TeamsScreen() {
   const [name, setName] = useState("");
   const [positions, setPositions] = useState<string[]>([]);
   const [jerseyText, setJerseyText] = useState("");
+
+  const { width: SCREEN_WIDTH } = Dimensions.get("window");
+  // Larger card sizing for clearer player display. Subtract extra margin to avoid edge cutoff.
+  const CARD_WIDTH = Math.min(420, SCREEN_WIDTH - 48);
+  const CARD_HEIGHT = 380;
 
   const KNOWN_POSITIONS = [
     "P",
@@ -114,17 +119,36 @@ export default function TeamsScreen() {
           <Text>No players yet.</Text>
         </View>
       ) : (
-        <List.Section>
-          {players.map((p) => (
-            <List.Item
-              key={p.id}
-              title={p.name}
-              description={(p.positions || []).join(", ") + (p.jerseyNumber != null ? `  #${p.jerseyNumber}` : "")}
-              left={(props) => <List.Icon {...props} icon="account" />}
-              onPress={() => openEdit(p)}
-            />
-          ))}
-        </List.Section>
+        <View style={{ alignItems: "center" }}>
+          <Carousel
+            width={CARD_WIDTH}
+            height={CARD_HEIGHT}
+            data={players}
+            loop={true}
+            pagingEnabled={true}
+            snapEnabled={true}
+            autoPlay={false}
+            mode="parallax"
+            modeConfig={{ parallaxScrollingScale: 0.9, parallaxScrollingOffset: 50 }}
+            renderItem={({ item }) => (
+              <View style={[styles.cardWrap, { width: CARD_WIDTH, height: CARD_HEIGHT }]}> 
+                <List.Item
+                  title={item.name}
+                  description={(item.positions || []).join(", ") + (item.jerseyNumber != null ? `  #${item.jerseyNumber}` : "")}
+                  //onPress={() => openEdit(item)}
+                  style={[
+                    styles.card,
+                    { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderWidth: 3, borderColor: "#000", borderRadius: 20 },
+                  ]}
+                  titleStyle={{ fontSize: 20, fontWeight: "600" }}
+                  descriptionStyle={{ fontSize: 16 }}
+                />
+              </View>
+            )}
+          />
+
+          <Text style={{ marginTop: 8, textAlign: "center" }}>Swipe to see all players</Text>
+        </View>
       )}
 
       <Portal>
@@ -199,5 +223,17 @@ const styles = StyleSheet.create({
   chip: {
     marginRight: 8,
     marginBottom: 8,
+  },
+  cardWrap: {
+  width: "100%",
+  height: "100%",
+  justifyContent: "center",
+  paddingHorizontal: 8,
+  alignItems: "center",
+  },
+  card: {
+    borderRadius: 16,
+    overflow: "hidden",
+    elevation: 2, // android shadow
   },
 });

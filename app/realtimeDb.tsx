@@ -1,4 +1,4 @@
-import { getDatabase, onValue, push, ref, set } from "firebase/database";
+import { getDatabase, onValue, push, ref, remove, set } from "firebase/database";
 import { app } from "../config/FirebaseConfig";
 
 export function fetchPlayerInfo(
@@ -51,4 +51,9 @@ export async function savePlayerInfo(
     });
     return newRef.key as string;
 }
+}
+
+export async function deletePlayer(userId: string, playerId: string): Promise<void> {
+  const db = getDatabase(app);
+  await remove(ref(db, `players/${userId}/${playerId}`));
 }
