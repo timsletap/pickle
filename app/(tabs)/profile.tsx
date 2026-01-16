@@ -39,11 +39,10 @@ export default function Profile() {
           />
 
           <View style={styles.nameColumn}>
-            <Text style={styles.subtitle}>Signed In As</Text>
+            <Text style={styles.subtitle}>Signed in as</Text>
             <Text style={styles.headerText}>
               {displayName}
             </Text>
-
             <Button
               mode="text"
               onPress={() => router.push("/EditingUsername")}
@@ -113,6 +112,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     marginBottom: 8,
+    paddingTop: 8,
   },
   headerGradient: {
     paddingTop: 40,
@@ -129,19 +129,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerText: {
-    flex: 1,
     minWidth: 0,
     fontSize: 28,
     fontWeight: "800",
     color: "#fff",
     letterSpacing: 0.6,
     marginTop: 8,
-    marginBottom: 12,
     flexShrink: 1,
   },
   subtitle: {
     opacity: 0.8,
-    marginTop: 8,
+    marginTop: 18,
     fontSize: 16,
     fontWeight: "400",
     color: "#fdfdfdff",
