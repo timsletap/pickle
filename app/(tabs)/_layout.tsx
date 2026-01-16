@@ -10,5 +10,6 @@ export default function TabsLayout() {
     <Tabs.Screen name="dugout" options={{ title: "Dugout", tabBarIcon: (color) => (<FontAwesome6 name="person-shelter" size={24} color={"lime"} />) }} />
     <Tabs.Screen name="playball" options={{ title: "Play Ball", tabBarIcon: (color) => (<MaterialCommunityIcons name="baseball-bat" size={24} color={"lime"} />) }} />
     <Tabs.Screen name="index" options={{ href: null }} /> {/*Hides index tab*/}
+    <Tabs.Screen name="EditingUsername" options={{ href: null }} /> {/*Hides EditingUsername tab*/}
   </Tabs>);
 }
