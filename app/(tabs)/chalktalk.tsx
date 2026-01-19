@@ -209,8 +209,8 @@ export default function ChalkTalk() {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
-            paddingTop: 60,
-            paddingBottom: 24,
+            paddingTop: 50,
+            paddingBottom: 8,
             paddingHorizontal: 24,
             borderBottomLeftRadius: 32,
             borderBottomRightRadius: 32,
@@ -237,9 +237,9 @@ export default function ChalkTalk() {
             }}
           />
 
-          <View style={{ marginBottom: 12 }}>
+          <View style={{ marginBottom: 4 }}>
             <Text style={{
-              fontSize: 42,
+              fontSize: 28,
               fontWeight: "900",
               color: "#fff",
               letterSpacing: 2,
@@ -252,12 +252,12 @@ export default function ChalkTalk() {
           </View>
 
           <Text style={{
-            fontSize: 13,
+            fontSize: 10,
             color: "#00ff41",
             fontWeight: "700",
             letterSpacing: 4,
             opacity: 0.8,
-            marginBottom: 20,
+            marginBottom: 8,
           }}>
             LEARN THE GAME
           </Text>
@@ -566,11 +566,11 @@ export default function ChalkTalk() {
                 onChangeText={setMessage}
                 style={{
                   backgroundColor: "rgba(0, 0, 0, 0.3)",
-                  borderRadius: 12,
-                  padding: 16,
+                  borderRadius: 8,
+                  padding: 6,
                   color: "#fff",
-                  fontSize: 16,
-                  marginBottom: 12,
+                  fontSize: 12,
+                  marginBottom: 4,
                   borderWidth: 1,
                   borderColor: "rgba(0, 255, 65, 0.2)",
                 }}
@@ -590,18 +590,18 @@ export default function ChalkTalk() {
                 }}
                 style={{
                   backgroundColor: "#00ff41",
-                  borderRadius: 12,
-                  padding: 16,
+                  borderRadius: 8,
+                  padding: 6,
                   alignItems: "center",
                 }}
               >
                 <Text style={{
                   color: "#000",
                   fontWeight: "800",
-                  fontSize: 14,
-                  letterSpacing: 1,
+                  fontSize: 11,
+                  letterSpacing: .8,
                 }}>
-                  POST MESSAGE
+                  SEND MESSAGE
                 </Text>
               </TouchableOpacity>
             </View>
@@ -613,22 +613,22 @@ export default function ChalkTalk() {
                   style={{
                     backgroundColor: "rgba(0, 255, 65, 0.08)",
                     borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 10,
+                    padding: 20,
+                    marginBottom: 12,
                     borderWidth: 1,
                     borderColor: "rgba(0, 255, 65, 0.15)",
                   }}
                 >
                   <Text style={{
                     color: "#fff",
-                    fontSize: 15,
-                    marginBottom: 6,
+                    fontSize: 18,
+                    marginBottom: 8,
                   }}>
                     {m.text}
                   </Text>
                   <Text style={{
                     color: "rgba(0, 255, 65, 0.6)",
-                    fontSize: 12,
+                    fontSize: 13,
                   }}>
                     {m.time}
                   </Text>
