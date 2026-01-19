@@ -1,5 +1,6 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, IconButton, Text, TextInput } from "react-native-paper";
 import { useAuth } from "../auth-context";
@@ -8,7 +9,7 @@ import { useAuth } from "../auth-context";
 
 export default function EditingUsername() {
     const { user, updateUsername } = useAuth();
-    const [editingUsername, setEditingUsername] = useState<string>(user?.username ?? "");
+    const [editingUsername, setEditingUsername] = useState<string>("");
     const [editFocused, setEditFocused] = useState<boolean>(false);
     const [saving, setSaving] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -48,6 +49,15 @@ export default function EditingUsername() {
             setError("Failed to update username.");
         }
     };
+
+    // Clear the input each time this screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            setEditingUsername("");
+            setError(null);
+            setUpdated(false);
+        }, [])
+    );
 
     return (
         <View style={styles.container}>
