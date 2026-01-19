@@ -21,6 +21,7 @@ type AuthContextType = {
     signIn: (email: string, password: string) => Promise<string | null>;
     signOut: () => Promise<void>;
     deleteAccount: () => Promise<string | null>;
+    updateUsername: (newName: string) => Promise<string | null>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,6 +116,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await firebaseSignOut(auth);
     };
 
+    const updateUsername = async (newName: string): Promise<string | null> => {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) return "No signed-in user.";
+
+        try {
+            await writeUserData(firebaseUser.uid, newName, firebaseUser.email ?? "");
+
+            // update in-memory user so UI reflects change immediately
+            setUser((prev) => (prev ? { ...prev, username: newName } : prev));
+            return null;
+        } catch (err: any) {
+            console.error("Failed to update username", err);
+            if (err instanceof Error) return err.message;
+            return "Failed to update username.";
+        }
+    };
+
     const deleteAccount = async (): Promise<string | null> => {
         const firebaseUser = auth.currentUser;
         if (!firebaseUser) {
@@ -141,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ loading, user, signUp, signIn, signOut, deleteAccount }}>
+        <AuthContext.Provider value={{ loading, user, signUp, signIn, signOut, deleteAccount, updateUsername }}>
             {children}
         </AuthContext.Provider>
     );

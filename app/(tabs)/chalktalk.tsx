@@ -1,11 +1,16 @@
-import { useState } from "react";
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useRef, useState } from "react";
 import {
+    Animated,
+    Easing,
     Linking,
     ScrollView,
-    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
     View,
 } from "react-native";
-import { Button, Card, Text, TextInput } from "react-native-paper";
 
 
 /* ---------------- TYPES ---------------- */
@@ -71,8 +76,15 @@ const QUIZ = [
 
 export default function ChalkTalk() {
   const [section, setSection] = useState<Section>("rules");
+  const [tabWidth, setTabWidth] = useState(0);
 
-
+  // Animation values
+  const tabAnimation = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-20)).current;
+  const contentFade = useRef(new Animated.Value(0)).current;
+  const contentSlide = useRef(new Animated.Value(30)).current;
 
   /* ----- Quiz State ----- */
   const [answer, setAnswer] = useState<number | null>(null);
@@ -83,134 +95,549 @@ export default function ChalkTalk() {
     { text: string; time: string }[]
   >([]);
 
+  useEffect(() => {
+    // Entrance animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentFade, {
+        toValue: 1,
+        duration: 600,
+        delay: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(contentSlide, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
+  const handleTabChange = (tab: Section) => {
+    const tabIndex = tab === "rules" ? 0 : tab === "quiz" ? 1 : 2;
 
-  
+    // Tab indicator animation with bounce
+    Animated.spring(tabAnimation, {
+      toValue: tabIndex,
+      friction: 7,
+      tension: 80,
+      useNativeDriver: true,
+    }).start();
+
+    // Content transition animation
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(contentFade, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentSlide, {
+          toValue: -20,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.timing(contentFade, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.spring(contentSlide, {
+          toValue: 0,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    // Haptic feedback pulse
+    Animated.sequence([
+      Animated.timing(pulseAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(pulseAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    setSection(tab);
+  };
+
+  const getTabIcon = (tab: Section): keyof typeof MaterialCommunityIcons.glyphMap => {
+    switch(tab) {
+      case "rules": return "book-open-variant";
+      case "quiz": return "head-question";
+      case "messages": return "message-text";
+      default: return "circle";
+    }
+  };
 
   /* ---------------- UI ---------------- */
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>
-        Chalk Talk
-      </Text>
-
-      {/* Section Navigation */}
-      <View style={styles.nav}>
-        <Button onPress={() => setSection("rules")}>Rules</Button>
-        <Button onPress={() => setSection("quiz")}>Quiz</Button>
-        <Button onPress={() => setSection("messages")}>Messages</Button>
-      </View>
-
-      
-
-      {/* ---------------- RULES ---------------- */}
-      {section === "rules" && (
-        <ScrollView>
-          {RULES.map((rule, i) => (
-            <Card key={i} style={styles.card}>
-              <Card.Title title={rule.category} />
-              <Card.Content>
-                <Text>{rule.text}</Text>
-                <Button
-                  onPress={() => Linking.openURL(rule.video)}
-                  style={{ marginTop: 8 }}
-                >
-                  Watch Video
-                </Button>
-              </Card.Content>
-            </Card>
-          ))}
-        </ScrollView>
-      )}
-
-      {/* ---------------- QUIZ ---------------- */}
-      {section === "quiz" && (
-        <View>
-          <Text variant="titleMedium">{QUIZ[0].question}</Text>
-
-          {QUIZ[0].options.map((opt, i) => (
-            <Button
-              key={i}
-              mode="outlined"
-              style={{ marginTop: 8 }}
-              onPress={() => setAnswer(i)}
-            >
-              {opt}
-            </Button>
-          ))}
-
-          {answer !== null && (
-            <Text style={{ marginTop: 12 }}>
-              {answer === QUIZ[0].correct
-                ? "✅ Correct!"
-                : "❌ Incorrect."}{" "}
-              {QUIZ[0].explanation}
-            </Text>
-          )}
-        </View>
-      )}
-
-      {/* ---------------- MESSAGES ---------------- */}
-      {section === "messages" && (
-        <View style={{ flex: 1 }}>
-          <TextInput
-            label="New Message"
-            value={message}
-            onChangeText={setMessage}
-            style={{ marginBottom: 8 }}
+    <View style={{ flex: 1, backgroundColor: "#000" }}>
+      {/* Header with Gradient */}
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+        }}
+      >
+        <LinearGradient
+          colors={["#000000", "#001a00", "#002200", "#001a00", "#000000"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            paddingTop: 50,
+            paddingBottom: 8,
+            paddingHorizontal: 24,
+            borderBottomLeftRadius: 32,
+            borderBottomRightRadius: 32,
+            shadowColor: "#00ff41",
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.4,
+            shadowRadius: 20,
+            elevation: 12,
+          }}
+        >
+          {/* Animated glow effect */}
+          <LinearGradient
+            colors={["transparent", "rgba(0, 255, 65, 0.05)", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderBottomLeftRadius: 32,
+              borderBottomRightRadius: 32,
+            }}
           />
 
-          <Button
-            mode="contained"
-            onPress={() => {
-              if (!message) return;
-              setMessages([
-                {
-                  text: message,
-                  time: new Date().toLocaleTimeString(),
-                },
-                ...messages,
-              ]);
-              setMessage("");
+          <View style={{ marginBottom: 4 }}>
+            <Text style={{
+              fontSize: 28,
+              fontWeight: "900",
+              color: "#fff",
+              letterSpacing: 2,
+              textShadowColor: "rgba(0, 255, 65, 0.3)",
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 10,
+            }}>
+              CHALK TALK
+            </Text>
+          </View>
+
+          <Text style={{
+            fontSize: 10,
+            color: "#00ff41",
+            fontWeight: "700",
+            letterSpacing: 4,
+            opacity: 0.8,
+            marginBottom: 8,
+          }}>
+            LEARN THE GAME
+          </Text>
+
+          {/* Tab Bar with Glassmorphism */}
+          <View
+            style={{
+              flexDirection: "row",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              borderRadius: 20,
+              padding: 5,
+              borderWidth: 1.5,
+              borderColor: "rgba(0, 255, 65, 0.25)",
+              shadowColor: "#00ff41",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 15,
+              elevation: 8,
+            }}
+            onLayout={(e) => {
+              const width = e.nativeEvent.layout.width;
+              setTabWidth((width - 10) / 3);
             }}
           >
-            Post
-          </Button>
+            {/* Animated Indicator */}
+            {tabWidth > 0 && (
+              <Animated.View
+                style={{
+                  position: "absolute",
+                  top: 5,
+                  left: 5,
+                  bottom: 5,
+                  width: tabWidth,
+                  borderRadius: 15,
+                  overflow: "hidden",
+                  transform: [{
+                    translateX: tabAnimation.interpolate({
+                      inputRange: [0, 1, 2],
+                      outputRange: [0, tabWidth, tabWidth * 2]
+                    })
+                  }],
+                }}
+              >
+                <LinearGradient
+                  colors={["#00ff41", "#00dd3a", "#00ff41"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    flex: 1,
+                    shadowColor: "#00ff41",
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.9,
+                    shadowRadius: 15,
+                    elevation: 10,
+                  }}
+                />
+              </Animated.View>
+            )}
 
-          <ScrollView style={{ marginTop: 12 }}>
-            {messages.map((m, i) => (
-              <Card key={i} style={styles.card}>
-                <Card.Content>
-                  <Text>{m.text}</Text>
-                  <Text style={{ fontSize: 12 }}>{m.time}</Text>
-                </Card.Content>
-              </Card>
+            {/* Rules Tab */}
+            <Animated.View style={{ flex: 1, transform: [{ scale: section === "rules" ? pulseAnim : 1 }] }}>
+              <TouchableOpacity
+                onPress={() => handleTabChange("rules")}
+                activeOpacity={0.8}
+                style={{
+                  paddingVertical: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 15,
+                  zIndex: 1,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name={getTabIcon("rules")}
+                  size={24}
+                  color={section === "rules" ? "#000" : "#00ff41"}
+                  style={{ marginBottom: 6 }}
+                />
+                <Text style={{
+                  fontSize: 11,
+                  fontWeight: "800",
+                  color: section === "rules" ? "#000" : "#00ff41",
+                  letterSpacing: 0.8,
+                }}>
+                  RULES
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Quiz Tab */}
+            <Animated.View style={{ flex: 1, transform: [{ scale: section === "quiz" ? pulseAnim : 1 }] }}>
+              <TouchableOpacity
+                onPress={() => handleTabChange("quiz")}
+                activeOpacity={0.8}
+                style={{
+                  paddingVertical: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 15,
+                  zIndex: 1,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name={getTabIcon("quiz")}
+                  size={24}
+                  color={section === "quiz" ? "#000" : "#00ff41"}
+                  style={{ marginBottom: 6 }}
+                />
+                <Text style={{
+                  fontSize: 11,
+                  fontWeight: "800",
+                  color: section === "quiz" ? "#000" : "#00ff41",
+                  letterSpacing: 0.8,
+                }}>
+                  QUIZ
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Messages Tab */}
+            <Animated.View style={{ flex: 1, transform: [{ scale: section === "messages" ? pulseAnim : 1 }] }}>
+              <TouchableOpacity
+                onPress={() => handleTabChange("messages")}
+                activeOpacity={0.8}
+                style={{
+                  paddingVertical: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 15,
+                  zIndex: 1,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name={getTabIcon("messages")}
+                  size={24}
+                  color={section === "messages" ? "#000" : "#00ff41"}
+                  style={{ marginBottom: 6 }}
+                />
+                <Text style={{
+                  fontSize: 11,
+                  fontWeight: "800",
+                  color: section === "messages" ? "#000" : "#00ff41",
+                  letterSpacing: 0.8,
+                }}>
+                  MESSAGES
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+
+      {/* Content Area with Smooth Transitions */}
+      <Animated.View
+        style={{
+          flex: 1,
+          backgroundColor: "#0a0a0a",
+          opacity: contentFade,
+          transform: [{ translateY: contentSlide }],
+        }}
+      >
+        {/* ---------------- RULES ---------------- */}
+        {section === "rules" && (
+          <ScrollView style={{ padding: 16 }}>
+            {RULES.map((rule, i) => (
+              <View
+                key={i}
+                style={{
+                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginBottom: 12,
+                  borderWidth: 1,
+                  borderColor: "rgba(0, 255, 65, 0.2)",
+                }}
+              >
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: "800",
+                  color: "#00ff41",
+                  marginBottom: 8,
+                  letterSpacing: 1,
+                }}>
+                  {rule.category}
+                </Text>
+                <Text style={{
+                  fontSize: 14,
+                  color: "#fff",
+                  lineHeight: 22,
+                  opacity: 0.9,
+                }}>
+                  {rule.text}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(rule.video)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 12,
+                    backgroundColor: "rgba(0, 255, 65, 0.15)",
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 12,
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  <MaterialCommunityIcons name="play-circle" size={20} color="#00ff41" />
+                  <Text style={{
+                    color: "#00ff41",
+                    fontWeight: "700",
+                    marginLeft: 8,
+                    fontSize: 13,
+                  }}>
+                    Watch Video
+                  </Text>
+                </TouchableOpacity>
+              </View>
             ))}
           </ScrollView>
-        </View>
-      )}
+        )}
+
+        {/* ---------------- QUIZ ---------------- */}
+        {section === "quiz" && (
+          <View style={{ padding: 16 }}>
+            <View style={{
+              backgroundColor: "rgba(0, 255, 65, 0.08)",
+              borderRadius: 16,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: "rgba(0, 255, 65, 0.2)",
+            }}>
+              <Text style={{
+                fontSize: 20,
+                fontWeight: "800",
+                color: "#fff",
+                marginBottom: 20,
+              }}>
+                {QUIZ[0].question}
+              </Text>
+
+              {QUIZ[0].options.map((opt, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => setAnswer(i)}
+                  style={{
+                    backgroundColor: answer === i
+                      ? (i === QUIZ[0].correct ? "rgba(0, 255, 65, 0.3)" : "rgba(255, 0, 0, 0.3)")
+                      : "rgba(0, 255, 65, 0.1)",
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 10,
+                    borderWidth: 1.5,
+                    borderColor: answer === i
+                      ? (i === QUIZ[0].correct ? "#00ff41" : "#ff0000")
+                      : "rgba(0, 255, 65, 0.3)",
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 16,
+                    fontWeight: "700",
+                    color: "#fff",
+                    textAlign: "center",
+                  }}>
+                    {opt}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+
+              {answer !== null && (
+                <View style={{
+                  marginTop: 16,
+                  padding: 16,
+                  backgroundColor: answer === QUIZ[0].correct
+                    ? "rgba(0, 255, 65, 0.15)"
+                    : "rgba(255, 0, 0, 0.15)",
+                  borderRadius: 12,
+                }}>
+                  <Text style={{
+                    fontSize: 16,
+                    fontWeight: "700",
+                    color: answer === QUIZ[0].correct ? "#00ff41" : "#ff6b6b",
+                  }}>
+                    {answer === QUIZ[0].correct ? "Correct!" : "Incorrect."} {QUIZ[0].explanation}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* ---------------- MESSAGES ---------------- */}
+        {section === "messages" && (
+          <View style={{ flex: 1, padding: 16 }}>
+            <View style={{
+              backgroundColor: "rgba(0, 255, 65, 0.08)",
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: "rgba(0, 255, 65, 0.2)",
+            }}>
+              <TextInput
+                placeholder="Write a message..."
+                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                value={message}
+                onChangeText={setMessage}
+                style={{
+                  backgroundColor: "rgba(0, 0, 0, 0.3)",
+                  borderRadius: 8,
+                  padding: 6,
+                  color: "#fff",
+                  fontSize: 12,
+                  marginBottom: 4,
+                  borderWidth: 1,
+                  borderColor: "rgba(0, 255, 65, 0.2)",
+                }}
+              />
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (!message) return;
+                  setMessages([
+                    {
+                      text: message,
+                      time: new Date().toLocaleTimeString(),
+                    },
+                    ...messages,
+                  ]);
+                  setMessage("");
+                }}
+                style={{
+                  backgroundColor: "#00ff41",
+                  borderRadius: 8,
+                  padding: 6,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{
+                  color: "#000",
+                  fontWeight: "800",
+                  fontSize: 11,
+                  letterSpacing: .8,
+                }}>
+                  SEND MESSAGE
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView>
+              {messages.map((m, i) => (
+                <View
+                  key={i}
+                  style={{
+                    backgroundColor: "rgba(0, 255, 65, 0.08)",
+                    borderRadius: 12,
+                    padding: 20,
+                    marginBottom: 12,
+                    borderWidth: 1,
+                    borderColor: "rgba(0, 255, 65, 0.15)",
+                  }}
+                >
+                  <Text style={{
+                    color: "#fff",
+                    fontSize: 18,
+                    marginBottom: 8,
+                  }}>
+                    {m.text}
+                  </Text>
+                  <Text style={{
+                    color: "rgba(0, 255, 65, 0.6)",
+                    fontSize: 13,
+                  }}>
+                    {m.time}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </Animated.View>
     </View>
   );
 }
-
-/* ---------------- STYLES ---------------- */
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  nav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 12,
-  },
-  card: {
-    marginBottom: 12,
-  },
-});

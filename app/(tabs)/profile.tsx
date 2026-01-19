@@ -32,16 +32,25 @@ export default function Profile() {
       >
         <View style={styles.headerRow}>
           <Avatar.Text
-            size={88}
+            size={100}
             label={initials}
             style={[styles.avatar, { backgroundColor: theme.colors.primaryContainer }]}
             labelStyle={{ color: theme.colors.onPrimaryContainer }}
           />
-          <View>
-            <Text numberOfLines={1} style={styles.headerText}>
+
+          <View style={styles.nameColumn}>
+            <Text style={styles.subtitle}>Signed in as</Text>
+            <Text style={styles.headerText}>
               {displayName}
             </Text>
-            <Text style={styles.subtitle}>Signed In</Text>
+            <Button
+              mode="text"
+              onPress={() => router.push("/EditingUsername")}
+              textColor="#fefefea7"
+              style={styles.editInlineButton}
+            >
+              Edit Username
+            </Button>
           </View>
         </View>
       </LinearGradient>
@@ -55,10 +64,7 @@ export default function Profile() {
             onPress={() => router.push("/Team")}
             titleStyle={styles.listTitle}
             descriptionStyle={styles.listDescription}
-            style={[
-              styles.listItem,
-              { borderColor: 'rgba(0,255,65,0.06)' },
-            ]}
+            style={[styles.listItem, { borderColor: 'rgba(0,255,65,0.06)' }]}
           />
           <List.Item
             title="Stats"
@@ -67,10 +73,7 @@ export default function Profile() {
             onPress={() => router.push("/Stats")}
             titleStyle={styles.listTitle}
             descriptionStyle={styles.listDescription}
-            style={[
-              styles.listItem,
-              { borderColor: 'rgba(0,255,65,0.06)' },
-            ]}
+            style={[styles.listItem, { borderColor: 'rgba(0,255,65,0.06)' }]}
           />
           <List.Item
             title="Import Stats"
@@ -86,9 +89,9 @@ export default function Profile() {
           />
         </List.Section>
       </View>
-      
+
       <View style={styles.actions}>
-         <Button
+        <Button
           mode="outlined"
           onPress={signOut}
           style={[styles.logoutButton, { borderColor: "#00ff41" }]}
@@ -119,41 +122,48 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 8,
+    paddingTop: 8,
   },
   headerGradient: {
     paddingTop: 40,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
+    paddingBottom: 28,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    marginBottom: 8,
   },
   avatar: {
     marginRight: 16,
+    marginTop: 6,
+  },
+  nameColumn: {
+    flex: 1,
   },
   headerText: {
-    flex: 1,
-  //  minWidth: 0,
+    minWidth: 0,
     fontSize: 28,
     fontWeight: "800",
     color: "#fff",
     letterSpacing: 0.6,
-    textShadowColor: "rgba(0, 255, 65, 0.12)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
-    marginTop: 0,
+    marginTop: 8,
+    flexShrink: 1,
   },
   subtitle: {
     opacity: 0.8,
-    marginTop: 4,
-    fontSize: 14,
+    marginTop: 18,
+    fontSize: 16,
     fontWeight: "400",
-    color: "#cfeecf",
+    color: "#fdfdfdff",
     letterSpacing: 0.6,
     textShadowColor: "rgba(0, 255, 65, 0.06)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
+  },
+  editInlineButton: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 0,
+    marginLeft: -9,
   },
   listItem: {
     borderWidth: 1,
