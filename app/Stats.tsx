@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View, } from "react-native";
 import { ActivityIndicator, Button, Dialog, Portal, Text, TextInput, } from "react-native-paper";
-import { observePlayers, updatePlayerStats } from "../config/FirebaseConfig";
+import { updatePlayerStats } from "../config/FirebaseConfig";
 import { useAuth } from "./auth-context";
+import { fetchPlayerInfo } from "./realtimeDb";
 import type { Player } from './types';
 
 import FilterSheet from './FilterSheet';
@@ -18,7 +19,7 @@ export default function StatsScreen() {
     if (!user) return;
 
     setLoading(true);
-    const unsub = observePlayers(user.uid, (data) => {
+    const unsub = fetchPlayerInfo(user.uid, (data) => {
       if (!data) {
         setPlayers([]);
         setLoading(false);

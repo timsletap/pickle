@@ -72,6 +72,18 @@ export default function Profile() {
               { borderColor: 'rgba(0,255,65,0.06)' },
             ]}
           />
+          <List.Item
+            title="Import Stats"
+            description="Attach file for data extraction"
+            right={(props) => <List.Icon {...props} icon="arrow-right" />}
+            onPress={() => router.push("/Statistics")}
+            titleStyle={styles.listTitle}
+            descriptionStyle={styles.listDescription}
+            style={[
+              styles.listItem,
+              { borderColor: 'rgba(0,255,65,0.06)' },
+            ]}
+          />
         </List.Section>
       </View>
       
