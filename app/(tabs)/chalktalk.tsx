@@ -65,10 +65,52 @@ const RULES = [
 
 const QUIZ = [
   {
-    question: "Can a runner leave early on a fly ball?",
+    question: "How many innings are there in a softball game?",
+    options: ["7", "9"],
+    correct: 0,
+    explanation: "There are 7 innings in a softball game unless there are extra innings.",
+  },
+  {
+    question: "Can a pitcher step backwards before pitching the ball?",
     options: ["Yes", "No"],
     correct: 1,
-    explanation: "Runners must wait until the ball is caught.",
+    explanation: "Stepping backwards before releasing the ball results in an illegal pitch.",
+  },
+  {
+    question: "Does a foul ball result in an out with 2 strikes?",
+    options: ["Yes", "No"],
+    correct: 0,
+    explanation: "A foul ball with 2 strikes results in an out.",
+  },
+  {
+    question: "A runner can't leave the base until the pitch is released.",
+    options: ["True", "False"],
+    correct: 0,
+    explanation: "Runners must wait until the ball is pitched before taking off.",
+  },
+  {
+    question: "Can a runner be out if they interfere with a fielder?",
+    options: ["Yes", "No"],
+    correct: 0,
+    explanation: "Interference with a fielder can lead to an out for the runner.",
+  },
+  {
+    question: "If a ball hits a base, is it fair?",
+    options: ["Yes", "No"],
+    correct: 0,
+    explanation: "A ball is fair as long as it is within foul lines, touches a base, or is fielded in field territory.",
+  },
+  {
+    question: "Helmets aren't required for running bases.",
+    options: ["True", "False"],
+    correct: 1,
+    explanation: "All batters and runners must wear a helmet.",
+  },
+  {
+    question: "If a third strike is dropped, it results in a ball?",
+    options: ["True", "False"],
+    correct: 1,
+    explanation: "If a third strike is dropped then a runner can run to first base if it's unoccupied.",
   },
 ];
 
@@ -87,7 +129,7 @@ export default function ChalkTalk() {
   const contentSlide = useRef(new Animated.Value(30)).current;
 
   /* ----- Quiz State ----- */
-  const [answer, setAnswer] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
 
   /* ----- Messages State ----- */
   const [message, setMessage] = useState("");
@@ -480,73 +522,79 @@ export default function ChalkTalk() {
         )}
 
         {/* ---------------- QUIZ ---------------- */}
-        {section === "quiz" && (
-          <View style={{ padding: 16 }}>
-            <View style={{
-              backgroundColor: "rgba(0, 255, 65, 0.08)",
-              borderRadius: 16,
-              padding: 20,
-              borderWidth: 1,
-              borderColor: "rgba(0, 255, 65, 0.2)",
+{section === "quiz" && (
+  <ScrollView style={{ flex: 1, padding: 16 }}>
+    {QUIZ.map((quiz, quizIndex) => (
+      <View
+        key={quizIndex}
+        style={{
+          backgroundColor: "rgba(0, 255, 65, 0.08)",
+          borderRadius: 16,
+          padding: 12,
+          marginBottom: 12,
+          borderWidth: 1,
+          borderColor: "rgba(0, 255, 65, 0.2)",
+        }}
+      >
+        <Text style={{
+          fontSize: 16,
+          fontWeight: "800",
+          color: "#fff",
+          marginBottom: 12,
+        }}>
+          Question {quizIndex + 1}: {quiz.question}
+        </Text>
+
+        {quiz.options.map((opt, i) => (
+          <TouchableOpacity
+            key={i}
+            onPress={() => setAnswers({ ...answers, [quizIndex]: i })}
+            style={{
+              backgroundColor: answers[quizIndex] === i
+                ? (i === quiz.correct ? "rgba(0, 255, 65, 0.3)" : "rgba(255, 0, 0, 0.3)")
+                : "rgba(0, 255, 65, 0.1)",
+              borderRadius: 12,
+              padding: 10,
+              marginBottom: 8,
+              borderWidth: 1.5,
+              borderColor: answers[quizIndex] === i
+                ? (i === quiz.correct ? "#00ff41" : "#ff0000")
+                : "rgba(0, 255, 65, 0.3)",
+            }}
+          >
+            <Text style={{
+              fontSize: 16,
+              fontWeight: "700",
+              color: "#fff",
+              textAlign: "center",
             }}>
-              <Text style={{
-                fontSize: 20,
-                fontWeight: "800",
-                color: "#fff",
-                marginBottom: 20,
-              }}>
-                {QUIZ[0].question}
-              </Text>
+              {opt}
+            </Text>
+          </TouchableOpacity>
+        ))}
 
-              {QUIZ[0].options.map((opt, i) => (
-                <TouchableOpacity
-                  key={i}
-                  onPress={() => setAnswer(i)}
-                  style={{
-                    backgroundColor: answer === i
-                      ? (i === QUIZ[0].correct ? "rgba(0, 255, 65, 0.3)" : "rgba(255, 0, 0, 0.3)")
-                      : "rgba(0, 255, 65, 0.1)",
-                    borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 10,
-                    borderWidth: 1.5,
-                    borderColor: answer === i
-                      ? (i === QUIZ[0].correct ? "#00ff41" : "#ff0000")
-                      : "rgba(0, 255, 65, 0.3)",
-                  }}
-                >
-                  <Text style={{
-                    fontSize: 16,
-                    fontWeight: "700",
-                    color: "#fff",
-                    textAlign: "center",
-                  }}>
-                    {opt}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-
-              {answer !== null && (
-                <View style={{
-                  marginTop: 16,
-                  padding: 16,
-                  backgroundColor: answer === QUIZ[0].correct
-                    ? "rgba(0, 255, 65, 0.15)"
-                    : "rgba(255, 0, 0, 0.15)",
-                  borderRadius: 12,
-                }}>
-                  <Text style={{
-                    fontSize: 16,
-                    fontWeight: "700",
-                    color: answer === QUIZ[0].correct ? "#00ff41" : "#ff6b6b",
-                  }}>
-                    {answer === QUIZ[0].correct ? "Correct!" : "Incorrect."} {QUIZ[0].explanation}
-                  </Text>
-                </View>
-              )}
-            </View>
+        {answers[quizIndex] !== undefined && answers[quizIndex] !== null && (
+          <View style={{
+            marginTop: 12,
+            padding: 12,
+            backgroundColor: answers[quizIndex] === quiz.correct
+              ? "rgba(0, 255, 65, 0.15)"
+              : "rgba(255, 0, 0, 0.15)",
+            borderRadius: 12,
+          }}>
+            <Text style={{
+              fontSize: 14,
+              fontWeight: "700",
+              color: answers[quizIndex] === quiz.correct ? "#00ff41" : "#ff6b6b",
+            }}>
+              {answers[quizIndex] === quiz.correct ? "Correct!" : "Incorrect."} {quiz.explanation}
+            </Text>
           </View>
         )}
+      </View>
+    ))}
+  </ScrollView>
+)}
 
         {/* ---------------- MESSAGES ---------------- */}
         {section === "messages" && (
