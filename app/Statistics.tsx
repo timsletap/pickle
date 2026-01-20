@@ -5,6 +5,10 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Button, Card, Paragraph } from 'react-native-paper';
 
+import { updatePlayerStats } from '../config/FirebaseConfig';
+import { useAuth } from './auth-context';
+import { fetchPlayerInfo } from './realtimeDb';
+
 type CsvDocument = {
     name?: string;
     uri?: string;
@@ -14,6 +18,9 @@ export default function Statistics() {
     const [csvFile, setCsvFile] = useState<CsvDocument | null>(null);
     const [parsedData, setParsedData] = useState<any[]>([]);
     const [headers, setHeaders] = useState<string[]>([]);
+
+    const { user } = useAuth();
+    const [saving, setSaving] = useState(false);
 
     const pickCsvFile = async () => {
         const result = await DocumentPicker.getDocumentAsync({
@@ -36,6 +43,64 @@ export default function Statistics() {
             setHeaders(parsed.meta.fields ?? []);
         } catch (err) {
             console.error('Failed to read or parse CSV file', err);
+        }
+    };
+
+    const saveCsvToFirebase = async () => {
+        if (!user || parsedData.length === 0) return;
+        setSaving(true);
+        try {
+            const playersMap: any = await new Promise((resolve) => {
+                const unsub = fetchPlayerInfo(user.uid, (data) => {
+                    unsub && unsub();
+                    resolve(data || {});
+                });
+            });
+
+            const entries = Object.entries(playersMap);
+
+            const results = await Promise.all(parsedData.map(async (row) => {
+                const jerseyNumber = row['Number'];
+                const nameVal = row['First'] + ' ' + row['Last'];
+                let playerId: string | null = null;
+
+                if (jerseyNumber != null && String(jerseyNumber).trim() !== '') {
+                    const jc = String(jerseyNumber).trim();
+                    const match = entries.find(([id, val]) => String((val as any).jerseyNumber ?? '').trim() === jc);
+                    if (match) playerId = match[0];
+                }
+
+                if (!playerId && nameVal) {
+                    const nameToFind = String(nameVal).trim().toLowerCase();
+                    const match = entries.find(([id, val]) => String((val as any).name ?? '').trim().toLowerCase() === nameToFind);
+                    if (match) playerId = match[0];
+                }
+                if (!playerId) {
+                    return { ok: false, reason: 'No matching player found', row };
+                }
+
+                const parse = (v: any) => (v === '' || v == null ? null : Number(v));
+                const stats: any = {};
+                if (row['BA'] != null) stats.ba = parse(row['BA']);
+                if (row['OBP'] != null) stats.obp = parse(row['OBP']);
+                if (row['SLG'] != null) stats.slg = parse(row['SLG']);
+                if (row['RBI'] != null) stats.rbi = parse(row['RBI']);
+                if (row['Games'] != null) stats.games = parse(row['Games']);
+                if (row['QAB'] != null) stats.qab = parse(row['QAB']);
+
+                try {
+                    await updatePlayerStats(user.uid, playerId, stats);
+                    return { ok: true, playerId };
+                } catch (err) {
+                    return { ok: false, playerId };
+                }
+            }));
+
+            console.log('CSV import results:', results);
+        } catch (err) {
+            console.error('Failed to save CSV data to Firebase', err);
+        } finally {
+            setSaving(false);
         }
     };
 
