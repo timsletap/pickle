@@ -81,11 +81,11 @@ export default function Statistics() {
 
                 const parse = (v: any) => (v === '' || v == null ? null : Number(v));
                 const stats: any = {};
-                if (row['BA'] != null) stats.ba = parse(row['BA']);
+                if (row['BA'] != null) stats.ba = parse(row['AVG']);
                 if (row['OBP'] != null) stats.obp = parse(row['OBP']);
                 if (row['SLG'] != null) stats.slg = parse(row['SLG']);
                 if (row['RBI'] != null) stats.rbi = parse(row['RBI']);
-                if (row['Games'] != null) stats.games = parse(row['Games']);
+                if (row['Games'] != null) stats.games = parse(row['GP']);
                 if (row['QAB'] != null) stats.qab = parse(row['QAB']);
 
                 try {
