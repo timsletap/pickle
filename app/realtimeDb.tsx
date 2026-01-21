@@ -40,6 +40,7 @@ export async function savePlayerInfo(
       jerseyNumber: player.jerseyNumber ?? null,
       updatedAt: Date.now(),
     });
+    
     return playerId;
   } else {
     const newRef = push(playersRef);
@@ -51,6 +52,26 @@ export async function savePlayerInfo(
     });
     return newRef.key as string;
 }
+}
+
+export async function savePlayerStats(
+    userId: string, 
+    stats: Record<string, any>,
+    playerId?: string
+): Promise<void> {
+  const db = getDatabase(app);
+  const playersRef = ref(db, `players/${userId}`);
+
+  if (playerId) {
+    const playerRef = ref(db, `players/${userId}/${playerId}/stats`);
+    await set(playerRef, stats);
+    return;
+  }
+  else {
+    const newRef = push(playersRef);
+    await set(newRef, { stats });
+    return;
+  }
 }
 
 export async function deletePlayer(userId: string, playerId: string): Promise<void> {

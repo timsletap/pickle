@@ -5,9 +5,8 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Button, Card, Paragraph } from 'react-native-paper';
 
-import { updatePlayerStats } from '../config/FirebaseConfig';
 import { useAuth } from './auth-context';
-import { fetchPlayerInfo } from './realtimeDb';
+import { fetchPlayerInfo, savePlayerInfo, savePlayerStats } from './realtimeDb';
 
 type CsvDocument = {
     name?: string;
@@ -20,6 +19,7 @@ export default function Statistics() {
     const [headers, setHeaders] = useState<string[]>([]);
 
     const { user } = useAuth();
+    const [players, setPlayers] = useState<any[]>([]);
     const [saving, setSaving] = useState(false);
 
     const pickCsvFile = async () => {
@@ -38,7 +38,12 @@ export default function Statistics() {
 
         try {
             const text = await readAsStringAsync(uri);
-            const parsed = Papa.parse(text, { header: true, skipEmptyLines: true, delimiter: ',' });
+
+            // drop the first row (often contains whitespace or garbage)
+            const lines = text.split(/\r?\n/);
+            const withoutFirst = lines.slice(1).join('\n');
+
+            const parsed = Papa.parse(withoutFirst, { header: true, skipEmptyLines: true, delimiter: ',' });
             setParsedData(parsed.data as any[]);
             setHeaders(parsed.meta.fields ?? []);
         } catch (err) {
@@ -62,7 +67,7 @@ export default function Statistics() {
             const results = await Promise.all(parsedData.map(async (row) => {
                 const jerseyNumber = row['Number'];
                 const nameVal = row['First'] + ' ' + row['Last'];
-                let playerId: string | null = null;
+                let playerId: string | undefined = undefined;
 
                 if (jerseyNumber != null && String(jerseyNumber).trim() !== '') {
                     const jc = String(jerseyNumber).trim();
@@ -75,21 +80,38 @@ export default function Statistics() {
                     const match = entries.find(([id, val]) => String((val as any).name ?? '').trim().toLowerCase() === nameToFind);
                     if (match) playerId = match[0];
                 }
-                if (!playerId) {
-                    return { ok: false, reason: 'No matching player found', row };
+
+                if (nameVal == null || String(nameVal).trim() === '') {
+                    return { ok: false, playerId };
                 }
 
                 const parse = (v: any) => (v === '' || v == null ? null : Number(v));
                 const stats: any = {};
-                if (row['BA'] != null) stats.ba = parse(row['AVG']);
+                if (row['AVG'] != null) stats.ba = parse(row['AVG']);
                 if (row['OBP'] != null) stats.obp = parse(row['OBP']);
                 if (row['SLG'] != null) stats.slg = parse(row['SLG']);
                 if (row['RBI'] != null) stats.rbi = parse(row['RBI']);
-                if (row['Games'] != null) stats.games = parse(row['GP']);
+                if (row['GP'] != null) stats.games = parse(row['GP']);
                 if (row['QAB'] != null) stats.qab = parse(row['QAB']);
 
                 try {
-                    await updatePlayerStats(user.uid, playerId, stats);
+                    if (playerId) {
+                        await savePlayerStats(user.uid, stats, playerId);
+                    } 
+                    else {
+                        const playerObj = {
+                            name: String(nameVal).trim(),
+                            positions: [],
+                            jerseyNumber: jerseyNumber != null && String(jerseyNumber).trim() !== '' ? Number(String(jerseyNumber).trim()) : undefined,
+                        }
+                        const newId = await savePlayerInfo(
+                            user.uid,
+                            playerObj,
+                        );
+                        
+                        await savePlayerStats(user.uid, stats, newId);
+                        playerId = newId;
+                    }
                     return { ok: true, playerId };
                 } catch (err) {
                     return { ok: false, playerId };
@@ -140,7 +162,19 @@ export default function Statistics() {
                     )}
                 </Card.Content>
             </Card>
-
+            <View style={{ marginHorizontal: 16 }}>
+                {parsedData.length > 0 && (
+                    <Button
+                        mode="contained"
+                        onPress={saveCsvToFirebase}
+                        loading={saving}
+                        disabled={saving}
+                        style={{ marginTop: 8 }}
+                    >
+                        Save to Firebase
+                    </Button>
+                )}
+            </View>
             <View style={{ margin: 16 }}>
                 {parsedData.length === 0 ? (
                     <Paragraph style={{ marginTop: 16 }}>No data parsed from the CSV file.</Paragraph>
