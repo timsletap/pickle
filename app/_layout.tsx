@@ -2,17 +2,26 @@ import { Stack, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { Provider as PaperProvider } from "react-native-paper";
-import { auth } from "../config/FirebaseConfig";
+import { auth, createFirestoreUserProfile } from "../config/FirebaseConfig";
 import { AuthProvider } from "./auth-context";
 
 function RouteGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();  //Object used to redirect user
+  const router = useRouter();
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Listen for Firebase auth state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuth(!!user);
+      
+      // Create Firestore profile when user is authenticated
+      if (user && user.email) {
+        createFirestoreUserProfile(
+          user.uid,
+          user.displayName || user.email.split('@')[0],
+          user.email
+        );
+      }
     });
 
     return unsubscribe;

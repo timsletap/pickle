@@ -1,5 +1,17 @@
+import { auth, db } from "@/config/FirebaseConfig";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from "expo-linear-gradient";
+import {
+    addDoc,
+    collection,
+    doc,
+    getDocs,
+    onSnapshot,
+    orderBy,
+    query,
+    serverTimestamp,
+    setDoc
+} from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import {
     Animated,
@@ -16,6 +28,19 @@ import {
 /* ---------------- TYPES ---------------- */
 
 type Section = "rules" | "quiz" | "messages";
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+type Chat = {
+  id: string;
+  otherUserId: string;
+  otherUserName: string;
+  lastMessage?: string;
+};
 
 /* ---------------- DATA ---------------- */
 
@@ -132,9 +157,13 @@ export default function ChalkTalk() {
   const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
 
   /* ----- Messages State ----- */
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<
-    { text: string; time: string }[]
+    { id: string; text: string; time: string; senderId?: string }[]
   >([]);
 
   useEffect(() => {
@@ -166,6 +195,76 @@ export default function ChalkTalk() {
       }),
     ]).start();
   }, []);
+
+  // DEBUG: Check current user
+  useEffect(() => {
+    console.log("Logged in as:", auth.currentUser?.uid);
+    console.log("Email:", auth.currentUser?.email);
+  }, []);
+
+  // Load users list
+  useEffect(() => {
+    if (section !== "messages") return;
+
+    const loadUsers = async () => {
+      const usersRef = collection(db, "users");
+      const snapshot = await getDocs(usersRef);
+      const usersList: User[] = [];
+      
+      snapshot.forEach((doc) => {
+        if (doc.id !== auth.currentUser?.uid) {
+          usersList.push({
+            id: doc.id,
+            name: doc.data().name || doc.data().email || "User",
+            email: doc.data().email || "",
+          });
+        }
+      });
+      
+      setUsers(usersList);
+    };
+
+    loadUsers();
+  }, [section]);
+
+  // Filter users based on search
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredUsers([]);
+    } else {
+      const filtered = users.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [searchQuery, users]);
+
+  // Firebase messages listener for selected chat
+  useEffect(() => {
+    if (!selectedUser || !auth.currentUser) return;
+
+    const chatId = [auth.currentUser.uid, selectedUser.id].sort().join("_");
+    const messagesRef = collection(db, "chats", chatId, "messages");
+    const messagesQuery = query(messagesRef, orderBy("timestamp", "asc"));
+
+    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+      const msgs: any[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        msgs.push({
+          id: doc.id,
+          text: data.text,
+          time: data.timestamp?.toDate().toLocaleTimeString() || "Just now",
+          senderId: data.senderId,
+        });
+      });
+      setMessages(msgs);
+    });
+
+    return () => unsubscribe();
+  }, [selectedUser]);
 
   const handleTabChange = (tab: Section) => {
     const tabIndex = tab === "rules" ? 0 : tab === "quiz" ? 1 : 2;
@@ -224,6 +323,30 @@ export default function ChalkTalk() {
     ]).start();
 
     setSection(tab);
+    setSelectedUser(null); // Reset when switching tabs
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim() || !selectedUser || !auth.currentUser) return;
+
+    const chatId = [auth.currentUser.uid, selectedUser.id].sort().join("_");
+    const messagesRef = collection(db, "chats", chatId, "messages");
+    
+    await addDoc(messagesRef, {
+      text: message,
+      senderId: auth.currentUser.uid,
+      timestamp: serverTimestamp(),
+    });
+
+    // Create/update chat document
+    const chatRef = doc(db, "chats", chatId);
+    await setDoc(chatRef, {
+      participants: [auth.currentUser.uid, selectedUser.id],
+      lastMessage: message,
+      lastMessageTime: serverTimestamp(),
+    }, { merge: true });
+
+    setMessage("");
   };
 
   const getTabIcon = (tab: Section): keyof typeof MaterialCommunityIcons.glyphMap => {
@@ -522,167 +645,272 @@ export default function ChalkTalk() {
         )}
 
         {/* ---------------- QUIZ ---------------- */}
-{section === "quiz" && (
-  <ScrollView style={{ flex: 1, padding: 16 }}>
-    {QUIZ.map((quiz, quizIndex) => (
-      <View
-        key={quizIndex}
-        style={{
-          backgroundColor: "rgba(0, 255, 65, 0.08)",
-          borderRadius: 16,
-          padding: 12,
-          marginBottom: 12,
-          borderWidth: 1,
-          borderColor: "rgba(0, 255, 65, 0.2)",
-        }}
-      >
-        <Text style={{
-          fontSize: 16,
-          fontWeight: "800",
-          color: "#fff",
-          marginBottom: 12,
-        }}>
-          Question {quizIndex + 1}: {quiz.question}
-        </Text>
+        {section === "quiz" && (
+          <ScrollView style={{ flex: 1, padding: 16 }}>
+            {QUIZ.map((quiz, quizIndex) => (
+              <View
+                key={quizIndex}
+                style={{
+                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  borderRadius: 16,
+                  padding: 12,
+                  marginBottom: 12,
+                  borderWidth: 1,
+                  borderColor: "rgba(0, 255, 65, 0.2)",
+                }}
+              >
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: "800",
+                  color: "#fff",
+                  marginBottom: 12,
+                }}>
+                  Question {quizIndex + 1}: {quiz.question}
+                </Text>
 
-        {quiz.options.map((opt, i) => (
-          <TouchableOpacity
-            key={i}
-            onPress={() => setAnswers({ ...answers, [quizIndex]: i })}
-            style={{
-              backgroundColor: answers[quizIndex] === i
-                ? (i === quiz.correct ? "rgba(0, 255, 65, 0.3)" : "rgba(255, 0, 0, 0.3)")
-                : "rgba(0, 255, 65, 0.1)",
-              borderRadius: 12,
-              padding: 10,
-              marginBottom: 8,
-              borderWidth: 1.5,
-              borderColor: answers[quizIndex] === i
-                ? (i === quiz.correct ? "#00ff41" : "#ff0000")
-                : "rgba(0, 255, 65, 0.3)",
-            }}
-          >
-            <Text style={{
-              fontSize: 16,
-              fontWeight: "700",
-              color: "#fff",
-              textAlign: "center",
-            }}>
-              {opt}
-            </Text>
-          </TouchableOpacity>
-        ))}
+                {quiz.options.map((opt, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => setAnswers({ ...answers, [quizIndex]: i })}
+                    style={{
+                      backgroundColor: answers[quizIndex] === i
+                        ? (i === quiz.correct ? "rgba(0, 255, 65, 0.3)" : "rgba(255, 0, 0, 0.3)")
+                        : "rgba(0, 255, 65, 0.1)",
+                      borderRadius: 12,
+                      padding: 10,
+                      marginBottom: 8,
+                      borderWidth: 1.5,
+                      borderColor: answers[quizIndex] === i
+                        ? (i === quiz.correct ? "#00ff41" : "#ff0000")
+                        : "rgba(0, 255, 65, 0.3)",
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: 16,
+                      fontWeight: "700",
+                      color: "#fff",
+                      textAlign: "center",
+                    }}>
+                      {opt}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
 
-        {answers[quizIndex] !== undefined && answers[quizIndex] !== null && (
-          <View style={{
-            marginTop: 12,
-            padding: 12,
-            backgroundColor: answers[quizIndex] === quiz.correct
-              ? "rgba(0, 255, 65, 0.15)"
-              : "rgba(255, 0, 0, 0.15)",
-            borderRadius: 12,
-          }}>
-            <Text style={{
-              fontSize: 14,
-              fontWeight: "700",
-              color: answers[quizIndex] === quiz.correct ? "#00ff41" : "#ff6b6b",
-            }}>
-              {answers[quizIndex] === quiz.correct ? "Correct!" : "Incorrect."} {quiz.explanation}
-            </Text>
-          </View>
+                {answers[quizIndex] !== undefined && answers[quizIndex] !== null && (
+                  <View style={{
+                    marginTop: 12,
+                    padding: 12,
+                    backgroundColor: answers[quizIndex] === quiz.correct
+                      ? "rgba(0, 255, 65, 0.15)"
+                      : "rgba(255, 0, 0, 0.15)",
+                    borderRadius: 12,
+                  }}>
+                    <Text style={{
+                      fontSize: 14,
+                      fontWeight: "700",
+                      color: answers[quizIndex] === quiz.correct ? "#00ff41" : "#ff6b6b",
+                    }}>
+                      {answers[quizIndex] === quiz.correct ? "Correct!" : "Incorrect."} {quiz.explanation}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </ScrollView>
         )}
-      </View>
-    ))}
-  </ScrollView>
-)}
 
         {/* ---------------- MESSAGES ---------------- */}
         {section === "messages" && (
           <View style={{ flex: 1, padding: 16 }}>
-            <View style={{
-              backgroundColor: "rgba(0, 255, 65, 0.08)",
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 16,
-              borderWidth: 1,
-              borderColor: "rgba(0, 255, 65, 0.2)",
-            }}>
-              <TextInput
-                placeholder="Write a message..."
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                value={message}
-                onChangeText={setMessage}
-                style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.3)",
-                  borderRadius: 8,
-                  padding: 6,
-                  color: "#fff",
-                  fontSize: 12,
-                  marginBottom: 4,
+            {!selectedUser ? (
+              // User search and list
+              <View style={{ flex: 1 }}>
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: "800",
+                  color: "#00ff41",
+                  marginBottom: 12,
+                }}>
+                  Search for a user
+                </Text>
+                
+                {/* Search input */}
+                <View style={{
+                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  borderRadius: 12,
+                  padding: 12,
+                  marginBottom: 16,
                   borderWidth: 1,
                   borderColor: "rgba(0, 255, 65, 0.2)",
-                }}
-              />
-
-              <TouchableOpacity
-                onPress={() => {
-                  if (!message) return;
-                  setMessages([
-                    {
-                      text: message,
-                      time: new Date().toLocaleTimeString(),
-                    },
-                    ...messages,
-                  ]);
-                  setMessage("");
-                }}
-                style={{
-                  backgroundColor: "#00ff41",
-                  borderRadius: 8,
-                  padding: 6,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{
-                  color: "#000",
-                  fontWeight: "800",
-                  fontSize: 11,
-                  letterSpacing: .8,
                 }}>
-                  SEND MESSAGE
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  <TextInput
+                    placeholder="Type name or email..."
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    style={{
+                      color: "#fff",
+                      fontSize: 16,
+                      padding: 4,
+                    }}
+                  />
+                </View>
 
-            <ScrollView>
-              {messages.map((m, i) => (
-                <View
-                  key={i}
+                {/* Search results */}
+                <ScrollView>
+                  {searchQuery.trim() === "" ? (
+                    <Text style={{ color: "rgba(255, 255, 255, 0.5)", textAlign: "center", marginTop: 32 }}>
+                      Start typing to search for users
+                    </Text>
+                  ) : filteredUsers.length === 0 ? (
+                    <Text style={{ color: "rgba(255, 255, 255, 0.5)", textAlign: "center", marginTop: 32 }}>
+                      No users found
+                    </Text>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <TouchableOpacity
+                        key={user.id}
+                        onPress={() => {
+                          setSelectedUser(user);
+                          setSearchQuery("");
+                        }}
+                        style={{
+                          backgroundColor: "rgba(0, 255, 65, 0.08)",
+                          borderRadius: 12,
+                          padding: 16,
+                          marginBottom: 12,
+                          borderWidth: 1,
+                          borderColor: "rgba(0, 255, 65, 0.2)",
+                        }}
+                      >
+                        <Text style={{
+                          fontSize: 16,
+                          fontWeight: "700",
+                          color: "#fff",
+                          marginBottom: 4,
+                        }}>
+                          {user.name}
+                        </Text>
+                        <Text style={{
+                          fontSize: 12,
+                          color: "rgba(255, 255, 255, 0.6)",
+                        }}>
+                          {user.email}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
+                </ScrollView>
+              </View>
+            ) : (
+              // Chat view
+              <View style={{ flex: 1 }}>
+                {/* Back button and user name */}
+                <TouchableOpacity
+                  onPress={() => setSelectedUser(null)}
                   style={{
-                    backgroundColor: "rgba(0, 255, 65, 0.08)",
-                    borderRadius: 12,
-                    padding: 20,
-                    marginBottom: 12,
-                    borderWidth: 1,
-                    borderColor: "rgba(0, 255, 65, 0.15)",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 16,
                   }}
                 >
+                  <MaterialCommunityIcons name="arrow-left" size={24} color="#00ff41" />
                   <Text style={{
-                    color: "#fff",
                     fontSize: 18,
-                    marginBottom: 8,
+                    fontWeight: "800",
+                    color: "#00ff41",
+                    marginLeft: 8,
                   }}>
-                    {m.text}
+                    {selectedUser.name}
                   </Text>
-                  <Text style={{
-                    color: "rgba(0, 255, 65, 0.6)",
-                    fontSize: 13,
-                  }}>
-                    {m.time}
-                  </Text>
+                </TouchableOpacity>
+
+                {/* Messages */}
+                <ScrollView style={{ flex: 1, marginBottom: 16 }}>
+                  {messages.map((m) => (
+                    <View
+                      key={m.id}
+                      style={{
+                        backgroundColor: m.senderId === auth.currentUser?.uid
+                          ? "rgba(0, 255, 65, 0.3)"
+                          : "rgba(0, 255, 65, 0.08)",
+                        borderRadius: 12,
+                        padding: 12,
+                        marginBottom: 8,
+                        borderWidth: 1,
+                        borderColor: "rgba(0, 255, 65, 0.2)",
+                        alignSelf: m.senderId === auth.currentUser?.uid ? "flex-end" : "flex-start",
+                        maxWidth: "80%",
+                      }}
+                    >
+                      <Text style={{
+                        color: "#fff",
+                        fontSize: 14,
+                        marginBottom: 4,
+                      }}>
+                        {m.text}
+                      </Text>
+                      <Text style={{
+                        color: "rgba(0, 255, 65, 0.6)",
+                        fontSize: 11,
+                      }}>
+                        {m.time}
+                      </Text>
+                    </View>
+                  ))}
+                </ScrollView>
+
+                {/* Input */}
+                <View style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  borderRadius: 12,
+                  padding: 8,
+                  borderWidth: 1,
+                  borderColor: "rgba(0, 255, 65, 0.2)",
+                }}>
+                  <TextInput
+                    placeholder="Type a message..."
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                    value={message}
+                    onChangeText={setMessage}
+                    style={{
+                      flex: 1,
+                      backgroundColor: "rgba(0, 0, 0, 0.3)",
+                      borderRadius: 8,
+                      padding: 8,
+                      color: "#fff",
+                      fontSize: 14,
+                      marginRight: 8,
+                      borderWidth: 1,
+                      borderColor: "rgba(0, 255, 65, 0.2)",
+                    }}
+                  />
+
+                  <TouchableOpacity
+                    onPress={handleSendMessage}
+                    style={{
+                      backgroundColor: "#00ff41",
+                      borderRadius: 8,
+                      paddingVertical: 8,
+                      paddingHorizontal: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{
+                      color: "#000",
+                      fontWeight: "800",
+                      fontSize: 12,
+                      letterSpacing: 0.8,
+                    }}>
+                      SEND
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-              ))}
-            </ScrollView>
+              </View>
+            )}
           </View>
         )}
       </Animated.View>

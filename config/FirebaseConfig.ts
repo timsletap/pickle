@@ -2,6 +2,7 @@
 import { getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { get, getDatabase, ref, remove, set } from "firebase/database";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
 
 // configuration for Firebase
 const firebaseConfig = {
@@ -30,6 +31,9 @@ if (typeof window !== "undefined") {
 // initialize and export Firebase Auth instance for app-wide use
 const auth = getAuth(app);
 export { auth };
+//firestore
+const db = getFirestore(app);
+export { db };
 
 export async function writeUserData(userId: string, name: string, email: string) {
   const db = getDatabase(app);
@@ -62,4 +66,16 @@ export async function updatePlayerStats(userId: string, playerId: string, stats:
   const db = getDatabase(app);
   // write the stats sub-node for the player
   await set(ref(db, `players/${userId}/${playerId}/stats`), stats);
+  
+}
+export async function createFirestoreUserProfile(userId: string, name: string, email: string) {
+  const userRef = doc(db, "users", userId);
+  
+  await setDoc(userRef, {
+    name: name,
+    email: email,
+    createdAt: new Date(),
+  }, { merge: true });
+
+  console.log('Firestore user profile created for user', userId);
 }
