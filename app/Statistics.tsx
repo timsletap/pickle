@@ -92,7 +92,7 @@ export default function Statistics() {
                 if (row['SLG'] != null) stats.slg = parse(row['SLG']);
                 if (row['RBI'] != null) stats.rbi = parse(row['RBI']);
                 if (row['GP'] != null) stats.games = parse(row['GP']);
-                if (row['QAB'] != null) stats.qab = parse(row['QAB']);
+                if (row['QAB%'] != null) stats.qab = parse(row['QAB%']);
 
                 try {
                     if (playerId) {
