@@ -66,7 +66,7 @@ export default function StatsScreen() {
     setSlgText(s.slg != null ? String(s.slg) : "");
     setRbiText(s.rbi != null ? String(s.rbi) : "");
     setGamesText(s.games != null ? String(s.games) : "");
-    setQabText(s.qab_pct != null ? String(s.qab_pct) : "");
+    setQabText(s.qab != null ? String(s.qab) : "");
     setStatsDialogVisible(true);
     
   };
@@ -81,7 +81,7 @@ export default function StatsScreen() {
 
   const clearFilters = () => setSelectedStat(null);
 
-  const statKeyMap: Record<string, string> = { ba: 'ba', obp: 'obp', slg: 'slg', rbi: 'rbi', games: 'games', qab: 'qab_pct', rcv: 'rcv' };
+  const statKeyMap: Record<string, string> = { ba: 'ba', obp: 'obp', slg: 'slg', rbi: 'rbi', games: 'games', qab: 'qab', rcv: 'rcv' };
 
   const computeRcv = (s: any) => {
     const ba = Number(s.ba ?? 0);
@@ -89,8 +89,8 @@ export default function StatsScreen() {
     const slg = Number(s.slg ?? 0);
     const rbi = Number(s.rbi ?? 0);
     const games = Number(s.games ?? 0);
-    const qab_pct = Number(s.qab_pct ?? 0);
-    return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab_pct;
+    const qab = Number(s.qab ?? 0);
+    return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab;
   };
 
   // Compute displayed players based on the single selected stat.
@@ -136,7 +136,7 @@ export default function StatsScreen() {
     if (slgText !== "") stats.slg = parse(slgText);
     if (rbiText !== "") stats.rbi = parse(rbiText);
     if (gamesText !== "") stats.games = parse(gamesText);
-    if (qabText !== "") stats.qab_pct = parse(qabText);
+    if (qabText !== "") stats.qab = parse(qabText);
 
     try {
       await updatePlayerStats(user.uid, editingStatsId, stats);

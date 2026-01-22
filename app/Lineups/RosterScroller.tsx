@@ -4,7 +4,7 @@ import type { Player } from './types';
 
 type Props = {
   sortedRoster: Player[];
-  metricMode?: 'name' | 'obp' | 'slg' | 'ba' | 'rbi' | 'games' | 'qab_pct';
+  metricMode?: 'name' | 'obp' | 'slg' | 'ba' | 'rbi' | 'games' | 'qab';
   assignments: Record<string, Player | null>;
   posById: (id: string) => { id: string; label: string; name: string };
   openStats: (p: Player) => void;
@@ -18,16 +18,16 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
     const slg = Number(s.slg ?? 0);
     const rbi = Number(s.rbi ?? 0);
     const games = Number(s.games ?? 0);
-    const qab_pct = Number(s.qab_pct ?? 0);
+    const qab = Number(s.qab ?? 0);
 
-    if (mode === 'RCV') return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab_pct;
+    if (mode === 'RCV') return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab;
     if (mode === 'name') return ba;
     if (mode === 'ba') return ba;
     if (mode === 'obp') return obp;
     if (mode === 'slg') return slg;
     if (mode === 'rbi') return rbi;
     if (mode === 'games') return games;
-    if (mode === 'qab_pct') return qab_pct;
+    if (mode === 'qab') return qab;
     return 0;
   };
 

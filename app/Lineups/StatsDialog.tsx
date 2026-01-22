@@ -18,7 +18,7 @@ export default function StatsDialog({ visible, player, closeStats }: Props) {
     { label: 'On-Base %', value: player.stats?.obp?.toFixed(3) ?? '-', icon: 'percent' },
     { label: 'Slugging', value: player.stats?.slg?.toFixed(3) ?? '-', icon: 'flash' },
     { label: 'Games', value: player.stats?.games ?? '-', icon: 'calendar-check' },
-    { label: 'QAB%', value: player.stats?.qab_pct?.toFixed(1) ?? '-', icon: 'chart-line' },
+    { label: 'QAB%', value: player.stats?.qab?.toFixed(1) ?? '-', icon: 'chart-line' },
   ];
 
   return (

@@ -93,7 +93,7 @@ export default function Lineups() {
     };
   }, [user]);
 
-  const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct'>('name');
+  const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
   const [battingOrder, setBattingOrder] = useState<any[] | null>(null);
@@ -128,7 +128,7 @@ export default function Lineups() {
     if (mode === 'slg') return s.slg ?? 0;
     if (mode === 'rbi') return s.rbi ?? 0;
     if (mode === 'games') return s.games ?? 0;
-    if (mode === 'qab_pct') return s.qab_pct ?? 0;
+    if (mode === 'qab') return s.qab ?? 0;
     return 0;
   };
 
@@ -144,7 +144,7 @@ export default function Lineups() {
     { key: 'slg', label: 'SLG' },
     { key: 'rbi', label: 'RBI' },
     { key: 'games', label: 'Games' },
-    { key: 'qab_pct', label: 'QAB' },
+    { key: 'qab', label: 'QAB' },
   ];
 
   return (

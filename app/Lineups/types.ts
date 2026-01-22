@@ -9,7 +9,7 @@ export type Player = {
     slg?: number;
     rbi?: number;
     games?: number;
-    qab_pct?: number;
+    qab?: number;
     rcv?: number;
   };
 };

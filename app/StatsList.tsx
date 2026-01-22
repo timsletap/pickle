@@ -27,7 +27,7 @@ export default function StatsList({ players, selectedStat, openStatsEditor, stat
             if (selectedStat === 'ba' || selectedStat === 'obp' || selectedStat === 'slg') {
               return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{raw.toFixed(2)}</Text>;
             }
-            if (selectedStat === 'qab_pct') {
+            if (selectedStat === 'qab') {
               return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{raw.toFixed(1)}%</Text>;
             }
             return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{Math.round(raw)}</Text>;

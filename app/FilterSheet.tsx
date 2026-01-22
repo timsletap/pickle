@@ -44,7 +44,7 @@ export default function FilterSheet({ selectedStat, onSelectStat, clear }: Props
           <List.Item title="Slugging % (SLG)" onPress={() => toggle('slg')} left={() => <Checkbox status={selectedStat === 'slg' ? 'checked' : 'unchecked'} />} />
           <List.Item title="RBI" onPress={() => toggle('rbi')} left={() => <Checkbox status={selectedStat === 'rbi' ? 'checked' : 'unchecked'} />} />
           <List.Item title="Games" onPress={() => toggle('games')} left={() => <Checkbox status={selectedStat === 'games' ? 'checked' : 'unchecked'} />} />
-          <List.Item title="Quality At-Bat % (QAB%)" onPress={() => toggle('qab_pct')} left={() => <Checkbox status={selectedStat === 'qab_pct' ? 'checked' : 'unchecked'} />} />
+          <List.Item title="Quality At-Bat % (QAB%)" onPress={() => toggle('qab')} left={() => <Checkbox status={selectedStat === 'qab' ? 'checked' : 'unchecked'} />} />
           <List.Item title="None (no stats set)" onPress={() => toggle('none')} left={() => <Checkbox status={selectedStat === 'none' ? 'checked' : 'unchecked'} />} />
         </ScrollView>
       </Animated.View>

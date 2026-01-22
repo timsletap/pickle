@@ -4,7 +4,7 @@ export type Stats = {
   slg?: number;
   rbi?: number;
   games?: number;
-  qab_pct?: number;
+  qab?: number;
   [key: string]: any;
 };
 

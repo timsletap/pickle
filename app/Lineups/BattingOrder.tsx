@@ -5,8 +5,8 @@ import type { Player } from './types';
 
 type Props = {
   roster: Player[];
-  sortMode: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct';
-  setSortMode: (m: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct') => void;
+  sortMode: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab';
+  setSortMode: (m: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab') => void;
   openStats: (p: Player) => void;
   battingOrder?: Player[];
   onAutoGenerate?: () => void;
