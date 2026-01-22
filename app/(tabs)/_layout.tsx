@@ -136,20 +136,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="playball"
-        options={{
-          title: "Play Ball",
-          tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons
-              name="baseball-bat"
-              size={focused ? 26 : 22}
-              color={color}
-              style={focused ? styles.iconShadow : undefined}
-            />
-          ),
-        }}
-      />
       <Tabs.Screen name="index" options={{ href: null }} />
       <Tabs.Screen name="EditingUsername" options={{ href: null }} />
     </Tabs>

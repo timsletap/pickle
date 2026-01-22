@@ -16,21 +16,23 @@ export default function StatsList({ players, selectedStat, openStatsEditor, stat
         <List.Item
           key={p.id}
           title={p.name}
+          titleStyle={{ color: '#fff' }}
           description={(p.positions || []).join(', ') + (p.jerseyNumber != null ? `  #${p.jerseyNumber}` : '')}
+          descriptionStyle={{ color: '#cfeecf' }}
           left={(props) => <List.Icon {...props} icon="account" />}
           onPress={() => openStatsEditor(p)}
           right={() => {
             if (!selectedStat) return null;
-            if (selectedStat === 'none') return <Text>-</Text>;
+            if (selectedStat === 'none') return <Text style={{ color: '#fff' }}>-</Text>;
             const sk = statKeyMap[selectedStat];
             const raw = p.stats && p.stats[sk] != null ? Number(p.stats[sk]) : 0;
             if (selectedStat === 'ba' || selectedStat === 'obp' || selectedStat === 'slg') {
-              return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{raw.toFixed(2)}</Text>;
+              return <Text style={{ alignSelf: 'center', marginRight: 8, color: '#fff' }}>{raw.toFixed(2)}</Text>;
             }
             if (selectedStat === 'qab') {
-              return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{raw.toFixed(1)}%</Text>;
+              return <Text style={{ alignSelf: 'center', marginRight: 8, color: '#fff' }}>{raw.toFixed(1)}%</Text>;
             }
-            return <Text style={{ alignSelf: 'center', marginRight: 8 }}>{Math.round(raw)}</Text>;
+            return <Text style={{ alignSelf: 'center', marginRight: 8, color: '#fff' }}>{Math.round(raw)}</Text>;
           }}
         />
       ))}

@@ -46,7 +46,7 @@ export default function RootLayout() {
     <PaperProvider>
       <AuthProvider>
         <RouteGuard>
-          <Stack>
+          <Stack screenOptions={{ headerShown: false }}> 
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
         </RouteGuard>

@@ -1,6 +1,7 @@
+import { router } from 'expo-router';
 import { useEffect, useState } from "react";
-import { StyleSheet, View, } from "react-native";
-import { ActivityIndicator, Button, Dialog, Portal, Text, TextInput, useTheme } from "react-native-paper";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Button, Dialog, IconButton, Portal, Text, TextInput, useTheme } from "react-native-paper";
 import { updatePlayerStats } from "../config/FirebaseConfig";
 import { useAuth } from "./auth-context";
 import { fetchPlayerInfo } from "./realtimeDb";
@@ -150,6 +151,14 @@ export default function StatsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: '#000' }]}>
+      <IconButton
+        icon="arrow-left"
+        size={30}
+        onPress={() => router.push('/profile')}
+        containerColor="transparent"
+        iconColor="#fff"
+        style={styles.backButton}
+      />
       {loading ? (
         <ActivityIndicator animating size="large" />
       ) : players.length === 0 ? (
@@ -157,7 +166,9 @@ export default function StatsScreen() {
           <Text style={styles.text}>No players yet.</Text>
         </View>
       ) : (
-        <StatsList players={filteredPlayers} selectedStat={selectedStat} openStatsEditor={openStatsEditor} statKeyMap={statKeyMap} />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
+          <StatsList players={filteredPlayers} selectedStat={selectedStat} openStatsEditor={openStatsEditor} statKeyMap={statKeyMap} />
+        </ScrollView>
       )}
 
       <Portal>
@@ -188,6 +199,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingTop: 96,
   },
   
   empty: {
@@ -240,6 +252,12 @@ const styles = StyleSheet.create({
   },
   arrow: { fontSize: 22, fontWeight: '700' },
   sheetHandleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  backButton: {
+    position: 'absolute',
+    left: 12,
+    top: 70,
+    zIndex: 60,
+  },
   
 });
 

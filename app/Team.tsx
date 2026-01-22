@@ -1,6 +1,7 @@
+import { router } from 'expo-router';
 import { useEffect, useState } from "react";
 import { Dimensions, Keyboard, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Button, Chip, Dialog, FAB, List, Portal, Text, TextInput, useTheme } from "react-native-paper";
+import { ActivityIndicator, Button, Chip, Dialog, FAB, IconButton, List, Portal, Text, TextInput, useTheme } from "react-native-paper";
 import Carousel from "react-native-reanimated-carousel";
 import { useAuth } from "./auth-context";
 import { deletePlayer, fetchPlayerInfo, savePlayerInfo } from "./realtimeDb";
@@ -118,12 +119,20 @@ export default function TeamsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: '#000' }]}> 
+      <IconButton
+        icon="arrow-left"
+        size={30}
+        onPress={() => router.push('/profile')}
+        containerColor="transparent"
+        iconColor="#fff"
+        style={styles.backButton}
+      />
       {loading ? (
         <ActivityIndicator animating size="large" />
       ) : players.length === 0 ? (
         <View style={styles.empty}>
-          <Text>No players yet.</Text>
+          <Text style={styles.text}>No players yet.</Text>
         </View>
       ) : (
         <View style={{ alignItems: "center" }}>
@@ -155,10 +164,10 @@ export default function TeamsScreen() {
                     title={item.name}
                     description={
                       <View style={{ flexDirection: "column", paddingTop: 8 }}>
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`Positions: ${item.positions?.join(", ") || "N/A"}`}
                         </Text>
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`Jersey Number: ${item.jerseyNumber != null ? item.jerseyNumber : "N/A"}`}
                         </Text>
 
@@ -171,25 +180,25 @@ export default function TeamsScreen() {
                           }}
                         />
 
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`Games: ${GAMES}`}
                         </Text>
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`BA: ${BA}`}
                         </Text>
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`OBP: ${OBP}`}
                         </Text>
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`SLG: ${SLG}`}
                         </Text>
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`RBI: ${RBI}`}
                         </Text>
-                        <Text>
+                        <Text style={styles.cardText}>
                           {`QAB%: ${QAB}`}
                         </Text>
-                        <Text>
+                        <Text style={styles.cardHint}>
                           Tap card to edit player
                         </Text>
                       </View>
@@ -198,17 +207,17 @@ export default function TeamsScreen() {
                     //onPress={() => openEdit(item)}
                     style={[
                       styles.card,
-                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderWidth: 3, borderColor: "#000", borderRadius: 20 },
+                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1.5, borderColor: 'rgba(0,255,65,0.18)' },
                     ]}
-                    titleStyle={{ fontSize: 20, fontWeight: "600" }}
-                    descriptionStyle={{ fontSize: 16 }}
+                    titleStyle={{ fontSize: 20, fontWeight: "600", color: '#fff' }}
+                    descriptionStyle={{ fontSize: 16, color: '#cfeecf' }}
                   />
                 </View>
               );
             }}
           />
 
-          <Text style={{ marginTop: 8, textAlign: "center" }}>Swipe to see all players</Text>
+          <Text style={[styles.cardHint, { marginTop: 8, textAlign: "center" }]}>Swipe to see all players</Text>
         </View>
       )}
 
@@ -253,7 +262,7 @@ export default function TeamsScreen() {
         </Dialog>
       </Portal>
 
-      <FAB style={[styles.fab, { backgroundColor: theme.colors.primary }]} icon="plus" label="New Player" onPress={openNew} />
+  <FAB style={[styles.fab, { backgroundColor: '#00ff41' }]} icon="plus" label="New Player" onPress={openNew} />
     </View>
   );
 }
@@ -262,6 +271,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingTop: 96,
   },
   headerRow: {
     marginBottom: 8,
@@ -296,5 +306,24 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     elevation: 2, // android shadow
+  },
+  cardText: {
+    color: '#fff',
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  cardHint: {
+    color: '#cfeecf',
+    marginTop: 8,
+    fontSize: 13,
+  },
+  text: {
+    color: '#fff',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 12,
+    top: 70,
+    zIndex: 60,
   },
 });

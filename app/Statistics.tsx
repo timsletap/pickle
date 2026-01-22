@@ -1,9 +1,10 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { readAsStringAsync } from 'expo-file-system/legacy';
+import { router } from 'expo-router';
 import Papa from 'papaparse';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Button, Card, Paragraph } from 'react-native-paper';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Card, IconButton, Paragraph } from 'react-native-paper';
 
 import { useAuth } from './auth-context';
 import { fetchPlayerInfo, savePlayerInfo, savePlayerStats } from './realtimeDb';
@@ -12,6 +13,33 @@ type CsvDocument = {
     name?: string;
     uri?: string;
 }
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#000', paddingTop: 96, paddingHorizontal: 16 },
+    card: {
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        borderRadius: 12,
+        borderWidth: 1.5,
+        borderColor: 'rgba(0,255,65,0.18)',
+        shadowColor: '#00ff41',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.12,
+        shadowRadius: 18,
+        elevation: 8,
+    },
+    cardContent: {
+        padding: 8,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(0,255,65,0.12)',
+        backgroundColor: 'rgba(0,0,0,0.5)'
+    },
+    paragraph: { color: '#fff' },
+    button: { backgroundColor: '#00ff41' },
+    tableCell: { borderRightWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
+    tableRow: { borderBottomWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
+    backButton: { position: 'absolute', left: 12, top: 70, zIndex: 60 },
+});
 
 export default function Statistics() {
     const [csvFile, setCsvFile] = useState<CsvDocument | null>(null);
@@ -133,32 +161,32 @@ export default function Statistics() {
     };
 
     return (
-        <>
-            <Card style={{ margin: 16 }}>
-                <Card.Title title="Attach CSV" />
+        <View style={styles.container}>
+            <IconButton
+                icon="arrow-left"
+                size={30}
+                onPress={() => router.push('/profile')}
+                containerColor="transparent"
+                iconColor="#fff"
+                style={styles.backButton}
+            />
+            <Card style={[styles.card, { margin: 16, marginTop: 30 }]}>
+                <Card.Title title="Attach CSV" titleStyle={{ textAlign: 'center', fontSize: 18, color: '#fff', marginTop: 14 }}/>
                 <Card.Content>
                     {csvFile ? (
                         <View
-                            style={{
-                                padding: 8,
-                                borderWidth: 1,
-                                borderColor: '#ddd',
-                                borderRadius: 6,
-                                backgroundColor: '#fafafa',
-                            }}
+                            style={styles.cardContent}
                         >
-                            <Paragraph numberOfLines={1}>{csvFile.name ?? csvFile.uri ?? 'Selected file'}</Paragraph>
-                            <Button mode="contained" onPress={removeCsvFile} style={{ marginTop: 8 }}>
+                            <Paragraph numberOfLines={1} style={styles.paragraph}>{csvFile.name ?? csvFile.uri ?? 'Selected file'}</Paragraph>
+                            <Button mode="contained" onPress={removeCsvFile} style={[styles.button, { marginTop: 8 }]}>
                                 Remove File
                             </Button>
-                            <Button mode="contained" onPress={pickCsvFile} style={{ marginTop: 8 }}>
+                            <Button mode="contained" onPress={pickCsvFile} style={[styles.button, { marginTop: 8 }]}>
                                 Change File
                             </Button>
                         </View>
                     ) : (
-                        <Button mode="contained" onPress={pickCsvFile}>
-                            Select CSV File
-                        </Button>
+                        <Button mode="contained" onPress={pickCsvFile} style={[styles.button, { marginTop: 8 }]} labelStyle={{ color: '#000000ff' }}>Select CSV File</Button>
                     )}
                 </Card.Content>
             </Card>
@@ -169,7 +197,7 @@ export default function Statistics() {
                         onPress={saveCsvToFirebase}
                         loading={saving}
                         disabled={saving}
-                        style={{ marginTop: 8 }}
+                        style={[styles.button, { marginTop: 8 }]}
                     >
                         Save to Firebase
                     </Button>
@@ -177,7 +205,7 @@ export default function Statistics() {
             </View>
             <View style={{ margin: 16 }}>
                 {parsedData.length === 0 ? (
-                    <Paragraph style={{ marginTop: 16 }}>No data parsed from the CSV file.</Paragraph>
+                    <Paragraph style={[styles.paragraph, { marginTop: 16 }]}>No data parsed from the CSV file.</Paragraph>
                 ) : (
                     <ScrollView horizontal style={{ marginTop: 16 }} contentContainerStyle={{ flexGrow: 1 }}>
                         <View>
@@ -185,9 +213,9 @@ export default function Statistics() {
                                 {headers.map((header) => (
                                     <View
                                         key={header}
-                                        style={{ minWidth: 120, padding: 6, borderRightWidth: 1, borderColor: '#eee' }}
+                                        style={[styles.tableCell, { minWidth: 120, padding: 6 }]}
                                     >
-                                        <Paragraph style={{ fontWeight: '600' }} numberOfLines={1}>
+                                        <Paragraph style={[styles.paragraph, { fontWeight: '600' }]} numberOfLines={1}>
                                             {header}
                                         </Paragraph>
                                     </View>
@@ -198,11 +226,11 @@ export default function Statistics() {
                                 {parsedData.map((row, rowIndex) => (
                                     <View
                                         key={rowIndex}
-                                        style={{ flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderColor: '#eee' }}
+                                        style={[styles.tableRow, { flexDirection: 'row', paddingVertical: 6 }]}
                                     >
                                         {headers.map((header) => (
-                                            <View key={header} style={{ minWidth: 120, padding: 6, borderRightWidth: 1, borderColor: '#eee' }}>
-                                                <Paragraph numberOfLines={1}>{String(row[header] ?? '')}</Paragraph>
+                                            <View key={header} style={[styles.tableCell, { minWidth: 120, padding: 6 }]}>
+                                                <Paragraph style={styles.paragraph} numberOfLines={1}>{String(row[header] ?? '')}</Paragraph>
                                             </View>
                                         ))}
                                     </View>
@@ -212,24 +240,7 @@ export default function Statistics() {
                     </ScrollView>
                 )}
             </View>
-        </>
+        </View>
     );
 }
 
-/*
-<Card.Title
-            title="Attach CSV"
-            titleStyle={{ textAlign: 'center', fontSize: 18, color: '#fff' }}
-            style={{ alignItems: 'center' }}
-            />
-            <Card.Content>
-            {csvFile ? (
-                <View style={{ padding: 8, borderWidth: 1, borderColor: '#222', borderRadius: 6, backgroundColor: '#070707' }}>
-                <Paragraph numberOfLines={1} style={{ color: '#fff', fontSize: 16 }}>{csvFile.name ?? csvFile.uri ?? 'Selected file'}</Paragraph>
-                <Button mode="contained" onPress={removeCsvFile} style={{ marginTop: 8, backgroundColor: '#000' }} labelStyle={{ color: '#fff' }}>Remove File</Button>
-                <Button mode="contained" onPress={pickCsvFile} style={{ marginTop: 8, backgroundColor: '#000' }} labelStyle={{ color: '#fff' }}>Change File</Button>
-                </View>
-            ) : (
-                <Button mode="contained" style={{ marginTop: 8, backgroundColor: '#000' }} labelStyle={{ color: '#fff' }} onPress={pickCsvFile}>Select CSV File</Button>
-            )}
-                */
