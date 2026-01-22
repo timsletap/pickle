@@ -23,7 +23,7 @@ def list_equipment():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM equipment ORDER BY created_at DESC")
+        cursor.execute("SELECT id, name as title, link, created_at FROM equipment ORDER BY created_at DESC")
         equipment = cursor.fetchall()
         conn.close()
 
@@ -54,7 +54,7 @@ def create_equipment(equipment: CreateEquipmentRequest):
         cursor = conn.cursor()
 
         cursor.execute(
-            "INSERT INTO equipment (title, link, created_at) VALUES (?, ?, ?)",
+            "INSERT INTO equipment (name, link, created_at) VALUES (?, ?, ?)",
             (equipment.title.strip(), equipment.link.strip(), datetime.now().isoformat())
         )
         conn.commit()
@@ -70,7 +70,7 @@ def create_equipment(equipment: CreateEquipmentRequest):
 
 @router.get("/search/web")
 async def search_equipment_web(query: str):
-    """Search reputable sports equipment sites for baseball deals"""
+    """Search reputable sports equipment sites for baseball gear using Google Custom Search"""
     if not query or len(query.strip()) == 0:
         raise HTTPException(status_code=400, detail="Search query is required")
 
@@ -80,8 +80,93 @@ async def search_equipment_web(query: str):
     search_term = query.strip()
     results = []
 
-    # List of reputable sports equipment retailers
-    sites = [
+    # Google Custom Search API configuration
+    api_key = os.getenv("GOOGLE_API_KEY")
+    search_engine_id = os.getenv("GOOGLE_SEARCH_ENGINE_ID")
+
+    # Whitelist of reputable sports equipment sites
+    trusted_sites = [
+        "dickssportinggoods.com",
+        "academy.com",
+        "baseballexpress.com",
+        "justbats.com",
+        "baseballmonkey.com",
+        "amazon.com",
+        "walmart.com",
+        "target.com",
+        "baseballsavings.com",
+        "eastbay.com",
+        "slugger.com",
+        "rawlings.com",
+        "wilson.com",
+        "easton.com",
+        "marucci.com",
+        "demarini.com",
+        "sportsunlimited.com",
+        "scheels.com",
+        "hibbett.com",
+        "bigfivestore.com"
+    ]
+
+    if api_key and search_engine_id:
+        # Use Google Custom Search API for better results
+        try:
+            # Build site restriction query to search only trusted sites
+            site_query = " OR ".join([f"site:{site}" for site in trusted_sites])
+            full_query = f"{search_term} baseball ({site_query})"
+
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                # Make two API calls to get up to 20 results
+                for start_index in [1, 11]:
+                    try:
+                        response = await client.get(
+                            "https://www.googleapis.com/customsearch/v1",
+                            params={
+                                "key": api_key,
+                                "cx": search_engine_id,
+                                "q": full_query,
+                                "num": 10,
+                                "start": start_index
+                            }
+                        )
+
+                        if response.status_code == 200:
+                            data = response.json()
+                            items = data.get("items", [])
+
+                            for item in items:
+                                # Extract domain from link
+                                link = item.get("link", "")
+                                display_link = item.get("displayLink", "")
+
+                                # Verify the result is from a trusted site
+                                is_trusted = any(trusted in display_link.lower() for trusted in trusted_sites)
+                                if not is_trusted:
+                                    continue
+
+                                results.append({
+                                    "title": item.get("title", ""),
+                                    "description": item.get("snippet", ""),
+                                    "link": link,
+                                    "display_link": display_link,
+                                    "image_url": item.get("pagemap", {}).get("cse_image", [{}])[0].get("src") if item.get("pagemap") else None
+                                })
+                        elif response.status_code == 429:
+                            # Rate limited, break out of pagination loop
+                            break
+                    except Exception:
+                        continue
+
+                # If Google API returned results, return them
+                if results:
+                    return results
+
+        except Exception:
+            # Fall through to fallback method if Google API fails
+            pass
+
+    # Fallback: Generate direct links to trusted retailer search pages
+    fallback_sites = [
         {
             "name": "Dick's Sporting Goods",
             "url": f"https://www.dickssportinggoods.com/search/SearchDisplay?searchTerm={search_term.replace(' ', '+')}+baseball",
@@ -91,6 +176,16 @@ async def search_equipment_web(query: str):
             "name": "Academy Sports + Outdoors",
             "url": f"https://www.academy.com/shop/browse?searchTerm={search_term.replace(' ', '+')}+baseball",
             "domain": "academy.com"
+        },
+        {
+            "name": "Amazon Baseball",
+            "url": f"https://www.amazon.com/s?k={search_term.replace(' ', '+')}+baseball",
+            "domain": "amazon.com"
+        },
+        {
+            "name": "Walmart Sports",
+            "url": f"https://www.walmart.com/search?q={search_term.replace(' ', '+')}+baseball",
+            "domain": "walmart.com"
         },
         {
             "name": "Baseball Express",
@@ -106,38 +201,46 @@ async def search_equipment_web(query: str):
             "name": "Baseball Monkey",
             "url": f"https://www.baseballmonkey.com/catalogsearch/result/?q={search_term.replace(' ', '+')}",
             "domain": "baseballmonkey.com"
+        },
+        {
+            "name": "Rawlings Official",
+            "url": f"https://www.rawlings.com/search?q={search_term.replace(' ', '+')}",
+            "domain": "rawlings.com"
+        },
+        {
+            "name": "Wilson Sporting Goods",
+            "url": f"https://www.wilson.com/en-us/search?q={search_term.replace(' ', '+')}",
+            "domain": "wilson.com"
+        },
+        {
+            "name": "Easton Baseball",
+            "url": f"https://www.easton.com/search?q={search_term.replace(' ', '+')}",
+            "domain": "easton.com"
+        },
+        {
+            "name": "Marucci Sports",
+            "url": f"https://www.marucci.com/search?q={search_term.replace(' ', '+')}",
+            "domain": "marucci.com"
+        },
+        {
+            "name": "Louisville Slugger",
+            "url": f"https://www.slugger.com/en-us/search?q={search_term.replace(' ', '+')}",
+            "domain": "slugger.com"
         }
     ]
 
-    try:
-        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-            for site in sites:
-                try:
-                    # Add user agent to avoid blocking
-                    headers = {
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-                    }
-                    response = await client.get(site["url"], headers=headers)
+    # Return all fallback sites directly without checking availability
+    # This ensures users always get results to click through
+    for site in fallback_sites:
+        results.append({
+            "title": f"{search_term} at {site['name']}",
+            "description": f"Search results for {search_term} on {site['name']} - Click to view deals and pricing",
+            "link": site["url"],
+            "display_link": site["domain"],
+            "image_url": None
+        })
 
-                    if response.status_code == 200:
-                        results.append({
-                            "title": f"{search_term} at {site['name']}",
-                            "description": f"Search results for {search_term} on {site['name']} - Click to view deals and pricing",
-                            "link": site["url"],
-                            "display_link": site["domain"],
-                            "image_url": None
-                        })
-                except Exception:
-                    # Skip sites that fail, don't block the whole search
-                    continue
-
-        return results
-    except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="Search request timed out")
-    except httpx.HTTPError as e:
-        raise HTTPException(status_code=500, detail=f"Error searching equipment sites: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    return results
 
 
 @router.get("/favorites")

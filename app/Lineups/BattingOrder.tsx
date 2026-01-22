@@ -1,10 +1,10 @@
-import { ScrollView, View } from 'react-native';
-import { Button, List, Text } from 'react-native-paper';
-import styles from './styles';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import styles, { colors } from './styles';
 import type { Player } from './types';
 
 type Props = {
-  roster: Player[]; // unfiltered roster used for default batting order (name-sorted)
+  roster: Player[];
   sortMode: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct';
   setSortMode: (m: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct') => void;
   openStats: (p: Player) => void;
@@ -18,33 +18,55 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
 
   return (
     <View style={styles.battingContainer}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text variant="titleMedium" style={{ marginBottom: 6 }}>Batting Order</Text>
+      <View style={styles.battingHeader}>
+        <Text style={styles.sectionTitle}>Batting Order</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity
+            onPress={() => onAutoGenerate && onAutoGenerate()}
+            style={[styles.actionButton, styles.actionButtonPrimary]}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>Auto-generate</Text>
+          </TouchableOpacity>
+          {onClearOrder && (
+            <TouchableOpacity
+              onPress={onClearOrder}
+              style={[styles.actionButton, styles.actionButtonSecondary]}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>Clear</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-
-      <ScrollView style={styles.battingList}>
-        {displayList.map((p: Player, index: number) => (
-          <List.Item
-            key={p.id}
-            title={`${index + 1}. ${p.first_name} ${p.last_name}`}
-            description={`#${p.jersey ?? '-'} — RCV ${p.stats?.rcv?.toFixed(2) ?? '-'}`}
-            onPress={() => openStats(p)}
-            left={(props) => <List.Icon {...props} icon="account" />}
-          />
-        ))}
-      </ScrollView>
-
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
-        <Button mode="outlined" compact onPress={() => onAutoGenerate && onAutoGenerate()}>
-          Auto-generate
-        </Button>
-        {onClearOrder ? (
-          <Button compact style={{ marginLeft: 8 }} onPress={onClearOrder}>
-            Clear
-          </Button>
-        ) : null}
-      </View>
+      {displayList.length === 0 ? (
+        <View style={{ padding: 20, alignItems: 'center' }}>
+          <MaterialCommunityIcons name="baseball-bat" size={40} color={colors.primaryDim} />
+          <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 12 }}>No players to display</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.battingList} showsVerticalScrollIndicator={false}>
+          {displayList.map((p: Player, index: number) => (
+            <Pressable
+              key={p.id}
+              onPress={() => openStats(p)}
+              style={({ pressed }) => [styles.battingItem, pressed && { opacity: 0.7 }]}
+            >
+              <View style={styles.battingIndex}>
+                <Text style={styles.battingIndexText}>{index + 1}</Text>
+              </View>
+              <View style={styles.battingPlayerInfo}>
+                <Text style={styles.battingPlayerName}>{p.first_name} {p.last_name}</Text>
+                <Text style={styles.battingPlayerStats}>
+                  #{p.jersey ?? '-'} — RCV {p.stats?.rcv?.toFixed(2) ?? '-'}
+                </Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primaryBorder} />
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }

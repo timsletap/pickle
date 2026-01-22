@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import styles from './styles';
+import styles, { colors } from './styles';
 import type { Player } from './types';
 
 type Props = {
@@ -35,9 +35,17 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
     const val = getMetric(p, metricMode ?? 'name');
     const formatted = (metricMode === 'rbi' || metricMode === 'games')
       ? `${Math.round(val ?? 0)}`
-      : `${(val ?? 0).toFixed(2)}`;
-    return <Text style={{ fontSize: 11, color: '#333', marginTop: 4 }}>{formatted}</Text>;
+      : `${(val ?? 0).toFixed(3)}`;
+    return <Text style={styles.metricText}>{formatted}</Text>;
   };
+
+  if (sortedRoster.length === 0) {
+    return (
+      <View style={{ padding: 20, alignItems: 'center' }}>
+        <Text style={{ color: colors.textMuted, fontSize: 14 }}>No players on roster</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView horizontal contentContainerStyle={styles.rosterScroll} showsHorizontalScrollIndicator={false}>
@@ -46,12 +54,19 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
         const assignedPos = assignedEntry ? assignedEntry[0] : null;
         return (
           <View key={p.id} style={styles.playerCard}>
-            <Text style={styles.playerName} numberOfLines={1}>{p.first_name} {p.last_name}</Text>
-            <Pressable onPress={() => openStats(p)} style={({ pressed }) => [styles.playerIcon, pressed ? styles.pressed : null]}>
-              <Text style={styles.playerNumber}>{p.jersey ?? ''}</Text>
+            <Text style={styles.playerName} numberOfLines={1}>
+              {p.first_name} {p.last_name.charAt(0)}.
+            </Text>
+            <Pressable
+              onPress={() => openStats(p)}
+              style={({ pressed }) => [styles.playerIcon, pressed && styles.pressed]}
+            >
+              <Text style={styles.playerNumber}>{p.jersey ?? '-'}</Text>
             </Pressable>
             {renderMetric(p)}
-            {assignedPos ? <Text style={styles.assignedText}>{posById(assignedPos).label}</Text> : null}
+            {assignedPos && (
+              <Text style={styles.assignedText}>{posById(assignedPos).label}</Text>
+            )}
           </View>
         );
       })}

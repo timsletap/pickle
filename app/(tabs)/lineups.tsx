@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Button, Divider, Provider as PaperProvider, Text } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { updatePlayerStats } from '../../config/FirebaseConfig';
 import BattingOrder from '../Lineups/BattingOrder';
@@ -8,7 +9,7 @@ import FieldView from '../Lineups/FieldView';
 import PickerDialog from '../Lineups/PickerDialog';
 import RosterScroller from '../Lineups/RosterScroller';
 import StatsDialog from '../Lineups/StatsDialog';
-import styles from '../Lineups/styles';
+import styles, { colors } from '../Lineups/styles';
 import { POSITIONS, Player } from '../Lineups/types';
 import { useAuth } from '../auth-context';
 import { fetchPlayerInfo } from '../realtimeDb';
@@ -16,6 +17,40 @@ import { fetchPlayerInfo } from '../realtimeDb';
 export default function Lineups() {
   const [roster, setRoster] = useState<Player[]>([]);
   const { user } = useAuth();
+
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const tabPosition = useRef(new Animated.Value(0)).current;
+  const [tabWidth, setTabWidth] = useState(0);
+
+  const handleTabChange = (mode: 'defense' | 'offense') => {
+    Animated.spring(tabPosition, {
+      toValue: mode === 'defense' ? 0 : 1,
+      friction: 8,
+      tension: 70,
+      useNativeDriver: true,
+    }).start();
+    setViewMode(mode);
+  };
+
+  useEffect(() => {
+    // Entrance animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -35,7 +70,6 @@ export default function Lineups() {
         const first_name = parts.shift() || "";
         const last_name = parts.join(' ');
 
-        // Attempt to coerce numeric ids when possible, otherwise keep string keys
         const id: string | number = /^[0-9]+$/.test(key) ? parseInt(key, 10) : key;
 
         return {
@@ -58,6 +92,7 @@ export default function Lineups() {
       }
     };
   }, [user]);
+
   const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab_pct'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
@@ -88,47 +123,159 @@ export default function Lineups() {
 
   const getMetric = (p: any, mode: string) => {
     const s = p.stats ?? {};
-    const ba = s.ba ?? 0;
-    const obp = s.obp ?? 0;
-    const slg = s.slg ?? 0;
-    const rbi = s.rbi ?? 0;
-    const games = s.games ?? 0;
-    const qab_pct = s.qab_pct ?? 0;
-
-    if (mode === 'ba') return ba;
-    if (mode === 'obp') return obp;
-    if (mode === 'slg') return slg;
-    if (mode === 'rbi') return rbi;
-    if (mode === 'games') return games;
-    if (mode === 'qab_pct') return qab_pct;
+    if (mode === 'ba') return s.ba ?? 0;
+    if (mode === 'obp') return s.obp ?? 0;
+    if (mode === 'slg') return s.slg ?? 0;
+    if (mode === 'rbi') return s.rbi ?? 0;
+    if (mode === 'games') return s.games ?? 0;
+    if (mode === 'qab_pct') return s.qab_pct ?? 0;
     return 0;
   };
 
   const sortedRoster = [...roster].sort((a: any, b: any) => {
     if (sortMode === 'name') return a.last_name.localeCompare(b.last_name);
-    if (sortMode === 'ba') return getMetric(b, 'ba') - getMetric(a, 'ba');
-    if (sortMode === 'obp') return getMetric(b, 'obp') - getMetric(a, 'obp');
-    if (sortMode === 'slg') return getMetric(b, 'slg') - getMetric(a, 'slg');
-    if (sortMode === 'rbi') return getMetric(b, 'rbi') - getMetric(a, 'rbi');
-    if (sortMode === 'games') return getMetric(b, 'games') - getMetric(a, 'games');
-    if (sortMode === 'qab_pct') return getMetric(b, 'qab_pct') - getMetric(a, 'qab_pct');
-    return 0;
+    return getMetric(b, sortMode) - getMetric(a, sortMode);
   });
 
-  return (
-    <PaperProvider>
-      <View style={styles.page}>
-        <View style={styles.viewToggleRow}>
-          <Button mode={viewMode === 'defense' ? 'contained' : 'outlined'} onPress={() => setViewMode('defense')} compact>
-            Defense
-          </Button>
-          <Button mode={viewMode === 'offense' ? 'contained' : 'outlined'} onPress={() => setViewMode('offense')} compact style={{ marginLeft: 8 }}>
-            Offense
-          </Button>
-        </View>
+  const sortOptions: { key: typeof sortMode; label: string }[] = [
+    { key: 'name', label: 'Name' },
+    { key: 'ba', label: 'BA' },
+    { key: 'obp', label: 'OBP' },
+    { key: 'slg', label: 'SLG' },
+    { key: 'rbi', label: 'RBI' },
+    { key: 'games', label: 'Games' },
+    { key: 'qab_pct', label: 'QAB' },
+  ];
 
+  return (
+    <View style={styles.page}>
+      {/* Header */}
+      <Animated.View
+        style={[
+          styles.header,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
+        <Text style={styles.headerSubtitle}>GAME DAY</Text>
+        <Text style={styles.headerTitle}>Lineups</Text>
+
+        {/* Tab Bar - matching ChalkTalk style */}
+        <View
+          style={{
+            flexDirection: 'row',
+            marginTop: 16,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            borderRadius: 20,
+            padding: 5,
+            borderWidth: 1.5,
+            borderColor: 'rgba(0, 255, 65, 0.25)',
+            shadowColor: '#00ff41',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 15,
+            elevation: 8,
+          }}
+          onLayout={(e) => {
+            setTabWidth((e.nativeEvent.layout.width - 10) / 2);
+          }}
+        >
+          {/* Animated Indicator */}
+          {tabWidth > 0 && (
+            <Animated.View
+              style={{
+                position: 'absolute',
+                top: 5,
+                left: 5,
+                bottom: 5,
+                width: tabWidth,
+                borderRadius: 15,
+                overflow: 'hidden',
+                transform: [{
+                  translateX: tabPosition.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, tabWidth],
+                  }),
+                }],
+              }}
+            >
+              <LinearGradient
+                colors={['#00ff41', '#00cc33', '#00ff41']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ flex: 1 }}
+              />
+            </Animated.View>
+          )}
+
+          {/* Defense Tab */}
+          <TouchableOpacity
+            onPress={() => handleTabChange('defense')}
+            activeOpacity={0.8}
+            style={{
+              flex: 1,
+              paddingVertical: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 15,
+              zIndex: 1,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="shield-outline"
+              size={22}
+              color={viewMode === 'defense' ? '#000' : '#00ff41'}
+              style={{ marginBottom: 4 }}
+            />
+            <Text style={{
+              fontSize: 11,
+              fontWeight: '800',
+              color: viewMode === 'defense' ? '#000' : '#00ff41',
+              letterSpacing: 0.8,
+            }}>
+              DEFENSE
+            </Text>
+          </TouchableOpacity>
+
+          {/* Offense Tab */}
+          <TouchableOpacity
+            onPress={() => handleTabChange('offense')}
+            activeOpacity={0.8}
+            style={{
+              flex: 1,
+              paddingVertical: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 15,
+              zIndex: 1,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="baseball-bat"
+              size={22}
+              color={viewMode === 'offense' ? '#000' : '#00ff41'}
+              style={{ marginBottom: 4 }}
+            />
+            <Text style={{
+              fontSize: 11,
+              fontWeight: '800',
+              color: viewMode === 'offense' ? '#000' : '#00ff41',
+              letterSpacing: 0.8,
+            }}>
+              OFFENSE
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      {/* Content */}
+      <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
         {viewMode === 'defense' ? (
-          <FieldView positions={POSITIONS} assignments={assignments} openPicker={openPicker} />
+          <View style={{ paddingTop: 16 }}>
+            <FieldView positions={POSITIONS} assignments={assignments} openPicker={openPicker} />
+          </View>
         ) : (
           <BattingOrder
             roster={roster}
@@ -137,10 +284,8 @@ export default function Lineups() {
             openStats={openStats}
             battingOrder={battingOrder ?? undefined}
             onAutoGenerate={async () => {
-              // lazy import algorithm to keep file clear; always brute (default)
               const alg = require('../Lineups/LineupAlgorithm') as typeof import('../Lineups/LineupAlgorithm');
               const result = alg.generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length)});
-              // compute raw metrics (rcv) and persist per-player so batting order can read stored values
               try {
                 const raw = alg.computeRawMetrics(roster);
                 await Promise.all(roster.map(async (p) => {
@@ -148,57 +293,59 @@ export default function Lineups() {
                   const merged = { ...(p.stats ?? {}), rcv };
                   try {
                     await updatePlayerStats(user!.uid, String(p.id), merged);
-                  } catch (e) {
-                    // ignore per-player write errors
-                  }
+                  } catch (e) {}
                 }));
-              } catch (e) {
-                // ignore persistence errors
-              }
+              } catch (e) {}
               setBattingOrder(result.lineup);
             }}
             onClearOrder={() => setBattingOrder(null)}
           />
         )}
 
-        <Divider style={{ marginVertical: 12 }} />
+        {/* Divider */}
+        <View style={styles.divider} />
 
+        {/* Players Section */}
         <View style={styles.rosterContainer}>
-          <Text variant="titleMedium" style={{ marginBottom: 6 }}>Players</Text>
+          <Text style={styles.sectionTitle}>Players</Text>
+
+          {/* Sort Buttons */}
           <View style={styles.sortRow}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 4 }}>
-              <Button mode={sortMode === 'name' ? 'contained' : 'outlined'} onPress={() => setSortMode('name')} compact>
-                Name
-              </Button>
-              <Button mode={sortMode === 'ba' ? 'contained' : 'outlined'} onPress={() => setSortMode('ba')} compact style={{ marginLeft: 8 }}>
-                BA
-              </Button>
-              <Button mode={sortMode === 'obp' ? 'contained' : 'outlined'} onPress={() => setSortMode('obp')} compact style={{ marginLeft: 8 }}>
-                OBP
-              </Button>
-              <Button mode={sortMode === 'slg' ? 'contained' : 'outlined'} onPress={() => setSortMode('slg')} compact style={{ marginLeft: 8 }}>
-                SLG
-              </Button>
-              <Button mode={sortMode === 'rbi' ? 'contained' : 'outlined'} onPress={() => setSortMode('rbi')} compact style={{ marginLeft: 8 }}>
-                RBI
-              </Button>
-              <Button mode={sortMode === 'games' ? 'contained' : 'outlined'} onPress={() => setSortMode('games')} compact style={{ marginLeft: 8 }}>
-                Games
-              </Button>
-              <Button mode={sortMode === 'qab_pct' ? 'contained' : 'outlined'} onPress={() => setSortMode('qab_pct')} compact style={{ marginLeft: 8 }}>
-                QAB
-              </Button>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {sortOptions.map((opt) => (
+                <TouchableOpacity
+                  key={opt.key}
+                  onPress={() => setSortMode(opt.key)}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    borderRadius: 10,
+                    marginRight: 8,
+                    backgroundColor: sortMode === opt.key ? colors.primary : 'transparent',
+                    borderWidth: 1.5,
+                    borderColor: sortMode === opt.key ? colors.primary : colors.primaryBorder,
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={{
+                    fontSize: 12,
+                    fontWeight: '700',
+                    color: sortMode === opt.key ? '#000' : colors.primary,
+                  }}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
 
           <RosterScroller sortedRoster={sortedRoster} metricMode={sortMode} assignments={assignments} posById={posById} openStats={openStats} />
         </View>
+      </Animated.View>
 
-        <PickerDialog visible={dialog.visible} positionId={dialog.positionId} closePicker={closePicker} roster={roster} assignments={assignments} selectNone={selectNone} selectPlayer={selectPlayer} posById={posById} />
+      <PickerDialog visible={dialog.visible} positionId={dialog.positionId} closePicker={closePicker} roster={roster} assignments={assignments} selectNone={selectNone} selectPlayer={selectPlayer} posById={posById} />
 
-        <StatsDialog visible={statsDialog.visible} player={statsDialog.player} closeStats={closeStats} />
-
-      </View>
-    </PaperProvider>
+      <StatsDialog visible={statsDialog.visible} player={statsDialog.player} closeStats={closeStats} />
+    </View>
   );
 }
