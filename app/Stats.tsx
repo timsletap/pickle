@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View, } from "react-native";
-import { ActivityIndicator, Button, Dialog, Portal, Text, TextInput, } from "react-native-paper";
+import { ActivityIndicator, Button, Dialog, Portal, Text, TextInput, useTheme } from "react-native-paper";
 import { updatePlayerStats } from "../config/FirebaseConfig";
 import { useAuth } from "./auth-context";
 import { fetchPlayerInfo } from "./realtimeDb";
@@ -11,6 +11,7 @@ import StatsList from './StatsList';
 
 export default function StatsScreen() {
   const { user } = useAuth();
+  const theme = useTheme();
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,12 +149,12 @@ export default function StatsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: '#000' }]}>
       {loading ? (
         <ActivityIndicator animating size="large" />
       ) : players.length === 0 ? (
         <View style={styles.empty}>
-          <Text>No players yet.</Text>
+          <Text style={styles.text}>No players yet.</Text>
         </View>
       ) : (
         <StatsList players={filteredPlayers} selectedStat={selectedStat} openStatsEditor={openStatsEditor} statKeyMap={statKeyMap} />
@@ -163,12 +164,12 @@ export default function StatsScreen() {
         <Dialog visible={statsDialogVisible} onDismiss={closeStatsDialog}>
           <Dialog.Title>{editingPlayerName ? `Edit Stats — ${editingPlayerName}` : 'Edit Stats'}</Dialog.Title>
           <Dialog.Content>
-            <TextInput label="Batting Average (BA)" value={baText} onChangeText={setBaText} keyboardType="numeric" returnKeyType="done"/>
-            <TextInput label="On-Base % (OBP)" value={obpText} onChangeText={setObpText} keyboardType="numeric" returnKeyType="done"/>
-            <TextInput label="Slugging % (SLG)" value={slgText} onChangeText={setSlgText} keyboardType="numeric" returnKeyType="done"/>
-            <TextInput label="RBI" value={rbiText} onChangeText={setRbiText} keyboardType="numeric" returnKeyType="done"/>
-            <TextInput label="Games" value={gamesText} onChangeText={setGamesText} keyboardType="numeric" returnKeyType="done"/>
-            <TextInput label="Quality At-Bat % (QAB%)" value={qabText} onChangeText={setQabText} keyboardType="numeric" returnKeyType="done"/>
+            <TextInput label="Batting Average (BA)" value={baText} onChangeText={setBaText} keyboardType="numeric" returnKeyType="done" mode="outlined" />
+            <TextInput label="On-Base % (OBP)" value={obpText} onChangeText={setObpText} keyboardType="numeric" returnKeyType="done" mode="outlined" />
+            <TextInput label="Slugging % (SLG)" value={slgText} onChangeText={setSlgText} keyboardType="numeric" returnKeyType="done" mode="outlined" />
+            <TextInput label="RBI" value={rbiText} onChangeText={setRbiText} keyboardType="numeric" returnKeyType="done" mode="outlined" />
+            <TextInput label="Games" value={gamesText} onChangeText={setGamesText} keyboardType="numeric" returnKeyType="done" mode="outlined" />
+            <TextInput label="Quality At-Bat % (QAB%)" value={qabText} onChangeText={setQabText} keyboardType="numeric" returnKeyType="done" mode="outlined" />
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={closeStatsDialog}>Cancel</Button>
@@ -193,6 +194,10 @@ const styles = StyleSheet.create({
     marginTop: 24,
     alignItems: "center",
   },
+  text: {
+    color: '#fff',
+    fontSize: 16,
+  },
   fab: {
     position: "absolute",
     right: 16,
@@ -205,7 +210,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 10,
@@ -217,7 +221,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: 320,
-    backgroundColor: 'white',
+    backgroundColor: '#0b0b0b',
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     paddingHorizontal: 16,
@@ -231,7 +235,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     zIndex: 10,
   },
   arrow: { fontSize: 22, fontWeight: '700' },

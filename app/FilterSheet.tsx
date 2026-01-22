@@ -35,8 +35,8 @@ export default function FilterSheet({ selectedStat, onSelectStat, clear }: Props
 
       <Animated.View pointerEvents={open ? 'auto' : 'none'} style={[styles.sheet, { transform: [{ translateY: sheetAnim }] }] }>
         <View style={styles.handleRow}>
-          <Text style={{ fontWeight: '600' }}>Filter Players</Text>
-          <Button compact onPress={clear}>Clear</Button>
+          <Text style={styles.handleTitle}>Filter Players</Text>
+          <Button compact onPress={clear} textColor="#000">Clear</Button>
         </View>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
           <List.Item title="Batting Average (BA)" onPress={() => toggle('ba')} left={() => <Checkbox status={selectedStat === 'ba' ? 'checked' : 'unchecked'} />} />
@@ -60,20 +60,20 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#fff',
+    backgroundColor: '#00ff41',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 10,
     zIndex: 40,
   },
-  arrow: { fontSize: 22, fontWeight: '700' },
+  arrow: { fontSize: 22, fontWeight: '700', color: '#000' },
   sheet: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
     height: 320,
-    backgroundColor: 'white',
+    backgroundColor: '#00ff41',
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     paddingHorizontal: 16,
@@ -91,4 +91,5 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   handleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  handleTitle: { fontWeight: '600', color: '#000' },
 });
