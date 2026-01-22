@@ -9,7 +9,7 @@ export default function TeamsScreen() {
   const { user } = useAuth();
   const theme = useTheme();
 
-  const [players, setPlayers] = useState<Array<{ id: string; name: string; positions?: string[]; jerseyNumber?: number }>>([]);
+  const [players, setPlayers] = useState<Array<{ id: string; name: string; positions?: string[]; jerseyNumber?: number; stats?: Record<string, any> }>>([]);
   const [loading, setLoading] = useState(true);
   const [dialogVisible, setDialogVisible] = useState(false);
 
@@ -48,7 +48,13 @@ export default function TeamsScreen() {
         return;
       }
 
-      const arr = Object.entries(data).map(([id, val]) => ({ id, name: val.name, positions: val.positions || [], jerseyNumber: val.jerseyNumber ?? undefined }));
+      const arr = Object.entries(data).map(([id, val]) => ({ 
+        id, 
+        name: val.name, 
+        positions: val.positions || [], 
+        jerseyNumber: val.jerseyNumber ?? undefined,
+        stats: val.stats || {},
+      }));
       arr.sort((a, b) => a.name.localeCompare(b.name));
       setPlayers(arr);
       setLoading(false);
@@ -73,7 +79,7 @@ export default function TeamsScreen() {
     setDialogVisible(true);
   };
 
-  const openEdit = (p: { id: string; name: string; positions?: string[]; jerseyNumber?: number }) => {
+  const openEdit = (p: { id: string; name: string; positions?: string[]; jerseyNumber?: number; stats?: Record<string, any> }) => {
     setEditingId(p.id);
     setName(p.name);
     setPositions((p.positions || []).slice());
@@ -130,21 +136,50 @@ export default function TeamsScreen() {
             autoPlay={false}
             mode="parallax"
             modeConfig={{ parallaxScrollingScale: 0.9, parallaxScrollingOffset: 50 }}
-            renderItem={({ item }) => (
-              <View style={[styles.cardWrap, { width: CARD_WIDTH, height: CARD_HEIGHT }]}> 
-                <List.Item
-                  title={item.name}
-                  description={(item.positions || []).join(", ") + (item.jerseyNumber != null ? `  #${item.jerseyNumber}` : "")}
-                  //onPress={() => openEdit(item)}
-                  style={[
-                    styles.card,
-                    { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderWidth: 3, borderColor: "#000", borderRadius: 20 },
-                  ]}
-                  titleStyle={{ fontSize: 20, fontWeight: "600" }}
-                  descriptionStyle={{ fontSize: 16 }}
-                />
-              </View>
-            )}
+            renderItem={({ item }) => {
+
+              const stats = item.stats || {};
+              const BA = stats.ba != null ? stats.ba.toFixed(2) : "N/A";
+              const OBP = stats.obp != null ? stats.obp.toFixed(2) : "N/A";
+              const SLG = stats.slg != null ? stats.slg.toFixed(2) : "N/A";
+              const RBI = stats.rbi != null ? stats.rbi : "N/A";
+              const GAMES = stats.games != null ? stats.games : "N/A";
+              const QAB = stats.qab != null ? stats.qab.toFixed(2) : "N/A";
+
+              const descBase = (item.positions || []).join(", ") + (item.jerseyNumber != null ? `  #${item.jerseyNumber}` : "");
+              
+              return (
+                <View style={[styles.cardWrap, { width: CARD_WIDTH, height: CARD_HEIGHT }]}> 
+                  <List.Item
+                    title={item.name}
+                    description={
+                      <View style={{ flexDirection: "column", gap: 4 }}>
+                        <Text>
+                          {`Positions: ${item.positions?.join(", ") || "N/A"}`}
+                        </Text>
+                        <Text>
+                          {`Jersey Number: ${item.jerseyNumber != null ? item.jerseyNumber : "N/A"}`}
+                        </Text>
+                        <Text>
+                          {`Games: ${GAMES}   RBI: ${RBI}`}
+                        </Text>
+                        <Text>
+                          {`BA: ${BA}   OBP: ${OBP}   SLG: ${SLG}   QAB: ${QAB}`}
+                        </Text>
+                      </View>
+                    }
+
+                    //onPress={() => openEdit(item)}
+                    style={[
+                      styles.card,
+                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderWidth: 3, borderColor: "#000", borderRadius: 20 },
+                    ]}
+                    titleStyle={{ fontSize: 20, fontWeight: "600" }}
+                    descriptionStyle={{ fontSize: 16 }}
+                  />
+                </View>
+              );
+            }}
           />
 
           <Text style={{ marginTop: 8, textAlign: "center" }}>Swipe to see all players</Text>
