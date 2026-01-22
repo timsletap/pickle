@@ -25,11 +25,18 @@ export default function Profile() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={["#000", "#0a1f0a", "#000"]}
+        colors={["#000000", "#001a00", "#002200", "#001a00", "#000000"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
       >
+        <LinearGradient
+          colors={["transparent", "rgba(0, 255, 65, 0.05)", "transparent"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.headerGlow}
+        />
+
         <View style={styles.headerRow}>
           <Avatar.Text
             size={100}
@@ -55,39 +62,38 @@ export default function Profile() {
         </View>
       </LinearGradient>
 
-      <View>
-        <List.Section>
-          <List.Item
-            title="Team"
-            description="Manage your team"
-            right={(props) => <List.Icon {...props} icon="arrow-right" />}
-            onPress={() => router.push("/Team")}
-            titleStyle={styles.listTitle}
-            descriptionStyle={styles.listDescription}
-            style={[styles.listItem, { borderColor: 'rgba(0,255,65,0.06)' }]}
-          />
-          <List.Item
-            title="Stats"
-            description="View your team statistics"
-            right={(props) => <List.Icon {...props} icon="arrow-right" />}
-            onPress={() => router.push("/Stats")}
-            titleStyle={styles.listTitle}
-            descriptionStyle={styles.listDescription}
-            style={[styles.listItem, { borderColor: 'rgba(0,255,65,0.06)' }]}
-          />
-          <List.Item
-            title="Import Stats"
-            description="Attach file for data extraction"
-            right={(props) => <List.Icon {...props} icon="arrow-right" />}
-            onPress={() => router.push("/Statistics")}
-            titleStyle={styles.listTitle}
-            descriptionStyle={styles.listDescription}
-            style={[
-              styles.listItem,
-              { borderColor: 'rgba(0,255,65,0.06)' },
-            ]}
-          />
-        </List.Section>
+      <View style={styles.contentArea}>
+        <View style={styles.glassSection}>
+          <List.Section>
+            <List.Item
+              title="Team"
+              description="Manage your team"
+              right={(props) => <List.Icon {...props} icon="arrow-right" />}
+              onPress={() => router.push("/Team")}
+              titleStyle={styles.listTitle}
+              descriptionStyle={styles.listDescription}
+              style={styles.listItem}
+            />
+            <List.Item
+              title="Stats"
+              description="View your team statistics"
+              right={(props) => <List.Icon {...props} icon="arrow-right" />}
+              onPress={() => router.push("/Stats")}
+              titleStyle={styles.listTitle}
+              descriptionStyle={styles.listDescription}
+              style={styles.listItem}
+            />
+            <List.Item
+              title="Import Stats"
+              description="Attach file for data extraction"
+              right={(props) => <List.Icon {...props} icon="arrow-right" />}
+              onPress={() => router.push("/Statistics")}
+              titleStyle={styles.listTitle}
+              descriptionStyle={styles.listDescription}
+              style={styles.listItem}
+            />
+          </List.Section>
+        </View>
       </View>
 
       <View style={styles.actions}>
@@ -127,11 +133,16 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   headerGradient: {
-    paddingTop: 40,
-    paddingHorizontal: 10,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    shadowColor: "#00ff41",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 12,
   },
   avatar: {
     marginRight: 16,
@@ -156,9 +167,9 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#fdfdfdff",
     letterSpacing: 0.6,
-    textShadowColor: "rgba(0, 255, 65, 0.06)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    textShadowColor: "rgba(0, 255, 65, 0.12)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
   editInlineButton: {
     alignSelf: "flex-start",
@@ -166,13 +177,18 @@ const styles = StyleSheet.create({
     marginLeft: -9,
   },
   listItem: {
-    borderWidth: 1,
-    borderColor: "rgba(0,255,65,0.06)",
-    backgroundColor: "rgba(255,255,255,0.02)",
+    borderWidth: 1.5,
+    borderColor: "rgba(0,255,65,0.18)",
+    backgroundColor: "rgba(0,0,0,0.45)",
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 12,
     marginVertical: 8,
+    shadowColor: "#00ff41",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 14,
+    elevation: 6,
   },
   listTitle: {
     color: "#fff",
@@ -201,5 +217,29 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: "flex-start",
+  },
+  headerGlow: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+  },
+  contentArea: {
+    paddingTop: 18,
+  },
+  glassSection: {
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
+    borderRadius: 20,
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: "rgba(0,255,65,0.18)",
+    shadowColor: "#00ff41",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22,
+    shadowRadius: 20,
+    elevation: 8,
   },
 });
