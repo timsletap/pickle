@@ -117,12 +117,12 @@ export default function TeamsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: '#000' }]}>
       {loading ? (
         <ActivityIndicator animating size="large" />
       ) : players.length === 0 ? (
         <View style={styles.empty}>
-          <Text>No players yet.</Text>
+          <Text style={styles.text}>No players yet.</Text>
         </View>
       ) : (
         <View style={{ alignItems: "center" }}>
@@ -136,61 +136,32 @@ export default function TeamsScreen() {
             autoPlay={false}
             mode="parallax"
             modeConfig={{ parallaxScrollingScale: 0.9, parallaxScrollingOffset: 50 }}
-            renderItem={({ item }) => {
-
-              const stats = item.stats || {};
-              const BA = stats.ba != null ? stats.ba.toFixed(2) : "N/A";
-              const OBP = stats.obp != null ? stats.obp.toFixed(2) : "N/A";
-              const SLG = stats.slg != null ? stats.slg.toFixed(2) : "N/A";
-              const RBI = stats.rbi != null ? stats.rbi : "N/A";
-              const GAMES = stats.games != null ? stats.games : "N/A";
-              const QAB = stats.qab != null ? stats.qab.toFixed(2) : "N/A";
-
-              const descBase = (item.positions || []).join(", ") + (item.jerseyNumber != null ? `  #${item.jerseyNumber}` : "");
-              
-              return (
-                <View style={[styles.cardWrap, { width: CARD_WIDTH, height: CARD_HEIGHT }]}> 
-                  <List.Item
-                    title={item.name}
-                    description={
-                      <View style={{ flexDirection: "column", gap: 4 }}>
-                        <Text>
-                          {`Positions: ${item.positions?.join(", ") || "N/A"}`}
-                        </Text>
-                        <Text>
-                          {`Jersey Number: ${item.jerseyNumber != null ? item.jerseyNumber : "N/A"}`}
-                        </Text>
-                        <Text>
-                          {`Games: ${GAMES}   RBI: ${RBI}`}
-                        </Text>
-                        <Text>
-                          {`BA: ${BA}   OBP: ${OBP}   SLG: ${SLG}   QAB: ${QAB}`}
-                        </Text>
-                      </View>
-                    }
-
-                    //onPress={() => openEdit(item)}
-                    style={[
-                      styles.card,
-                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderWidth: 3, borderColor: "#000", borderRadius: 20 },
-                    ]}
-                    titleStyle={{ fontSize: 20, fontWeight: "600" }}
-                    descriptionStyle={{ fontSize: 16 }}
-                  />
-                </View>
-              );
-            }}
+            renderItem={({ item }) => (
+              <View style={[styles.cardWrap, { width: CARD_WIDTH, height: CARD_HEIGHT }]}> 
+                <List.Item
+                  title={item.name}
+                  description={(item.positions || []).join(", ") + (item.jerseyNumber != null ? `  #${item.jerseyNumber}` : "")}
+                  //onPress={() => openEdit(item)}
+                  style={[
+                    styles.card,
+                    { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderWidth: 3, borderColor: "#000", borderRadius: 20 },
+                  ]}
+                  titleStyle={{ fontSize: 20, fontWeight: "600" }}
+                  descriptionStyle={{ fontSize: 16 }}
+                />
+              </View>
+            )}
           />
 
-          <Text style={{ marginTop: 8, textAlign: "center" }}>Swipe to see all players</Text>
+          <Text style={styles.hintText}>Swipe to see all players</Text>
         </View>
       )}
 
       <Portal>
-        <Dialog visible={dialogVisible} onDismiss={closeDialog}>
-          <Dialog.Title>{editingId ? "Edit Player" : "New Player"}</Dialog.Title>
+        <Dialog visible={dialogVisible} onDismiss={closeDialog} style={styles.dialog}>
+          <Dialog.Title style={styles.dialogTitle}>{editingId ? "Edit Player" : "New Player"}</Dialog.Title>
           <Dialog.Content>
-            <TextInput label="Player name" value={name} onChangeText={setName} />
+            <TextInput label="Player name" value={name} onChangeText={setName} mode="outlined" textColor="#000" outlineColor="rgba(0,0,0,0.12)" activeOutlineColor="#000" />
 
             <View style={styles.chipsRow}>
               {KNOWN_POSITIONS.map((pos) => {
@@ -203,9 +174,9 @@ export default function TeamsScreen() {
                       if (active) setPositions((prev) => prev.filter((p) => p !== pos));
                       else setPositions((prev) => [...prev, pos]);
                     }}
-                    style={styles.chip}
+                    style={[styles.chip, { backgroundColor: active ? '#000' : 'transparent' }]}
                   >
-                    {pos}
+                    <Text style={{ color: active ? '#fff' : '#000' }}>{pos}</Text>
                   </Chip>
                 );
               })}
@@ -217,17 +188,25 @@ export default function TeamsScreen() {
               onChangeText={setJerseyText}
               keyboardType="numeric"
               returnKeyType="done"
+              mode="outlined"
+              textColor="#000"
+              outlineColor="rgba(0,0,0,0.12)"
+              activeOutlineColor="#000"
              //onSubmitEditing={handleSave}
             />
           </Dialog.Content>
           <Dialog.Actions>
-            {editingId ? <Button textColor={theme.colors.error} onPress={handleDelete}>Delete</Button> : <Button onPress={closeDialog}>Cancel</Button>}
-            <Button onPress={handleSave}>{editingId ? "Save" : "Create"}</Button>
+            {editingId ? (
+              <Button textColor={theme.colors.error} onPress={handleDelete}>Delete</Button>
+            ) : (
+              <Button textColor={theme.colors.error} onPress={closeDialog}>Cancel</Button>
+            )}
+            <Button textColor={editingId ? undefined : '#15af3bff'} onPress={handleSave}>{editingId ? "Save" : "Create"}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
 
-      <FAB style={[styles.fab, { backgroundColor: theme.colors.primary }]} icon="plus" label="New Player" onPress={openNew} />
+      <FAB style={[styles.fab, { backgroundColor: '#00ff41' }]} icon="plus" label="New Player" onPress={openNew} />
     </View>
   );
 }
@@ -244,10 +223,20 @@ const styles = StyleSheet.create({
     marginTop: 24,
     alignItems: "center",
   },
+  text: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  hintText: {
+    marginTop: 8,
+    textAlign: 'center',
+    color: '#cfcfcf',
+  },
   fab: {
     position: "absolute",
     right: 16,
     bottom: 24,
+    color: "#00ff41",
   },
   chipsRow: {
     flexDirection: "row",
@@ -270,5 +259,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     elevation: 2, // android shadow
+  },
+  dialog: {
+    backgroundColor: '#ffffffb9',
+  },
+  dialogTitle: {
+    color: '#000',
   },
 });

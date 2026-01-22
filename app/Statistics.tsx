@@ -215,3 +215,21 @@ export default function Statistics() {
         </>
     );
 }
+
+/*
+<Card.Title
+            title="Attach CSV"
+            titleStyle={{ textAlign: 'center', fontSize: 18, color: '#fff' }}
+            style={{ alignItems: 'center' }}
+            />
+            <Card.Content>
+            {csvFile ? (
+                <View style={{ padding: 8, borderWidth: 1, borderColor: '#222', borderRadius: 6, backgroundColor: '#070707' }}>
+                <Paragraph numberOfLines={1} style={{ color: '#fff', fontSize: 16 }}>{csvFile.name ?? csvFile.uri ?? 'Selected file'}</Paragraph>
+                <Button mode="contained" onPress={removeCsvFile} style={{ marginTop: 8, backgroundColor: '#000' }} labelStyle={{ color: '#fff' }}>Remove File</Button>
+                <Button mode="contained" onPress={pickCsvFile} style={{ marginTop: 8, backgroundColor: '#000' }} labelStyle={{ color: '#fff' }}>Change File</Button>
+                </View>
+            ) : (
+                <Button mode="contained" style={{ marginTop: 8, backgroundColor: '#000' }} labelStyle={{ color: '#fff' }} onPress={pickCsvFile}>Select CSV File</Button>
+            )}
+                */
