@@ -5,6 +5,7 @@ import Carousel from "react-native-reanimated-carousel";
 import { useAuth } from "./auth-context";
 import { deletePlayer, fetchPlayerInfo, savePlayerInfo } from "./realtimeDb";
 
+// Change for Nishant
 export default function TeamsScreen() {
   const { user } = useAuth();
   const theme = useTheme();
