@@ -153,18 +153,43 @@ export default function TeamsScreen() {
                   <List.Item
                     title={item.name}
                     description={
-                      <View style={{ flexDirection: "column", gap: 4 }}>
+                      <View style={{ flexDirection: "column", paddingTop: 8 }}>
                         <Text>
                           {`Positions: ${item.positions?.join(", ") || "N/A"}`}
                         </Text>
                         <Text>
                           {`Jersey Number: ${item.jerseyNumber != null ? item.jerseyNumber : "N/A"}`}
                         </Text>
+
+                        <View
+                          style={{
+                            marginTop: 8,
+                            borderTopWidth: 1,
+                            borderTopColor: "#ccc",
+                            paddingTop: 8,
+                          }}
+                        />
+
                         <Text>
-                          {`Games: ${GAMES}   RBI: ${RBI}`}
+                          {`Games: ${GAMES}`}
                         </Text>
                         <Text>
-                          {`BA: ${BA}   OBP: ${OBP}   SLG: ${SLG}   QAB: ${QAB}`}
+                          {`BA: ${BA}`}
+                        </Text>
+                        <Text>
+                          {`OBP: ${OBP}`}
+                        </Text>
+                        <Text>
+                          {`SLG: ${SLG}`}
+                        </Text>
+                        <Text>
+                          {`RBI: ${RBI}`}
+                        </Text>
+                        <Text>
+                          {`QAB%: ${QAB}`}
+                        </Text>
+                        <Text>
+                          Tap card to edit player
                         </Text>
                       </View>
                     }
