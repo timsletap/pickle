@@ -79,7 +79,7 @@ export default function EditingUsername() {
                             keyboardType="default"
                             mode="outlined"
                             outlineColor="rgba(0, 255, 64, 0.7)"
-                            activeOutlineColor="#00ff41"
+                            activeOutlineColor="#00a878"
                             textColor="#fff"
                             style={styles.editUser}
                             onChangeText={(t) => { setEditingUsername(t); if (error) setError(null); if (updated) setUpdated(false); }}
@@ -126,14 +126,14 @@ const styles = StyleSheet.create({
     },
     updateButton: {
         marginLeft: 8,
-        backgroundColor: '#00ff41',
+        backgroundColor: '#00a878',
     },
     updateLabel: {
         color: '#000',
         fontWeight: '700',
     },
     updatedText: {
-        color: '#00ff41',
+        color: '#00a878',
         marginTop: 8,
     },
     errorText: {
@@ -159,14 +159,14 @@ const styles = StyleSheet.create({
         fontWeight: "400",
         color: "#fdfdfdff",
         letterSpacing: 0.6,
-        textShadowColor: "rgba(0, 255, 65, 0.06)",
+        textShadowColor: "rgba(0, 168, 120, 0.06)",
         textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 4,
     },
     editUserFocused: {
         backgroundColor: "rgba(255,255,255,0.02)",
         borderRadius: 12,
-        shadowColor: "#00ff41",
+        shadowColor: "#00a878",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.12,
         shadowRadius: 6,

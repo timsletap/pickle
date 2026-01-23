@@ -1,5 +1,4 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Text, TouchableOpacity, View, Alert, Easing } from "react-native";
 import DrillsList from "../DugoutFolder/DrillsList";
@@ -162,55 +161,38 @@ export default function Dugout() {
           transform: [{ translateY: slideAnim }],
         }}
       >
-        <LinearGradient
-          colors={["#000000", "#001a00", "#002200", "#001a00", "#000000"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <View
           style={{
-            paddingTop: 60,
-            paddingBottom: 24,
-            paddingHorizontal: 24,
-            borderBottomLeftRadius: 32,
-            borderBottomRightRadius: 32,
-            shadowColor: "#00ff41",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.4,
-            shadowRadius: 20,
-            elevation: 12,
+            paddingTop: 50,
+            paddingBottom: 20,
+            paddingHorizontal: 20,
+            backgroundColor: "#0c0c0e",
+            borderBottomWidth: 1,
+            borderBottomColor: "rgba(0, 168, 120, 0.22)",
           }}
         >
-          {/* Animated glow effect */}
-          <LinearGradient
-            colors={["transparent", "rgba(0, 255, 65, 0.05)", "transparent"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderBottomLeftRadius: 32,
-              borderBottomRightRadius: 32,
-            }}
-          />
-
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <View>
               <Text style={{
-                fontSize: 42,
+                fontSize: 12,
+                color: "#00a878",
+                fontWeight: "700",
+                letterSpacing: 3,
+                marginTop: 4,
+              }}>
+                TRAINING CENTER
+              </Text>
+              <Text style={{
+                fontSize: 28,
                 fontWeight: "900",
                 color: "#fff",
-                letterSpacing: 2,
-                textShadowColor: "rgba(0, 255, 65, 0.3)",
-                textShadowOffset: { width: 0, height: 2 },
-                textShadowRadius: 10,
+                letterSpacing: 1,
               }}>
-                DUGOUT
+                Dugout
               </Text>
             </View>
 
-            {/* Glassmorphic Status Indicator */}
+            {/* Status Indicator */}
             <TouchableOpacity
               onPress={recheckConnection}
               activeOpacity={0.7}
@@ -218,7 +200,7 @@ export default function Dugout() {
                 flexDirection: "row",
                 alignItems: "center",
                 backgroundColor: apiStatus === 'connected'
-                  ? "rgba(0, 255, 65, 0.15)"
+                  ? "rgba(0, 168, 120, 0.15)"
                   : apiStatus === 'disconnected'
                   ? "rgba(255, 0, 0, 0.15)"
                   : "rgba(255, 165, 0, 0.15)",
@@ -227,11 +209,11 @@ export default function Dugout() {
                 borderRadius: 20,
                 borderWidth: 1.5,
                 borderColor: apiStatus === 'connected'
-                  ? "rgba(0, 255, 65, 0.4)"
+                  ? "rgba(0, 168, 120, 0.4)"
                   : apiStatus === 'disconnected'
                   ? "rgba(255, 0, 0, 0.4)"
                   : "rgba(255, 165, 0, 0.4)",
-                shadowColor: apiStatus === 'connected' ? "#00ff41" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
+                shadowColor: apiStatus === 'connected' ? "#00a878" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.6,
                 shadowRadius: 8,
@@ -242,10 +224,10 @@ export default function Dugout() {
                 width: 10,
                 height: 10,
                 borderRadius: 5,
-                backgroundColor: apiStatus === 'connected' ? "#00ff41" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
+                backgroundColor: apiStatus === 'connected' ? "#00a878" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
                 marginRight: 8,
                 transform: [{ scale: apiStatus === 'checking' ? statusPulse : 1 }],
-                shadowColor: apiStatus === 'connected' ? "#00ff41" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
+                shadowColor: apiStatus === 'connected' ? "#00a878" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
                 shadowOffset: { width: 0, height: 0 },
                 shadowOpacity: 0.8,
                 shadowRadius: 6,
@@ -253,7 +235,7 @@ export default function Dugout() {
               <Text style={{
                 fontSize: 11,
                 fontWeight: "800",
-                color: apiStatus === 'connected' ? "#00ff41" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
+                color: apiStatus === 'connected' ? "#00a878" : apiStatus === 'disconnected' ? "#ff0000" : "#FFA500",
                 letterSpacing: 1,
               }}>
                 {apiStatus === 'connected' ? 'LIVE' : apiStatus === 'disconnected' ? 'OFFLINE' : 'SYNCING'}
@@ -261,18 +243,7 @@ export default function Dugout() {
             </TouchableOpacity>
           </View>
 
-          <Text style={{
-            fontSize: 13,
-            color: "#00ff41",
-            fontWeight: "700",
-            letterSpacing: 4,
-            opacity: 0.8,
-            marginBottom: 20,
-          }}>
-            TRAINING COMMAND CENTER
-          </Text>
-
-          {/* Next-Gen Floating Tab Bar with Glassmorphism */}
+          {/* Tab Bar */}
           <View
             style={{
               flexDirection: "row",
@@ -281,8 +252,8 @@ export default function Dugout() {
               borderRadius: 20,
               padding: 5,
               borderWidth: 1.5,
-              borderColor: "rgba(0, 255, 65, 0.25)",
-              shadowColor: "#00ff41",
+              borderColor: "rgba(0, 168, 120, 0.25)",
+              shadowColor: "#00a878",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 15,
@@ -303,7 +274,7 @@ export default function Dugout() {
                   bottom: 5,
                   width: tabWidth,
                   borderRadius: 15,
-                  overflow: "hidden",
+                  backgroundColor: "#00a878",
                   transform: [{
                     translateX: tabAnimation.interpolate({
                       inputRange: [0, 1, 2],
@@ -311,21 +282,7 @@ export default function Dugout() {
                     })
                   }],
                 }}
-              >
-                <LinearGradient
-                  colors={["#00ff41", "#00dd3a", "#00ff41"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    flex: 1,
-                    shadowColor: "#00ff41",
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.9,
-                    shadowRadius: 15,
-                    elevation: 10,
-                  }}
-                />
-              </Animated.View>
+              />
             )}
 
             {/* Drills Tab */}
@@ -344,13 +301,13 @@ export default function Dugout() {
                 <MaterialCommunityIcons
                   name={getTabIcon("drills")}
                   size={24}
-                  color={activeTab === "drills" ? "#000" : "#00ff41"}
+                  color={activeTab === "drills" ? "#000" : "#00a878"}
                   style={{ marginBottom: 6 }}
                 />
                 <Text style={{
                   fontSize: 11,
                   fontWeight: "800",
-                  color: activeTab === "drills" ? "#000" : "#00ff41",
+                  color: activeTab === "drills" ? "#000" : "#00a878",
                   letterSpacing: 0.8,
                 }}>
                   DRILLS
@@ -374,13 +331,13 @@ export default function Dugout() {
                 <MaterialCommunityIcons
                   name={getTabIcon("practice")}
                   size={24}
-                  color={activeTab === "practice" ? "#000" : "#00ff41"}
+                  color={activeTab === "practice" ? "#000" : "#00a878"}
                   style={{ marginBottom: 6 }}
                 />
                 <Text style={{
                   fontSize: 11,
                   fontWeight: "800",
-                  color: activeTab === "practice" ? "#000" : "#00ff41",
+                  color: activeTab === "practice" ? "#000" : "#00a878",
                   letterSpacing: 0.8,
                 }}>
                   PRACTICE
@@ -404,13 +361,13 @@ export default function Dugout() {
                 <MaterialCommunityIcons
                   name={getTabIcon("equipment")}
                   size={24}
-                  color={activeTab === "equipment" ? "#000" : "#00ff41"}
+                  color={activeTab === "equipment" ? "#000" : "#00a878"}
                   style={{ marginBottom: 6 }}
                 />
                 <Text style={{
                   fontSize: 11,
                   fontWeight: "800",
-                  color: activeTab === "equipment" ? "#000" : "#00ff41",
+                  color: activeTab === "equipment" ? "#000" : "#00a878",
                   letterSpacing: 0.8,
                 }}>
                   GEAR
@@ -418,10 +375,10 @@ export default function Dugout() {
               </TouchableOpacity>
             </Animated.View>
           </View>
-        </LinearGradient>
+        </View>
       </Animated.View>
 
-      {/* Content Area with Smooth Transitions */}
+      {/* Content Area */}
       <Animated.View
         style={{
           flex: 1,

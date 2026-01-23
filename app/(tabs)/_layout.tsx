@@ -1,5 +1,5 @@
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from "expo-router";
 import { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
@@ -74,19 +74,19 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: '#00ff41',
-        tabBarInactiveTintColor: 'rgba(0, 255, 65, 0.35)',
+        tabBarActiveTintColor: '#00a878',
+        tabBarInactiveTintColor: 'rgba(0, 168, 120, 0.4)',
         tabBarLabelStyle: styles.tabLabel,
         tabBarButton: (props) => <AnimatedTabButton {...props} />,
       }}
     >
       <Tabs.Screen
-        name="profile"
+        name="home"
         options={{
-          title: "Profile",
+          title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome6
-              name="user-circle"
+            <Ionicons
+              name={focused ? "home" : "home-outline"}
               size={focused ? 26 : 22}
               color={color}
               style={focused ? styles.iconShadow : undefined}
@@ -136,6 +136,20 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, focused }) => (
+            <FontAwesome6
+              name="user-circle"
+              size={focused ? 26 : 22}
+              color={color}
+              style={focused ? styles.iconShadow : undefined}
+            />
+          ),
+        }}
+      />
       <Tabs.Screen name="index" options={{ href: null }} />
       <Tabs.Screen name="EditingUsername" options={{ href: null }} />
     </Tabs>
@@ -144,13 +158,13 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: '#000',
+    backgroundColor: '#0c0c0e',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 255, 65, 0.15)',
+    borderTopColor: 'rgba(0, 168, 120, 0.15)',
     height: 75,
     paddingBottom: 12,
     paddingTop: 8,
-    shadowColor: '#00ff41',
+    shadowColor: '#00a878',
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
@@ -173,7 +187,7 @@ const styles = StyleSheet.create({
     left: '15%',
     right: '15%',
     bottom: 4,
-    backgroundColor: 'rgba(0, 255, 65, 0.1)',
+    backgroundColor: 'rgba(0, 168, 120, 0.1)',
     borderRadius: 16,
   },
   activeIndicator: {
@@ -182,8 +196,8 @@ const styles = StyleSheet.create({
     width: 20,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#00ff41',
-    shadowColor: '#00ff41',
+    backgroundColor: '#00a878',
+    shadowColor: '#00a878',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 8,
@@ -196,8 +210,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   iconShadow: {
-    textShadowColor: '#00ff41',
+    textShadowColor: '#00a878',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    textShadowRadius: 8,
   },
 });

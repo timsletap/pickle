@@ -207,7 +207,7 @@ export default function TeamsScreen() {
                     //onPress={() => openEdit(item)}
                     style={[
                       styles.card,
-                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1.5, borderColor: 'rgba(0,255,65,0.18)' },
+                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1.5, borderColor: 'rgba(0,168,120,0.18)' },
                     ]}
                     titleStyle={{ fontSize: 20, fontWeight: "600", color: '#fff' }}
                     descriptionStyle={{ fontSize: 16, color: '#cfeecf' }}
@@ -262,7 +262,7 @@ export default function TeamsScreen() {
         </Dialog>
       </Portal>
 
-  <FAB style={[styles.fab, { backgroundColor: '#00ff41' }]} icon="plus" label="New Player" onPress={openNew} />
+  <FAB style={[styles.fab, { backgroundColor: '#00a878' }]} icon="plus" label="New Player" onPress={openNew} />
     </View>
   );
 }

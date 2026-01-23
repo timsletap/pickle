@@ -171,8 +171,8 @@ export default function Lineups() {
             borderRadius: 20,
             padding: 5,
             borderWidth: 1.5,
-            borderColor: 'rgba(0, 255, 65, 0.25)',
-            shadowColor: '#00ff41',
+            borderColor: 'rgba(0, 168, 120, 0.25)',
+            shadowColor: '#00a878',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 15,
@@ -201,12 +201,7 @@ export default function Lineups() {
                 }],
               }}
             >
-              <LinearGradient
-                colors={['#00ff41', '#00cc33', '#00ff41']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{ flex: 1 }}
-              />
+              <View style={{ flex: 1, backgroundColor: '#00a878' }} />
             </Animated.View>
           )}
 
@@ -226,13 +221,13 @@ export default function Lineups() {
             <MaterialCommunityIcons
               name="shield-outline"
               size={22}
-              color={viewMode === 'defense' ? '#000' : '#00ff41'}
+              color={viewMode === 'defense' ? '#000' : '#00a878'}
               style={{ marginBottom: 4 }}
             />
             <Text style={{
               fontSize: 11,
               fontWeight: '800',
-              color: viewMode === 'defense' ? '#000' : '#00ff41',
+              color: viewMode === 'defense' ? '#000' : '#00a878',
               letterSpacing: 0.8,
             }}>
               DEFENSE
@@ -255,13 +250,13 @@ export default function Lineups() {
             <MaterialCommunityIcons
               name="baseball-bat"
               size={22}
-              color={viewMode === 'offense' ? '#000' : '#00ff41'}
+              color={viewMode === 'offense' ? '#000' : '#00a878'}
               style={{ marginBottom: 4 }}
             />
             <Text style={{
               fontSize: 11,
               fontWeight: '800',
-              color: viewMode === 'offense' ? '#000' : '#00ff41',
+              color: viewMode === 'offense' ? '#000' : '#00a878',
               letterSpacing: 0.8,
             }}>
               OFFENSE

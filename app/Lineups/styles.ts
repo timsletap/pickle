@@ -1,21 +1,21 @@
 import { StyleSheet } from 'react-native';
 
-// Theme colors matching Dugout and ChalkTalk
+// Professional jade green color palette
 export const colors = {
-  background: '#0a0a0a',
-  backgroundDark: '#000',
-  primary: '#00ff41',
-  primaryMuted: 'rgba(0, 255, 65, 0.8)',
-  primaryDim: 'rgba(0, 255, 65, 0.15)',
-  primaryBorder: 'rgba(0, 255, 65, 0.25)',
-  cardBg: 'rgba(0, 255, 65, 0.08)',
-  cardBorder: 'rgba(0, 255, 65, 0.2)',
-  white: '#fff',
-  textMuted: 'rgba(255, 255, 255, 0.7)',
-  textDim: 'rgba(255, 255, 255, 0.5)',
-  fieldGreen: '#1a472a',
-  fieldGreenLight: '#2d5a3d',
-  fieldGreenDark: '#0d2818',
+  background: '#141416',
+  backgroundDark: '#0c0c0e',
+  primary: '#00a878',
+  primaryMuted: 'rgba(0, 168, 120, 0.75)',
+  primaryDim: 'rgba(0, 168, 120, 0.12)',
+  primaryBorder: 'rgba(0, 168, 120, 0.22)',
+  cardBg: 'rgba(0, 168, 120, 0.07)',
+  cardBorder: 'rgba(0, 168, 120, 0.18)',
+  white: '#f5f5f5',
+  textMuted: 'rgba(255, 255, 255, 0.65)',
+  textDim: 'rgba(255, 255, 255, 0.4)',
+  fieldGreen: '#1a3830',
+  fieldGreenLight: '#264a40',
+  fieldGreenDark: '#122822',
 };
 
 export default StyleSheet.create({

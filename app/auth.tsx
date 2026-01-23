@@ -1,228 +1,332 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useState } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
-import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Easing,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
+import { Text } from "react-native-paper";
 import { useAuth } from "./auth-context";
 
+const colors = {
+  background: '#141416',
+  backgroundDark: '#0c0c0e',
+  primary: '#00a878',
+  primaryMuted: 'rgba(0, 168, 120, 0.75)',
+  primaryDim: 'rgba(0, 168, 120, 0.12)',
+  primaryBorder: 'rgba(0, 168, 120, 0.22)',
+  cardBg: 'rgba(0, 168, 120, 0.07)',
+  cardBorder: 'rgba(0, 168, 120, 0.18)',
+  white: '#f5f5f5',
+  textMuted: 'rgba(255, 255, 255, 0.65)',
+  textDim: 'rgba(255, 255, 255, 0.4)',
+  error: '#f87171',
+  errorDim: 'rgba(248, 113, 113, 0.12)',
+};
+
 export default function AuthScreen() {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-    //State to track whether user is signing up or signing in
-    const [isSignUp, setIsSignUp] = useState<boolean>(false);
+  const { signUp, signIn } = useAuth();
 
-    //States to hold email, username and password inputs
-    const [email, setEmail] = useState<string>("");
-    const [password, setPassword] = useState<string>("");
-    const [username, setUsername] = useState<string>("");
-    const [error, setError] = useState<string | null>(null);
-    // Focus state to show floating labels
-    const [emailFocused, setEmailFocused] = useState<boolean>(false);
-    const [passwordFocused, setPasswordFocused] = useState<boolean>(false);
-    const [usernameFocused, setUsernameFocused] = useState<boolean>(false);
+  // Simple entrance animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
 
-    const theme = useTheme();
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
-    //Function to handle switching between Sign In and Sign Up modes
-    const handleSwitchMode = () => {
-        setIsSignUp(!isSignUp);
+  const handleSwitchMode = () => {
+    setIsSignUp(!isSignUp);
+    setError(null);
+  };
+
+  const handleAuth = async () => {
+    setError(null);
+
+    if (!email || !password || (isSignUp && !username)) {
+      setError("Please fill in all fields");
+      return;
     }
 
-    //Authentication logic: sign in or sign up via Firebase (using AuthContext)
-    const { signUp, signIn } = useAuth();
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
 
-    const handleAuth = async () => {
-        setError(null);
-
-        if (!email || !password || (isSignUp && !username)) {
-            setError("One or more fields are currently empty");
-            return;
+    try {
+      if (isSignUp) {
+        const errMsg = await signUp(email, password, username);
+        if (errMsg) {
+          setError(errMsg);
+          return;
         }
-
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters long");
-            return;
+      } else {
+        const errMsg = await signIn(email, password);
+        if (errMsg) {
+          setError(errMsg);
+          return;
         }
+      }
+      router.replace("/(tabs)/profile");
+    } catch (err: any) {
+      setError(err.message || "Authentication failed");
+    }
+  };
 
-        try {
-            if (isSignUp) {
-                const errMsg = await signUp(email, password, username);
-                if (errMsg) {
-                    setError("Sign up failed: " + errMsg);
-                    return;
-                }
-            } else {
-                const errMsg = await signIn(email, password);
-                if (errMsg) {
-                    setError("Sign in failed: " + errMsg);
-                    return;
-                }
-            }
-            // On success navigate to Profile inside the tabs group
-            router.replace("/(tabs)/profile");
-        } catch (err: any) {
-            setError("Authentication failed: " + err.message);
-        }
-    };
-
-
-    return (
-        <KeyboardAvoidingView   //So keyboard doesn't cover inputs
-            behavior={Platform.OS === "ios" ? "padding" : "height"}    //Makes room for keyboard
-            style={styles.container} //Applies styling from below Stylesheet
+  return (
+    <View style={styles.page}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        {/* Header */}
+        <Animated.View
+          style={[
+            styles.header,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
         >
-            <LinearGradient
-                colors={["#000", "#0a1f0a", "#000"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.headerGradient}
-            >
-                <Text style={styles.headerTitle}>{isSignUp ? "Create Account" : "Welcome Back"}</Text>
-                <Text style={styles.headerSubtitle}>{isSignUp ? "Create your account to get started" : "Sign in to continue"}</Text>
-            </LinearGradient>
+          <Text style={styles.headerSubtitle}>PICKLE</Text>
+          <Text style={styles.headerTitle}>
+            {isSignUp ? "Create Account" : "Welcome Back"}
+          </Text>
+        </Animated.View>
 
-            <View style={styles.content}>
-                <View style={styles.fieldWrap}>
-                    {(emailFocused || email) ? <Text>Email</Text> : null}
-                    <TextInput
-                        placeholder="Email"
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                        mode="outlined"
-                        outlineColor="rgba(0,255,64,0.7)"
-                        activeOutlineColor="#00ff41"
-                        textColor="#fff"
-                        style={styles.input}
-                        onChangeText={setEmail}
-                        value={email}
-                        onFocus={() => setEmailFocused(true)}
-                        onBlur={() => setEmailFocused(false)}
-                    />
-                </View>
+        {/* Form Card */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          {/* Email Field */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>EMAIL</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              placeholderTextColor={colors.textDim}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              cursorColor={colors.primary}
+              selectionColor={colors.primaryDim}
+            />
+          </View>
 
-                {isSignUp ? (
-                    <View style={styles.fieldWrap}>
-                        {(usernameFocused || username) ? <Text>Username</Text> : null}
-                        <TextInput
-                            placeholder="Username"
-                            autoCapitalize="none"
-                            keyboardType="default"
-                            mode="outlined"
-                            outlineColor="rgba(0, 255, 64, 0.7)"
-                            activeOutlineColor="#00ff41"
-                            textColor="#fff"
-                            style={styles.input}
-                            onChangeText={setUsername}
-                            value={username}
-                            onFocus={() => setUsernameFocused(true)}
-                            onBlur={() => setUsernameFocused(false)}
-                        />
-                    </View>
-                ) : null}
-
-                <View style={styles.fieldWrap}>
-                    {(passwordFocused || password) ? <Text>Password</Text> : null}
-                    <TextInput
-                        placeholder="Password"
-                        autoCapitalize="none"
-                        mode="outlined"
-                        secureTextEntry
-                        outlineColor="rgba(0, 255, 64, 0.7)"
-                        activeOutlineColor="#00ff41"
-                        textColor="#fff"
-                        style={styles.input}
-                        onChangeText={setPassword}
-                        value={password}
-                        onFocus={() => setPasswordFocused(true)}
-                        onBlur={() => setPasswordFocused(false)}
-                    />
-                </View>
-
-                {/* Style & Display error message if exists */}
-                {error ? <Text style={{ color: theme.colors.error, marginBottom: 8 }}>{error}</Text> : null}
-
-                <Button mode="contained" style={styles.biggerButton} onPress={handleAuth} textColor="#000">
-                    {isSignUp ? "Sign Up" : "Sign In"}
-                </Button>
-                <Button mode="text" onPress={handleSwitchMode} style={styles.button} textColor="#00ff41">
-                    {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
-                </Button>
-
+          {/* Username Field (Sign Up only) */}
+          {isSignUp && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>USERNAME</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Choose a username"
+                placeholderTextColor={colors.textDim}
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                cursorColor={colors.primary}
+                selectionColor={colors.primaryDim}
+              />
             </View>
+          )}
 
-        </KeyboardAvoidingView>
-    );
+          {/* Password Field */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>PASSWORD</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              placeholderTextColor={colors.textDim}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              cursorColor={colors.primary}
+              selectionColor={colors.primaryDim}
+            />
+          </View>
+
+          {/* Error Message */}
+          {error && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {/* Submit Button */}
+          <Pressable
+            onPress={handleAuth}
+            style={({ pressed }) => [
+              styles.submitButton,
+              pressed && styles.submitButtonPressed,
+            ]}
+          >
+            <LinearGradient
+              colors={[colors.primary, '#009068', colors.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.submitButtonGradient}
+            >
+              <Text style={styles.submitButtonText}>
+                {isSignUp ? "Create Account" : "Sign In"}
+              </Text>
+            </LinearGradient>
+          </Pressable>
+
+          {/* Switch Mode */}
+          <Pressable onPress={handleSwitchMode} style={styles.switchButton}>
+            <Text style={styles.switchText}>
+              {isSignUp
+                ? "Already have an account? "
+                : "Don't have an account? "}
+              <Text style={styles.switchTextHighlight}>
+                {isSignUp ? "Sign In" : "Sign Up"}
+              </Text>
+            </Text>
+          </Pressable>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        padding: 20,
-        backgroundColor: "#000000ff"
-    },
-
-    content: {
-        flex: 1,
-        backgroundColor: "rgba(10,10,10,0.85)",
-        padding: 20,
-        borderRadius: 12,
-        marginTop: 12,
-        borderColor: "rgba(0,255,65,0.06)",
-        borderWidth: 1,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-
-    title: {
-        textAlign: "center",
-        marginBottom: 16,
-    },
-
-    input: {
-        marginBottom: 16,
-        backgroundColor: "transparent",
-    },
-
-    biggerButton: {
-        fontSize: 18,
-        marginTop: 8,
-        backgroundColor: "#00ff41",
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-
-    button: {
-        marginTop: 12,
-    },
-    headerGradient: {
-        paddingTop: 56,
-        paddingBottom: 16,
-        paddingHorizontal: 20,
-        borderRadius: 12,
-    },
-    headerTitle: {
-        color: "#ffffff",
-        fontSize: 28,
-        fontWeight: "700",
-        textAlign: "center",
-        marginBottom: 14,
-    },
-    headerSubtitle: {
-        color: "rgba(255,255,255,0.85)",
-        fontSize: 13,
-        textAlign: "center",
-        marginBottom: 2,
-        fontWeight: "400",
-    },
-
-    fieldWrap: {
-        marginBottom: 8,
-    },
-
+  page: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  header: {
+    marginBottom: 24,
+    paddingHorizontal: 4,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: "700",
+    letterSpacing: 3,
+    marginBottom: 8,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: "900",
+    color: colors.white,
+    letterSpacing: 1,
+  },
+  card: {
+    backgroundColor: colors.backgroundDark,
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primary,
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: colors.cardBg,
+    borderWidth: 1.5,
+    borderColor: colors.cardBorder,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: colors.white,
+    fontWeight: "500",
+  },
+  errorBox: {
+    backgroundColor: colors.errorDim,
+    borderWidth: 1,
+    borderColor: colors.error,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  submitButton: {
+    borderRadius: 12,
+    overflow: "hidden",
+    marginTop: 4,
+  },
+  submitButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  submitButtonGradient: {
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  submitButtonText: {
+    color: colors.backgroundDark,
+    fontSize: 15,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  switchButton: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  switchText: {
+    color: colors.textMuted,
+    fontSize: 14,
+  },
+  switchTextHighlight: {
+    color: colors.primary,
+    fontWeight: "700",
+  },
 });

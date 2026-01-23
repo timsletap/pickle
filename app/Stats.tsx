@@ -17,6 +17,20 @@ export default function StatsScreen() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Stats editor state - must be before any conditional returns
+  const [statsDialogVisible, setStatsDialogVisible] = useState(false);
+  const [editingStatsId, setEditingStatsId] = useState<string | null>(null);
+  const [editingPlayerName, setEditingPlayerName] = useState<string | null>(null);
+  const [baText, setBaText] = useState("");
+  const [obpText, setObpText] = useState("");
+  const [slgText, setSlgText] = useState("");
+  const [rbiText, setRbiText] = useState("");
+  const [gamesText, setGamesText] = useState("");
+  const [qabText, setQabText] = useState("");
+
+  // Selected stat (single choice). null = none (default alphabetical).
+  const [selectedStat, setSelectedStat] = useState<string | null>(null);
+
   useEffect(() => {
     if (!user) return;
 
@@ -48,17 +62,6 @@ export default function StatsScreen() {
     );
   }
 
-  // Stats editor state
-  const [statsDialogVisible, setStatsDialogVisible] = useState(false);
-  const [editingStatsId, setEditingStatsId] = useState<string | null>(null);
-  const [editingPlayerName, setEditingPlayerName] = useState<string | null>(null);
-  const [baText, setBaText] = useState("");
-  const [obpText, setObpText] = useState("");
-  const [slgText, setSlgText] = useState("");
-  const [rbiText, setRbiText] = useState("");
-  const [gamesText, setGamesText] = useState("");
-  const [qabText, setQabText] = useState("");
-
   const openStatsEditor = (p: Player) => {
     setEditingStatsId(p.id);
     setEditingPlayerName(p.name ?? null);
@@ -70,11 +73,7 @@ export default function StatsScreen() {
     setGamesText(s.games != null ? String(s.games) : "");
     setQabText(s.qab != null ? String(s.qab) : "");
     setStatsDialogVisible(true);
-    
   };
-
-  // Selected stat (single choice). null = none (default alphabetical).
-  const [selectedStat, setSelectedStat] = useState<string | null>(null);
 
   const toggleFilter = (key: string) => {
     if (selectedStat === key) setSelectedStat(null);

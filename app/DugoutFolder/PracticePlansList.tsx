@@ -225,19 +225,19 @@ export default function PracticePlansList() {
   if (selectedPlan) {
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
-        <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "rgba(0, 255, 65, 0.1)" }}>
+        <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "rgba(0, 168, 120, 0.1)" }}>
           <TouchableOpacity onPress={() => setSelectedPlan(null)}>
-            <Text style={{ fontSize: 16, color: "#00ff41", fontWeight: "600" }}>← Back</Text>
+            <Text style={{ fontSize: 16, color: "#00a878", fontWeight: "600" }}>← Back</Text>
           </TouchableOpacity>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
             <Text style={{ fontSize: 24, fontWeight: "bold", color: "#fff" }}>{selectedPlan.name}</Text>
             <TouchableOpacity
               onPress={openDrillSelector}
               style={{
-                backgroundColor: "#00ff41",
+                backgroundColor: "#00a878",
                 padding: 10,
                 borderRadius: 12,
-                shadowColor: "#00ff41",
+                shadowColor: "#00a878",
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.4,
                 shadowRadius: 8,
@@ -261,30 +261,30 @@ export default function PracticePlansList() {
               backgroundColor: "rgba(255, 255, 255, 0.03)",
               borderRadius: 12,
               borderWidth: 1,
-              borderColor: "rgba(0, 255, 65, 0.15)",
+              borderColor: "rgba(0, 168, 120, 0.15)",
               flexDirection: "row"
             }}>
-              <Text style={{ fontSize: 18, fontWeight: "bold", marginRight: 15, color: "#00ff41" }}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", marginRight: 15, color: "#00a878" }}>
                 {index + 1}.
               </Text>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 5, color: "#fff" }}>{item.title}</Text>
-                <Text style={{ fontSize: 12, color: "#00ff41", textTransform: "uppercase", fontWeight: "600" }}>{item.skill_focus}</Text>
+                <Text style={{ fontSize: 12, color: "#00a878", textTransform: "uppercase", fontWeight: "600" }}>{item.skill_focus}</Text>
               </View>
             </View>
           )}
           ListEmptyComponent={
             <View style={{ padding: 40, alignItems: "center" }}>
-              <MaterialCommunityIcons name="clipboard-text-outline" size={60} color="rgba(0, 255, 65, 0.2)" />
+              <MaterialCommunityIcons name="clipboard-text-outline" size={60} color="rgba(0, 168, 120, 0.2)" />
               <Text style={{ fontSize: 16, color: "#666", marginTop: 16, marginBottom: 10 }}>No drills added yet</Text>
               <TouchableOpacity
                 onPress={openDrillSelector}
                 style={{
-                  backgroundColor: "#00ff41",
+                  backgroundColor: "#00a878",
                   padding: 12,
                   paddingHorizontal: 20,
                   borderRadius: 12,
-                  shadowColor: "#00ff41",
+                  shadowColor: "#00a878",
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.4,
                   shadowRadius: 8
@@ -302,12 +302,12 @@ export default function PracticePlansList() {
               padding: 20,
               paddingTop: 60,
               borderBottomWidth: 1,
-              borderBottomColor: "rgba(0, 255, 65, 0.2)",
+              borderBottomColor: "rgba(0, 168, 120, 0.2)",
               backgroundColor: "#0a0a0a"
             }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
                 <View>
-                  <Text style={{ fontSize: 14, color: "#00ff41", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>SELECT</Text>
+                  <Text style={{ fontSize: 14, color: "#00a878", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>SELECT</Text>
                   <Text style={{ fontSize: 28, fontWeight: "900", color: "#fff" }}>Add Drill</Text>
                 </View>
                 <TouchableOpacity
@@ -318,7 +318,7 @@ export default function PracticePlansList() {
                     borderRadius: 12
                   }}
                 >
-                  <MaterialCommunityIcons name="close" size={28} color="#00ff41" />
+                  <MaterialCommunityIcons name="close" size={28} color="#00a878" />
                 </TouchableOpacity>
               </View>
 
@@ -329,13 +329,13 @@ export default function PracticePlansList() {
                     paddingVertical: 10,
                     paddingHorizontal: 18,
                     marginHorizontal: 4,
-                    backgroundColor: drillFilter === "" ? "#00ff41" : "rgba(0, 255, 65, 0.1)",
+                    backgroundColor: drillFilter === "" ? "#00a878" : "rgba(0, 168, 120, 0.1)",
                     borderRadius: 20,
                     borderWidth: 1,
-                    borderColor: drillFilter === "" ? "#00ff41" : "rgba(0, 255, 65, 0.3)"
+                    borderColor: drillFilter === "" ? "#00a878" : "rgba(0, 168, 120, 0.3)"
                   }}
                 >
-                  <Text style={{ color: drillFilter === "" ? "#000" : "#00ff41", fontWeight: "700", fontSize: 13 }}>ALL</Text>
+                  <Text style={{ color: drillFilter === "" ? "#000" : "#00a878", fontWeight: "700", fontSize: 13 }}>ALL</Text>
                 </TouchableOpacity>
                 {["hitting", "fielding", "pitching", "baserunning"].map((skill) => (
                   <TouchableOpacity
@@ -345,13 +345,13 @@ export default function PracticePlansList() {
                       paddingVertical: 10,
                       paddingHorizontal: 18,
                       marginHorizontal: 4,
-                      backgroundColor: drillFilter === skill ? "#00ff41" : "rgba(0, 255, 65, 0.1)",
+                      backgroundColor: drillFilter === skill ? "#00a878" : "rgba(0, 168, 120, 0.1)",
                       borderRadius: 20,
                       borderWidth: 1,
-                      borderColor: drillFilter === skill ? "#00ff41" : "rgba(0, 255, 65, 0.3)"
+                      borderColor: drillFilter === skill ? "#00a878" : "rgba(0, 168, 120, 0.3)"
                     }}
                   >
-                    <Text style={{ color: drillFilter === skill ? "#000" : "#00ff41", textTransform: "uppercase", fontWeight: "700", fontSize: 13 }}>
+                    <Text style={{ color: drillFilter === skill ? "#000" : "#00a878", textTransform: "uppercase", fontWeight: "700", fontSize: 13 }}>
                       {skill}
                     </Text>
                   </TouchableOpacity>
@@ -373,21 +373,21 @@ export default function PracticePlansList() {
                     backgroundColor: "rgba(255, 255, 255, 0.03)",
                     borderRadius: 12,
                     borderWidth: 1,
-                    borderColor: "rgba(0, 255, 65, 0.15)"
+                    borderColor: "rgba(0, 168, 120, 0.15)"
                   }}
                 >
                   <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 5, color: "#fff" }}>{item.title}</Text>
                   <Text style={{ fontSize: 13, color: "#999", marginBottom: 5 }}>{item.description}</Text>
                   <View style={{
-                    backgroundColor: "rgba(0, 255, 65, 0.1)",
+                    backgroundColor: "rgba(0, 168, 120, 0.1)",
                     paddingVertical: 4,
                     paddingHorizontal: 10,
                     borderRadius: 8,
                     alignSelf: "flex-start",
                     borderWidth: 1,
-                    borderColor: "rgba(0, 255, 65, 0.3)"
+                    borderColor: "rgba(0, 168, 120, 0.3)"
                   }}>
-                    <Text style={{ fontSize: 11, color: "#00ff41", textTransform: "uppercase", fontWeight: "700" }}>{item.skill_focus}</Text>
+                    <Text style={{ fontSize: 11, color: "#00a878", textTransform: "uppercase", fontWeight: "700" }}>{item.skill_focus}</Text>
                   </View>
                 </TouchableOpacity>
               )}
@@ -400,21 +400,21 @@ export default function PracticePlansList() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
-      <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "rgba(0, 255, 65, 0.1)" }}>
+      <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "rgba(0, 168, 120, 0.1)" }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
           <View>
-            <Text style={{ fontSize: 14, color: "#00ff41", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>TRAINING</Text>
+            <Text style={{ fontSize: 14, color: "#00a878", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>TRAINING</Text>
             <Text style={{ fontSize: 28, fontWeight: "900", color: "#fff" }}>Practice Plans</Text>
           </View>
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
             style={{
-              backgroundColor: "#00ff41",
+              backgroundColor: "#00a878",
               padding: 12,
               borderRadius: 12,
               flexDirection: "row",
               alignItems: "center",
-              shadowColor: "#00ff41",
+              shadowColor: "#00a878",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.4,
               shadowRadius: 8,
@@ -431,14 +431,14 @@ export default function PracticePlansList() {
           style={{
             paddingVertical: 10,
             paddingHorizontal: 18,
-            backgroundColor: showFavoritesOnly ? "#00ff41" : "rgba(0, 255, 65, 0.1)",
+            backgroundColor: showFavoritesOnly ? "#00a878" : "rgba(0, 168, 120, 0.1)",
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: showFavoritesOnly ? "#00ff41" : "rgba(0, 255, 65, 0.3)",
+            borderColor: showFavoritesOnly ? "#00a878" : "rgba(0, 168, 120, 0.3)",
             alignSelf: "flex-start"
           }}
         >
-          <Text style={{ color: showFavoritesOnly ? "#000" : "#00ff41", fontWeight: "700", fontSize: 13 }}>
+          <Text style={{ color: showFavoritesOnly ? "#000" : "#00a878", fontWeight: "700", fontSize: 13 }}>
             {showFavoritesOnly ? "★ FAVORITES" : "☆ SHOW FAVORITES"}
           </Text>
         </TouchableOpacity>
@@ -446,7 +446,7 @@ export default function PracticePlansList() {
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.9)", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: "#0a0a0a", padding: 20, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTopWidth: 2, borderColor: "rgba(0, 255, 65, 0.3)" }}>
+          <View style={{ backgroundColor: "#0a0a0a", padding: 20, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTopWidth: 2, borderColor: "rgba(0, 168, 120, 0.3)" }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 15, color: "#fff" }}>Create Practice Plan</Text>
 
             <TextInput
@@ -456,7 +456,7 @@ export default function PracticePlansList() {
               onChangeText={setPlanName}
               style={{
                 borderWidth: 1,
-                borderColor: "rgba(0, 255, 65, 0.3)",
+                borderColor: "rgba(0, 168, 120, 0.3)",
                 backgroundColor: "rgba(255, 255, 255, 0.05)",
                 color: "#fff",
                 padding: 14,
@@ -469,11 +469,11 @@ export default function PracticePlansList() {
             <TouchableOpacity
               onPress={createPlan}
               style={{
-                backgroundColor: "#00ff41",
+                backgroundColor: "#00a878",
                 padding: 14,
                 borderRadius: 12,
                 marginBottom: 10,
-                shadowColor: "#00ff41",
+                shadowColor: "#00a878",
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.4,
                 shadowRadius: 8
@@ -492,10 +492,10 @@ export default function PracticePlansList() {
                 padding: 14,
                 borderRadius: 12,
                 borderWidth: 1,
-                borderColor: "rgba(0, 255, 65, 0.3)"
+                borderColor: "rgba(0, 168, 120, 0.3)"
               }}
             >
-              <Text style={{ color: "#00ff41", fontWeight: "700", textAlign: "center", fontSize: 16 }}>Cancel</Text>
+              <Text style={{ color: "#00a878", fontWeight: "700", textAlign: "center", fontSize: 16 }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -503,12 +503,12 @@ export default function PracticePlansList() {
 
       {loading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0a0a0a" }}>
-          <MaterialCommunityIcons name="loading" size={40} color="#00ff41" />
-          <Text style={{ color: "#00ff41", marginTop: 12, fontSize: 16, fontWeight: "600" }}>Loading plans...</Text>
+          <MaterialCommunityIcons name="loading" size={40} color="#00a878" />
+          <Text style={{ color: "#00a878", marginTop: 12, fontSize: 16, fontWeight: "600" }}>Loading plans...</Text>
         </View>
       ) : filteredPlans.length === 0 ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
-          <MaterialCommunityIcons name="clipboard-text-outline" size={60} color="rgba(0, 255, 65, 0.2)" />
+          <MaterialCommunityIcons name="clipboard-text-outline" size={60} color="rgba(0, 168, 120, 0.2)" />
           <Text style={{ fontSize: 18, color: "#666", marginTop: 16, textAlign: "center" }}>
             {showFavoritesOnly ? "No favorite plans yet" : "No practice plans yet"}
           </Text>
@@ -525,9 +525,9 @@ export default function PracticePlansList() {
               backgroundColor: "rgba(255, 255, 255, 0.03)",
               borderRadius: 16,
               borderWidth: 1,
-              borderColor: "rgba(0, 255, 65, 0.15)",
+              borderColor: "rgba(0, 168, 120, 0.15)",
               overflow: "hidden",
-              shadowColor: "#00ff41",
+              shadowColor: "#00a878",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 8
@@ -559,7 +559,7 @@ export default function PracticePlansList() {
                 <TouchableOpacity
                   onPress={() => viewPlanDetails(item.id)}
                   style={{
-                    backgroundColor: "#00ff41",
+                    backgroundColor: "#00a878",
                     padding: 12,
                     borderRadius: 10,
                     flexDirection: "row",

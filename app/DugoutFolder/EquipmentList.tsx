@@ -225,21 +225,21 @@ export default function EquipmentList() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
-      <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "rgba(0, 255, 65, 0.1)" }}>
+      <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "rgba(0, 168, 120, 0.1)" }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <View>
-            <Text style={{ fontSize: 14, color: "#00ff41", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>BASEBALL</Text>
+            <Text style={{ fontSize: 14, color: "#00a878", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>BASEBALL</Text>
             <Text style={{ fontSize: 28, fontWeight: "900", color: "#fff" }}>Equipment Deals</Text>
           </View>
           <TouchableOpacity
             onPress={() => setSearchModalVisible(true)}
             style={{
-              backgroundColor: "#00ff41",
+              backgroundColor: "#00a878",
               padding: 12,
               borderRadius: 12,
               flexDirection: "row",
               alignItems: "center",
-              shadowColor: "#00ff41",
+              shadowColor: "#00a878",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.4,
               shadowRadius: 8,
@@ -254,12 +254,12 @@ export default function EquipmentList() {
 
       {loading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0a0a0a" }}>
-          <MaterialCommunityIcons name="loading" size={40} color="#00ff41" />
-          <Text style={{ color: "#00ff41", marginTop: 12, fontSize: 16, fontWeight: "600" }}>Loading equipment...</Text>
+          <MaterialCommunityIcons name="loading" size={40} color="#00a878" />
+          <Text style={{ color: "#00a878", marginTop: 12, fontSize: 16, fontWeight: "600" }}>Loading equipment...</Text>
         </View>
       ) : equipment.length === 0 ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
-          <MaterialCommunityIcons name="baseball-bat" size={60} color="rgba(0, 255, 65, 0.2)" />
+          <MaterialCommunityIcons name="baseball-bat" size={60} color="rgba(0, 168, 120, 0.2)" />
           <Text style={{ fontSize: 18, color: "#666", marginTop: 16, textAlign: "center" }}>No equipment deals yet</Text>
           <Text style={{ fontSize: 14, color: "#444", marginTop: 8, textAlign: "center" }}>Search for gear to get started!</Text>
         </View>
@@ -274,9 +274,9 @@ export default function EquipmentList() {
               backgroundColor: "rgba(255, 255, 255, 0.03)",
               borderRadius: 16,
               borderWidth: 1,
-              borderColor: "rgba(0, 255, 65, 0.15)",
+              borderColor: "rgba(0, 168, 120, 0.15)",
               padding: 16,
-              shadowColor: "#00ff41",
+              shadowColor: "#00a878",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 8
@@ -302,7 +302,7 @@ export default function EquipmentList() {
               <TouchableOpacity
                 onPress={() => openLink(item.link)}
                 style={{
-                  backgroundColor: "#00ff41",
+                  backgroundColor: "#00a878",
                   padding: 14,
                   borderRadius: 10,
                   flexDirection: "row",
@@ -324,12 +324,12 @@ export default function EquipmentList() {
             padding: 20,
             paddingTop: 60,
             borderBottomWidth: 1,
-            borderBottomColor: "rgba(0, 255, 65, 0.2)",
+            borderBottomColor: "rgba(0, 168, 120, 0.2)",
             backgroundColor: "#0a0a0a"
           }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <View>
-                <Text style={{ fontSize: 14, color: "#00ff41", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>WEB SEARCH</Text>
+                <Text style={{ fontSize: 14, color: "#00a878", fontWeight: "600", letterSpacing: 1, marginBottom: 4 }}>WEB SEARCH</Text>
                 <Text style={{ fontSize: 28, fontWeight: "900", color: "#fff" }}>Find Equipment</Text>
               </View>
               <TouchableOpacity
@@ -345,7 +345,7 @@ export default function EquipmentList() {
                   borderRadius: 12
                 }}
               >
-                <MaterialCommunityIcons name="close" size={28} color="#00ff41" />
+                <MaterialCommunityIcons name="close" size={28} color="#00a878" />
               </TouchableOpacity>
             </View>
 
@@ -358,7 +358,7 @@ export default function EquipmentList() {
                   onChangeText={setWebSearchQuery}
                   style={{
                     borderWidth: 1,
-                    borderColor: "rgba(0, 255, 65, 0.3)",
+                    borderColor: "rgba(0, 168, 120, 0.3)",
                     backgroundColor: "rgba(255, 255, 255, 0.05)",
                     color: "#fff",
                     padding: 14,
@@ -371,10 +371,10 @@ export default function EquipmentList() {
                   onPress={searchWeb}
                   disabled={searching}
                   style={{
-                    backgroundColor: "#00ff41",
+                    backgroundColor: "#00a878",
                     padding: 14,
                     borderRadius: 12,
-                    shadowColor: "#00ff41",
+                    shadowColor: "#00a878",
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
                     shadowRadius: 8
@@ -396,11 +396,11 @@ export default function EquipmentList() {
               <TouchableOpacity
                 onPress={addEquipment}
                 style={{
-                  backgroundColor: "#00ff41",
+                  backgroundColor: "#00a878",
                   padding: 16,
                   borderRadius: 12,
                   marginBottom: 12,
-                  shadowColor: "#00ff41",
+                  shadowColor: "#00a878",
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.4,
                   shadowRadius: 8
@@ -418,10 +418,10 @@ export default function EquipmentList() {
                   padding: 16,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: "rgba(0, 255, 65, 0.3)"
+                  borderColor: "rgba(0, 168, 120, 0.3)"
                 }}
               >
-                <Text style={{ color: "#00ff41", fontWeight: "700", textAlign: "center", fontSize: 16 }}>
+                <Text style={{ color: "#00a878", fontWeight: "700", textAlign: "center", fontSize: 16 }}>
                   Back to Results
                 </Text>
               </TouchableOpacity>
@@ -441,23 +441,23 @@ export default function EquipmentList() {
                     backgroundColor: "rgba(255, 255, 255, 0.03)",
                     borderRadius: 12,
                     borderWidth: 1,
-                    borderColor: "rgba(0, 255, 65, 0.15)",
+                    borderColor: "rgba(0, 168, 120, 0.15)",
                     flexDirection: "row"
                   }}
                 >
-                  <MaterialCommunityIcons name="web" size={30} color="#00ff41" style={{ marginRight: 12 }} />
+                  <MaterialCommunityIcons name="web" size={30} color="#00a878" style={{ marginRight: 12 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 16, fontWeight: "800", marginBottom: 6, color: "#fff" }}>{item.title}</Text>
                     <Text style={{ fontSize: 13, color: "#999", marginBottom: 6, lineHeight: 18 }}>
                       {item.description.substring(0, 80)}...
                     </Text>
-                    <Text style={{ fontSize: 12, color: "#00ff41", fontWeight: "600" }}>{item.display_link}</Text>
+                    <Text style={{ fontSize: 12, color: "#00a878", fontWeight: "600" }}>{item.display_link}</Text>
                   </View>
                 </TouchableOpacity>
               )}
               ListEmptyComponent={
                 <View style={{ padding: 40, alignItems: "center" }}>
-                  <MaterialCommunityIcons name="baseball-bat" size={60} color="rgba(0, 255, 65, 0.2)" />
+                  <MaterialCommunityIcons name="baseball-bat" size={60} color="rgba(0, 168, 120, 0.2)" />
                   <Text style={{ fontSize: 16, color: "#666", marginTop: 16 }}>
                     {searching ? "Searching the web..." : "Search for equipment to get started"}
                   </Text>

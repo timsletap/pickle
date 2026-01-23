@@ -1,6 +1,5 @@
 import { auth, db } from "@/config/FirebaseConfig";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { LinearGradient } from "expo-linear-gradient";
 import {
     addDoc,
     collection,
@@ -369,62 +368,33 @@ export default function ChalkTalk() {
           transform: [{ translateY: slideAnim }],
         }}
       >
-        <LinearGradient
-          colors={["#000000", "#001a00", "#002200", "#001a00", "#000000"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <View
           style={{
             paddingTop: 50,
-            paddingBottom: 8,
-            paddingHorizontal: 24,
-            borderBottomLeftRadius: 32,
-            borderBottomRightRadius: 32,
-            shadowColor: "#00ff41",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.4,
-            shadowRadius: 20,
-            elevation: 12,
+            paddingBottom: 20,
+            paddingHorizontal: 20,
+            backgroundColor: "#0c0c0e",
+            borderBottomWidth: 1,
+            borderBottomColor: "rgba(0, 168, 120, 0.22)",
           }}
         >
-          {/* Animated glow effect */}
-          <LinearGradient
-            colors={["transparent", "rgba(0, 255, 65, 0.05)", "transparent"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderBottomLeftRadius: 32,
-              borderBottomRightRadius: 32,
-            }}
-          />
-
-          <View style={{ marginBottom: 4 }}>
-            <Text style={{
-              fontSize: 28,
-              fontWeight: "900",
-              color: "#fff",
-              letterSpacing: 2,
-              textShadowColor: "rgba(0, 255, 65, 0.3)",
-              textShadowOffset: { width: 0, height: 2 },
-              textShadowRadius: 10,
-            }}>
-              CHALK TALK
-            </Text>
-          </View>
-
           <Text style={{
-            fontSize: 10,
-            color: "#00ff41",
+            fontSize: 12,
+            color: "#00a878",
             fontWeight: "700",
-            letterSpacing: 4,
-            opacity: 0.8,
-            marginBottom: 8,
+            letterSpacing: 3,
+            marginTop: 4,
           }}>
             LEARN THE GAME
+          </Text>
+          <Text style={{
+            fontSize: 28,
+            fontWeight: "900",
+            color: "#fff",
+            letterSpacing: 1,
+            marginBottom: 12,
+          }}>
+            Chalk Talk
           </Text>
 
           {/* Tab Bar with Glassmorphism */}
@@ -435,8 +405,8 @@ export default function ChalkTalk() {
               borderRadius: 20,
               padding: 5,
               borderWidth: 1.5,
-              borderColor: "rgba(0, 255, 65, 0.25)",
-              shadowColor: "#00ff41",
+              borderColor: "rgba(0, 168, 120, 0.25)",
+              shadowColor: "#00a878",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 15,
@@ -457,7 +427,7 @@ export default function ChalkTalk() {
                   bottom: 5,
                   width: tabWidth,
                   borderRadius: 15,
-                  overflow: "hidden",
+                  backgroundColor: "#00a878",
                   transform: [{
                     translateX: tabAnimation.interpolate({
                       inputRange: [0, 1, 2],
@@ -465,21 +435,7 @@ export default function ChalkTalk() {
                     })
                   }],
                 }}
-              >
-                <LinearGradient
-                  colors={["#00ff41", "#00dd3a", "#00ff41"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    flex: 1,
-                    shadowColor: "#00ff41",
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.9,
-                    shadowRadius: 15,
-                    elevation: 10,
-                  }}
-                />
-              </Animated.View>
+              />
             )}
 
             {/* Rules Tab */}
@@ -498,13 +454,13 @@ export default function ChalkTalk() {
                 <MaterialCommunityIcons
                   name={getTabIcon("rules")}
                   size={24}
-                  color={section === "rules" ? "#000" : "#00ff41"}
+                  color={section === "rules" ? "#000" : "#00a878"}
                   style={{ marginBottom: 6 }}
                 />
                 <Text style={{
                   fontSize: 11,
                   fontWeight: "800",
-                  color: section === "rules" ? "#000" : "#00ff41",
+                  color: section === "rules" ? "#000" : "#00a878",
                   letterSpacing: 0.8,
                 }}>
                   RULES
@@ -528,13 +484,13 @@ export default function ChalkTalk() {
                 <MaterialCommunityIcons
                   name={getTabIcon("quiz")}
                   size={24}
-                  color={section === "quiz" ? "#000" : "#00ff41"}
+                  color={section === "quiz" ? "#000" : "#00a878"}
                   style={{ marginBottom: 6 }}
                 />
                 <Text style={{
                   fontSize: 11,
                   fontWeight: "800",
-                  color: section === "quiz" ? "#000" : "#00ff41",
+                  color: section === "quiz" ? "#000" : "#00a878",
                   letterSpacing: 0.8,
                 }}>
                   QUIZ
@@ -558,13 +514,13 @@ export default function ChalkTalk() {
                 <MaterialCommunityIcons
                   name={getTabIcon("messages")}
                   size={24}
-                  color={section === "messages" ? "#000" : "#00ff41"}
+                  color={section === "messages" ? "#000" : "#00a878"}
                   style={{ marginBottom: 6 }}
                 />
                 <Text style={{
                   fontSize: 11,
                   fontWeight: "800",
-                  color: section === "messages" ? "#000" : "#00ff41",
+                  color: section === "messages" ? "#000" : "#00a878",
                   letterSpacing: 0.8,
                 }}>
                   MESSAGES
@@ -572,10 +528,10 @@ export default function ChalkTalk() {
               </TouchableOpacity>
             </Animated.View>
           </View>
-        </LinearGradient>
+        </View>
       </Animated.View>
 
-      {/* Content Area with Smooth Transitions */}
+      {/* Content Area */}
       <Animated.View
         style={{
           flex: 1,
@@ -591,18 +547,18 @@ export default function ChalkTalk() {
               <View
                 key={i}
                 style={{
-                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  backgroundColor: "rgba(0, 168, 120, 0.08)",
                   borderRadius: 16,
                   padding: 16,
                   marginBottom: 12,
                   borderWidth: 1,
-                  borderColor: "rgba(0, 255, 65, 0.2)",
+                  borderColor: "rgba(0, 168, 120, 0.2)",
                 }}
               >
                 <Text style={{
                   fontSize: 18,
                   fontWeight: "800",
-                  color: "#00ff41",
+                  color: "#00a878",
                   marginBottom: 8,
                   letterSpacing: 1,
                 }}>
@@ -622,16 +578,16 @@ export default function ChalkTalk() {
                     flexDirection: "row",
                     alignItems: "center",
                     marginTop: 12,
-                    backgroundColor: "rgba(0, 255, 65, 0.15)",
+                    backgroundColor: "rgba(0, 168, 120, 0.15)",
                     paddingVertical: 10,
                     paddingHorizontal: 16,
                     borderRadius: 12,
                     alignSelf: "flex-start",
                   }}
                 >
-                  <MaterialCommunityIcons name="play-circle" size={20} color="#00ff41" />
+                  <MaterialCommunityIcons name="play-circle" size={20} color="#00a878" />
                   <Text style={{
-                    color: "#00ff41",
+                    color: "#00a878",
                     fontWeight: "700",
                     marginLeft: 8,
                     fontSize: 13,
@@ -651,12 +607,12 @@ export default function ChalkTalk() {
               <View
                 key={quizIndex}
                 style={{
-                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  backgroundColor: "rgba(0, 168, 120, 0.08)",
                   borderRadius: 16,
                   padding: 12,
                   marginBottom: 12,
                   borderWidth: 1,
-                  borderColor: "rgba(0, 255, 65, 0.2)",
+                  borderColor: "rgba(0, 168, 120, 0.2)",
                 }}
               >
                 <Text style={{
@@ -674,15 +630,15 @@ export default function ChalkTalk() {
                     onPress={() => setAnswers({ ...answers, [quizIndex]: i })}
                     style={{
                       backgroundColor: answers[quizIndex] === i
-                        ? (i === quiz.correct ? "rgba(0, 255, 65, 0.3)" : "rgba(255, 0, 0, 0.3)")
-                        : "rgba(0, 255, 65, 0.1)",
+                        ? (i === quiz.correct ? "rgba(0, 168, 120, 0.3)" : "rgba(255, 0, 0, 0.3)")
+                        : "rgba(0, 168, 120, 0.1)",
                       borderRadius: 12,
                       padding: 10,
                       marginBottom: 8,
                       borderWidth: 1.5,
                       borderColor: answers[quizIndex] === i
-                        ? (i === quiz.correct ? "#00ff41" : "#ff0000")
-                        : "rgba(0, 255, 65, 0.3)",
+                        ? (i === quiz.correct ? "#00a878" : "#ff0000")
+                        : "rgba(0, 168, 120, 0.3)",
                     }}
                   >
                     <Text style={{
@@ -701,14 +657,14 @@ export default function ChalkTalk() {
                     marginTop: 12,
                     padding: 12,
                     backgroundColor: answers[quizIndex] === quiz.correct
-                      ? "rgba(0, 255, 65, 0.15)"
+                      ? "rgba(0, 168, 120, 0.15)"
                       : "rgba(255, 0, 0, 0.15)",
                     borderRadius: 12,
                   }}>
                     <Text style={{
                       fontSize: 14,
                       fontWeight: "700",
-                      color: answers[quizIndex] === quiz.correct ? "#00ff41" : "#ff6b6b",
+                      color: answers[quizIndex] === quiz.correct ? "#00a878" : "#ff6b6b",
                     }}>
                       {answers[quizIndex] === quiz.correct ? "Correct!" : "Incorrect."} {quiz.explanation}
                     </Text>
@@ -728,7 +684,7 @@ export default function ChalkTalk() {
                 <Text style={{
                   fontSize: 18,
                   fontWeight: "800",
-                  color: "#00ff41",
+                  color: "#00a878",
                   marginBottom: 12,
                 }}>
                   Search for a user
@@ -736,12 +692,12 @@ export default function ChalkTalk() {
                 
                 {/* Search input */}
                 <View style={{
-                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  backgroundColor: "rgba(0, 168, 120, 0.08)",
                   borderRadius: 12,
                   padding: 12,
                   marginBottom: 16,
                   borderWidth: 1,
-                  borderColor: "rgba(0, 255, 65, 0.2)",
+                  borderColor: "rgba(0, 168, 120, 0.2)",
                 }}>
                   <TextInput
                     placeholder="Type name or email..."
@@ -775,12 +731,12 @@ export default function ChalkTalk() {
                           setSearchQuery("");
                         }}
                         style={{
-                          backgroundColor: "rgba(0, 255, 65, 0.08)",
+                          backgroundColor: "rgba(0, 168, 120, 0.08)",
                           borderRadius: 12,
                           padding: 16,
                           marginBottom: 12,
                           borderWidth: 1,
-                          borderColor: "rgba(0, 255, 65, 0.2)",
+                          borderColor: "rgba(0, 168, 120, 0.2)",
                         }}
                       >
                         <Text style={{
@@ -814,11 +770,11 @@ export default function ChalkTalk() {
                     marginBottom: 16,
                   }}
                 >
-                  <MaterialCommunityIcons name="arrow-left" size={24} color="#00ff41" />
+                  <MaterialCommunityIcons name="arrow-left" size={24} color="#00a878" />
                   <Text style={{
                     fontSize: 18,
                     fontWeight: "800",
-                    color: "#00ff41",
+                    color: "#00a878",
                     marginLeft: 8,
                   }}>
                     {selectedUser.name}
@@ -832,13 +788,13 @@ export default function ChalkTalk() {
                       key={m.id}
                       style={{
                         backgroundColor: m.senderId === auth.currentUser?.uid
-                          ? "rgba(0, 255, 65, 0.3)"
-                          : "rgba(0, 255, 65, 0.08)",
+                          ? "rgba(0, 168, 120, 0.3)"
+                          : "rgba(0, 168, 120, 0.08)",
                         borderRadius: 12,
                         padding: 12,
                         marginBottom: 8,
                         borderWidth: 1,
-                        borderColor: "rgba(0, 255, 65, 0.2)",
+                        borderColor: "rgba(0, 168, 120, 0.2)",
                         alignSelf: m.senderId === auth.currentUser?.uid ? "flex-end" : "flex-start",
                         maxWidth: "80%",
                       }}
@@ -851,7 +807,7 @@ export default function ChalkTalk() {
                         {m.text}
                       </Text>
                       <Text style={{
-                        color: "rgba(0, 255, 65, 0.6)",
+                        color: "rgba(0, 168, 120, 0.6)",
                         fontSize: 11,
                       }}>
                         {m.time}
@@ -864,11 +820,11 @@ export default function ChalkTalk() {
                 <View style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "rgba(0, 255, 65, 0.08)",
+                  backgroundColor: "rgba(0, 168, 120, 0.08)",
                   borderRadius: 12,
                   padding: 8,
                   borderWidth: 1,
-                  borderColor: "rgba(0, 255, 65, 0.2)",
+                  borderColor: "rgba(0, 168, 120, 0.2)",
                 }}>
                   <TextInput
                     placeholder="Type a message..."
@@ -884,14 +840,14 @@ export default function ChalkTalk() {
                       fontSize: 14,
                       marginRight: 8,
                       borderWidth: 1,
-                      borderColor: "rgba(0, 255, 65, 0.2)",
+                      borderColor: "rgba(0, 168, 120, 0.2)",
                     }}
                   />
 
                   <TouchableOpacity
                     onPress={handleSendMessage}
                     style={{
-                      backgroundColor: "#00ff41",
+                      backgroundColor: "#00a878",
                       borderRadius: 8,
                       paddingVertical: 8,
                       paddingHorizontal: 16,
