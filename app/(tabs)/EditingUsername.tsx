@@ -78,7 +78,7 @@ export default function EditingUsername() {
                             autoCapitalize="none"
                             keyboardType="default"
                             mode="outlined"
-                            outlineColor="rgba(0, 255, 64, 0.7)"
+                            outlineColor="rgba(255, 255, 255, 1)"
                             activeOutlineColor="#00a878"
                             textColor="#fff"
                             style={styles.editUser}
