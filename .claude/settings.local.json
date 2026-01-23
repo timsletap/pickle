@@ -4,7 +4,10 @@
       "Bash(python clear_and_repopulate.py:*)",
       "Bash(timeout 2 python:*)",
       "Bash(python -m json.tool:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(gh repo view:*)",
+      "Bash(git fetch:*)",
+      "Bash(git filter-branch:*)"
     ]
   }
 }
