@@ -21,8 +21,8 @@ export default function TeamsScreen() {
 
   const { width: SCREEN_WIDTH } = Dimensions.get("window");
   // Larger card sizing for clearer player display. Subtract extra margin to avoid edge cutoff.
-  const CARD_WIDTH = Math.min(420, SCREEN_WIDTH - 48);
-  const CARD_HEIGHT = 380;
+  const CARD_WIDTH = Math.min(400, SCREEN_WIDTH - 32);
+  const CARD_HEIGHT = 450;
 
   const KNOWN_POSITIONS = [
     "P",
@@ -166,18 +166,9 @@ export default function TeamsScreen() {
                         <Text style={styles.cardText}>
                           {`Positions: ${item.positions?.join(", ") || "N/A"}`}
                         </Text>
-                        <Text style={styles.cardText}>
+                        <Text style={[styles.cardText, { paddingBottom: 24 }]}>
                           {`Jersey Number: ${item.jerseyNumber != null ? item.jerseyNumber : "N/A"}`}
                         </Text>
-
-                        <View
-                          style={{
-                            marginTop: 8,
-                            borderTopWidth: 1,
-                            borderTopColor: "#ccc",
-                            paddingTop: 8,
-                          }}
-                        />
 
                         <Text style={styles.cardText}>
                           {`Games: ${GAMES}`}
@@ -197,19 +188,40 @@ export default function TeamsScreen() {
                         <Text style={styles.cardText}>
                           {`QAB%: ${QAB}`}
                         </Text>
+                        {/*}
                         <Text style={styles.cardHint}>
                           Tap card to edit player
                         </Text>
+                        */}
                       </View>
                     }
 
                     //onPress={() => openEdit(item)}
                     style={[
                       styles.card,
-                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1.5, borderColor: 'rgba(0,168,120,0.18)' },
+                      { width: CARD_WIDTH - 32, 
+                        height: CARD_HEIGHT - 32, 
+                        borderRadius: 20, 
+                        backgroundColor: 'rgba(0,0,0,0.45)', 
+                        borderWidth: 1.5, 
+                        borderColor: '#00a878',
+                        shadowColor: '#00a878',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 10,
+                      }
                     ]}
-                    titleStyle={{ fontSize: 20, fontWeight: "600", color: '#fff' }}
+                    titleStyle={{ fontSize: 36, fontWeight: "600", color: '#fff' , marginBottom: 24 }}
                     descriptionStyle={{ fontSize: 16, color: '#cfeecf' }}
+                  />
+                  <IconButton
+                    icon="pencil"
+                    size={24}
+                    iconColor="#00a878"
+                    containerColor="transparent"
+                    onPress={() => openEdit(item)}
+                    style={styles.editIcon}
                   />
                 </View>
               );
@@ -270,7 +282,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    paddingTop: 96,
+    paddingTop: 160,
+    //justifyContent: "center",
   },
   headerRow: {
     marginBottom: 8,
@@ -306,9 +319,22 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     elevation: 2, // android shadow
   },
+  editIcon: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
+    zIndex: 10,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    borderRadius: 16,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
   cardText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 24,
     marginBottom: 4,
   },
   cardHint: {
