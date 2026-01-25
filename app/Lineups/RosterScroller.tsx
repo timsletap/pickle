@@ -4,7 +4,7 @@ import styles, { colors } from './styles';
 
 type Props = {
   sortedRoster: Player[];
-  metricMode?: 'name' | 'obp' | 'slg' | 'ba' | 'rbi' | 'games' | 'qab';
+  metricMode?: 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings';
   assignments: Record<string, Player | null>;
   posById: (id: string) => { id: string; label: string; name: string };
   openStats: (p: Player) => void;
@@ -33,9 +33,9 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
 
   const renderMetric = (p: Player) => {
     const val = getMetric(p, metricMode ?? 'name');
-    const formatted = (metricMode === 'rbi' || metricMode === 'games')
+    const formatted = (metricMode === 'dp' || metricMode === 'po' || metricMode === 'a' || metricMode === 'tc' || metricMode === 'etc' || metricMode === 'innings')
       ? `${Math.round(val ?? 0)}`
-      : `${(val ?? 0).toFixed(3)}`;
+      : `${(val ?? 0).toFixed(2)}`;
     return <Text style={styles.metricText}>{formatted}</Text>;
   };
 

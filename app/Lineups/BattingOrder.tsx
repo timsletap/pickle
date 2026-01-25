@@ -5,8 +5,8 @@ import styles, { colors } from './styles';
 
 type Props = {
   roster: Player[];
-  sortMode: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab';
-  setSortMode: (m: 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab') => void;
+  sortMode: 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings';
+  setSortMode: (m: 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings') => void;
   openStats: (p: Player) => void;
   battingOrder?: Player[];
   onAutoGenerate?: () => void;
