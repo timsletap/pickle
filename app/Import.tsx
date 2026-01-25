@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backButton: { position: 'absolute', left: 12, top: 70, zIndex: 60 },
 });
 
-export default function Statistics() {
+export default function Import() {
     const [csvFile, setCsvFile] = useState<CsvDocument | null>(null);
     const [parsedData, setParsedData] = useState<any[]>([]);
     const [headers, setHeaders] = useState<string[]>([]);
