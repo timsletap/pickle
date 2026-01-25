@@ -1,18 +1,5 @@
-export type Player = {
-  id: string | number;
-  first_name: string;
-  last_name: string;
-  jersey?: number;
-  stats?: {
-    ba?: number;
-    obp?: number;
-    slg?: number;
-    rbi?: number;
-    games?: number;
-    qab?: number;
-    rcv?: number;
-  };
-};
+import type { Player as BasePlayer } from '../types';
+export type Player = BasePlayer;
 
 export type Position = {
   id: string;

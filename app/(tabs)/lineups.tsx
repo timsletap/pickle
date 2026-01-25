@@ -86,8 +86,7 @@ export default function Lineups() {
 
       return () => unsub && unsub();
     }, [user]);
-  }
-    
+
   const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
@@ -127,12 +126,9 @@ export default function Lineups() {
     return 0;
   };
 
-  const sortedRoster = [...roster].sort((a: any, b: any) => {
-    if (sortMode === 'name') return a.last_name.localeCompare(b.last_name);
-    return getMetric(b, sortMode) - getMetric(a, sortMode);
-  });
+  type SortKey = 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab';
 
-  const sortOptions: { key: typeof sortMode; label: string }[] = [
+  const sortOptions: { key: SortKey; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'ba', label: 'BA' },
     { key: 'obp', label: 'OBP' },
@@ -141,6 +137,11 @@ export default function Lineups() {
     { key: 'games', label: 'Games' },
     { key: 'qab', label: 'QAB' },
   ];
+
+  const sortedRoster = [...roster].sort((a: any, b: any) => {
+    if (sortMode === 'name') return (a.name ?? '').localeCompare(b.name ?? '');
+    return getMetric(b, sortMode) - getMetric(a, sortMode);
+  });
 
   return (
     <View style={styles.page}>

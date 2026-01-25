@@ -126,7 +126,7 @@ export default function Import() {
                 if (row['QAB%'] != null) stats.qab = parse(row['QAB%']);
 
                 // defensive stats
-                if (row['TC'] != null) statsDefensive.ta = parse(row['TC']);
+                if (row['TC'] != null) statsDefensive.tc = parse(row['TC']);
                 if (row['E'] != null && row['TC'] != null) {
                     const tc = parse(row['TC']);
                     const e = parse(row['E']);
@@ -136,7 +136,7 @@ export default function Import() {
                 }
                 if (row['A'] != null) statsDefensive.a = parse(row['A']);
                 if (row['PO'] != null) statsDefensive.po = parse(row['PO']);
-                if (row['INN'] != null) statsDefensive.innings = parse(row['INN']);
+                if (row['Total'] != null) statsDefensive.innings = parse(row['Total']);
                 if (row['DP'] != null) statsDefensive.dp = parse(row['DP']);
 
                 try {

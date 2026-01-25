@@ -76,7 +76,7 @@ export async function savePlayerStats(
 
 export async function savePlayerStatsDefensive(
     userId: string, 
-    stats: Record<string, any>,
+    statsDefensive: Record<string, any>,
     playerId?: string
 ): Promise<void> {
   const db = getDatabase(app);
@@ -84,12 +84,12 @@ export async function savePlayerStatsDefensive(
 
   if (playerId) {
     const playerRef = ref(db, `players/${userId}/${playerId}/statsDefensive`);
-    await set(playerRef, stats);
+    await set(playerRef, statsDefensive);
     return;
   }
   else {
     const newRef = push(playersRef);
-    await set(newRef, { statsDefensive: stats });
+    await set(newRef, { statsDefensive: statsDefensive });
     return;
   }
 }

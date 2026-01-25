@@ -1,7 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import type { Player } from '../types';
 import styles, { colors } from './styles';
-import type { Player } from './types';
 
 type Props = {
   roster: Player[];
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function BattingOrder({ roster, sortMode, setSortMode, openStats, battingOrder, onAutoGenerate, onClearOrder }: Props) {
-  const displayList = battingOrder ?? roster.slice().sort((a, b) => a.last_name.localeCompare(b.last_name));
+  const displayList = battingOrder ?? roster.slice().sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? ''));
 
   return (
     <View style={styles.battingContainer}>
@@ -57,9 +57,9 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
                 <Text style={styles.battingIndexText}>{index + 1}</Text>
               </View>
               <View style={styles.battingPlayerInfo}>
-                <Text style={styles.battingPlayerName}>{p.first_name} {p.last_name}</Text>
+                <Text style={styles.battingPlayerName}>{p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()}</Text>
                 <Text style={styles.battingPlayerStats}>
-                  #{p.jersey ?? '-'} — RCV {p.stats?.rcv?.toFixed(2) ?? '-'}
+                  #{p.jersey ?? p.jerseyNumber ?? '-'} — RCV {(() => { const r = p.stats?.rcv; return r != null ? r.toFixed(2) : '-'; })()}
                 </Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primaryBorder} />

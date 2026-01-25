@@ -82,7 +82,7 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
               top: pos.top,
               left: pos.left,
               alignItems: 'center',
-            }}
+            } as any}
           >
             <Pressable
               onPress={() => openPicker(pos.id)}
@@ -124,7 +124,7 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
               }}
               numberOfLines={1}
             >
-              {assigned ? `${assigned.first_name} ${assigned.last_name.charAt(0)}.` : pos.name}
+              {assigned ? `${assigned.first_name ?? ''} ${(assigned.last_name ?? '')[0] ? `${(assigned.last_name ?? '')[0]}.` : ''}`.trim() : pos.name}
             </Text>
           </View>
         );

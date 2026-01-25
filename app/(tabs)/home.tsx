@@ -4,12 +4,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
 import {
-  Animated,
-  Easing,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
+    Animated,
+    Easing,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 import { Text } from "react-native-paper";
 import { useAuth } from "../auth-context";
@@ -176,7 +176,7 @@ export default function Home() {
                 ]}
               >
                 <LinearGradient
-                  colors={action.gradient}
+                  colors={action.gradient as any}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.actionIconContainer}
