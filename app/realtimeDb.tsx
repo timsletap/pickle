@@ -74,6 +74,26 @@ export async function savePlayerStats(
   }
 }
 
+export async function savePlayerStatsDefensive(
+    userId: string, 
+    stats: Record<string, any>,
+    playerId?: string
+): Promise<void> {
+  const db = getDatabase(app);
+  const playersRef = ref(db, `players/${userId}`);
+
+  if (playerId) {
+    const playerRef = ref(db, `players/${userId}/${playerId}/statsDefensive`);
+    await set(playerRef, stats);
+    return;
+  }
+  else {
+    const newRef = push(playersRef);
+    await set(newRef, { statsDefensive: stats });
+    return;
+  }
+}
+
 export async function deletePlayer(userId: string, playerId: string): Promise<void> {
   const db = getDatabase(app);
   await remove(ref(db, `players/${userId}/${playerId}`));

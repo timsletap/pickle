@@ -7,7 +7,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, IconButton, Paragraph } from 'react-native-paper';
 
 import { useAuth } from './auth-context';
-import { fetchPlayerInfo, savePlayerInfo, savePlayerStats } from './realtimeDb';
+import { fetchPlayerInfo, savePlayerInfo, savePlayerStats, savePlayerStatsDefensive } from './realtimeDb';
 
 type CsvDocument = {
     name?: string;
@@ -115,6 +115,9 @@ export default function Import() {
 
                 const parse = (v: any) => (v === '' || v == null ? null : Number(v));
                 const stats: any = {};
+                const statsDefensive: any = {};
+
+                // offensive stats
                 if (row['AVG'] != null) stats.ba = parse(row['AVG']);
                 if (row['OBP'] != null) stats.obp = parse(row['OBP']);
                 if (row['SLG'] != null) stats.slg = parse(row['SLG']);
@@ -122,9 +125,24 @@ export default function Import() {
                 if (row['GP'] != null) stats.games = parse(row['GP']);
                 if (row['QAB%'] != null) stats.qab = parse(row['QAB%']);
 
+                // defensive stats
+                if (row['TC'] != null) statsDefensive.ta = parse(row['TC']);
+                if (row['E'] != null && row['TC'] != null) {
+                    const tc = parse(row['TC']);
+                    const e = parse(row['E']);
+                    if (tc != null && e != null && tc > 0) {
+                        statsDefensive.etc = e/tc;
+                    }
+                }
+                if (row['A'] != null) statsDefensive.a = parse(row['A']);
+                if (row['PO'] != null) statsDefensive.po = parse(row['PO']);
+                if (row['INN'] != null) statsDefensive.innings = parse(row['INN']);
+                if (row['DP'] != null) statsDefensive.dp = parse(row['DP']);
+
                 try {
                     if (playerId) {
                         await savePlayerStats(user.uid, stats, playerId);
+                        await savePlayerStatsDefensive(user.uid, statsDefensive, playerId);
                     } 
                     else {
                         const playerObj = {
@@ -138,6 +156,7 @@ export default function Import() {
                         );
                         
                         await savePlayerStats(user.uid, stats, newId);
+                        await savePlayerStatsDefensive(user.uid, statsDefensive, newId);
                         playerId = newId;
                     }
                     return { ok: true, playerId };
