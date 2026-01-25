@@ -75,7 +75,7 @@ export default function Lineups() {
             name: v.name, 
             positions: v.positions || [], 
             jerseyNumber: v.jerseyNumber ?? undefined, 
-            stats: v.stats || {} 
+            statsDefensive: v.statsDefensive || {} 
           } as Player;
         });
         arr.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
@@ -87,7 +87,7 @@ export default function Lineups() {
       return () => unsub && unsub();
     }, [user]);
 
-  const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab'>('name');
+  const [sortMode, setSortMode] = useState<'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
   const [battingOrder, setBattingOrder] = useState<any[] | null>(null);
@@ -116,26 +116,25 @@ export default function Lineups() {
   const closeStats = () => setStatsDialog({ visible: false, player: null });
 
   const getMetric = (p: any, mode: string) => {
-    const s = p.stats ?? {};
-    if (mode === 'ba') return s.ba ?? 0;
-    if (mode === 'obp') return s.obp ?? 0;
-    if (mode === 'slg') return s.slg ?? 0;
-    if (mode === 'rbi') return s.rbi ?? 0;
-    if (mode === 'games') return s.games ?? 0;
-    if (mode === 'qab') return s.qab ?? 0;
+    const s = p.statsDefensive ?? {};
+    if (mode === 'tc') return s.tc ?? 0;
+    if (mode === 'etc') return s.etc ?? 0;
+    if (mode === 'a') return s.a ?? 0;
+    if (mode === 'dp') return s.dp ?? 0;
+    if (mode === 'po') return s.po ?? 0;
+    if (mode === 'innings') return s.innings ?? 0;
     return 0;
   };
 
-  type SortKey = 'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab';
-
+  type SortKey = 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings';
   const sortOptions: { key: SortKey; label: string }[] = [
     { key: 'name', label: 'Name' },
-    { key: 'ba', label: 'BA' },
-    { key: 'obp', label: 'OBP' },
-    { key: 'slg', label: 'SLG' },
-    { key: 'rbi', label: 'RBI' },
-    { key: 'games', label: 'Games' },
-    { key: 'qab', label: 'QAB' },
+    { key: 'tc', label: 'TC' },
+    { key: 'etc', label: 'ETC' },
+    { key: 'a', label: 'A' },
+    { key: 'dp', label: 'DP' },
+    { key: 'po', label: 'PO' },
+    { key: 'innings', label: 'Innings' },
   ];
 
   const sortedRoster = [...roster].sort((a: any, b: any) => {
