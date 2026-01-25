@@ -1,22 +1,25 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { updatePlayerStats } from '../../config/FirebaseConfig';
+import { useAuth } from '../auth-context';
 import BattingOrder from '../Lineups/BattingOrder';
 import FieldView from '../Lineups/FieldView';
 import PickerDialog from '../Lineups/PickerDialog';
 import RosterScroller from '../Lineups/RosterScroller';
 import StatsDialog from '../Lineups/StatsDialog';
 import styles, { colors } from '../Lineups/styles';
-import { POSITIONS, Player } from '../Lineups/types';
-import { useAuth } from '../auth-context';
+import { POSITIONS } from '../Lineups/types';
 import { fetchPlayerInfo } from '../realtimeDb';
+import { Player } from '../types';
 
 export default function Lineups() {
   const [roster, setRoster] = useState<Player[]>([]);
   const { user } = useAuth();
+
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -58,41 +61,33 @@ export default function Lineups() {
       return;
     }
 
-    const unsub = fetchPlayerInfo(user.uid, (playersRecord) => {
-      if (!playersRecord) {
-        setRoster([]);
+    const unsub = fetchPlayerInfo(user.uid, (data) => {
+      if (!data) {
+        setPlayers([]);
+        setLoading(false);
         return;
       }
 
-      const players: Player[] = Object.entries(playersRecord).map(([key, value], idx) => {
-        const fullName = (value.name || "").trim();
-        const parts = fullName.split(/\s+/);
-        const first_name = parts.shift() || "";
-        const last_name = parts.join(' ');
-
-        const id: string | number = /^[0-9]+$/.test(key) ? parseInt(key, 10) : key;
-
-        return {
-          id,
-          first_name,
-          last_name,
-          jersey: value.jerseyNumber ?? undefined,
-          stats: value.stats ?? undefined,
-        } as Player;
+      const arr = Object.entries(data).map(([id, val]) => {
+        const v = val as any;
+          return { 
+            id, 
+            name: v.name, 
+            positions: v.positions || [], 
+            jerseyNumber: v.jerseyNumber ?? undefined, 
+            stats: v.stats || {} 
+          } as Player;
+        });
+        arr.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+        setPlayers(arr);
+        setRoster(arr);
+        setLoading(false);
       });
 
-      setRoster(players);
-    });
-
-    return () => {
-      try {
-        unsub();
-      } catch (e) {
-        // ignore
-      }
-    };
-  }, [user]);
-
+      return () => unsub && unsub();
+    }, [user]);
+  }
+    
   const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
