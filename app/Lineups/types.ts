@@ -12,10 +12,10 @@ export type Position = {
 // Softball field positions - properly spaced for the diamond layout
 export const POSITIONS: Position[] = [
   // Catcher at bottom
-  { id: "C", label: "C", name: "Catcher", top: "78%", left: "45%" },
+  { id: "C", label: "C", name: "Catcher", top: "78%", left: "44.5%" },
 
   // Pitcher in center
-  { id: "P", label: "P", name: "Pitcher", top: "55%", left: "45%" },
+  { id: "P", label: "P", name: "Pitcher", top: "55%", left: "44.5%" },
 
   // Infield - corners
   { id: "1B", label: "1B", name: "1st Base", top: "48%", left: "70%" },
@@ -26,7 +26,7 @@ export const POSITIONS: Position[] = [
   { id: "SS", label: "SS", name: "Shortstop", top: "32%", left: "32%" },
 
   // Outfield
-  { id: "LF", label: "LF", name: "Left Field", top: "10%", left: "12%" },
-  { id: "CF", label: "CF", name: "Center Field", top: "3%", left: "45%" },
+  { id: "LF", label: "LF", name: "Left Field", top: "10%", left: "9.5%" },
+  { id: "CF", label: "CF", name: "Center Field", top: "3%", left: "42.5%" },
   { id: "RF", label: "RF", name: "Right Field", top: "10%", left: "78%" },
 ];
