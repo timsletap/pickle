@@ -47,6 +47,17 @@ export default function PickerDialog({ visible, positionId, closePicker, roster,
 
             {/* Player list */}
             {roster.map((player) => {
+              const playerId = player.id;
+              const playerJersey = player.jerseyNumber;
+              const playerName = player.name;
+              const playerIntials = playerName
+                ? playerName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()
+                : '';
+
               const assignedEntry = Object.entries(assignments).find(([posId, p]) => p?.id === player.id);
               const assignedPosId = assignedEntry ? assignedEntry[0] : null;
               const isAssignedElsewhere = !!assignedPosId && assignedPosId !== positionId;
@@ -66,15 +77,15 @@ export default function PickerDialog({ visible, positionId, closePicker, roster,
                 >
                   <View style={styles.listItemIcon}>
                     <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 14 }}>
-                      {player.jersey ?? '-'}
+                      {playerIntials ?? '-'}
                     </Text>
                   </View>
                   <View style={styles.listItemContent}>
                     <Text style={styles.listItemTitle}>
-                      {player.first_name} {player.last_name}
+                      {playerName}
                     </Text>
                     <Text style={styles.listItemDescription}>
-                      {isAssignedElsewhere ? `Assigned to ${assignedPosName}` : `#${player.jersey ?? '-'}`}
+                      {isAssignedElsewhere ? `Assigned to ${assignedPosName}` : `#${playerJersey ?? '-'}`}
                     </Text>
                   </View>
                   {!isAssignedElsewhere && (

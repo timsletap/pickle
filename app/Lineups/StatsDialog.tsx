@@ -14,9 +14,9 @@ export default function StatsDialog({ visible, player, closeStats }: Props) {
 
   const stats = [
     { label: 'Jersey', value: player.jersey ?? '-', icon: 'tshirt-crew' },
-    { label: 'Batting Avg', value: player.stats?.ba?.toFixed(3) ?? '-', icon: 'baseball-bat' },
-    { label: 'On-Base %', value: player.stats?.obp?.toFixed(3) ?? '-', icon: 'percent' },
-    { label: 'Slugging', value: player.stats?.slg?.toFixed(3) ?? '-', icon: 'flash' },
+    { label: 'Batting Avg', value: player.stats?.ba?.toFixed(2) ?? '-', icon: 'baseball-bat' },
+    { label: 'On-Base %', value: player.stats?.obp?.toFixed(2) ?? '-', icon: 'percent' },
+    { label: 'Slugging', value: player.stats?.slg?.toFixed(2) ?? '-', icon: 'flash' },
     { label: 'Games', value: player.stats?.games ?? '-', icon: 'calendar-check' },
     { label: 'QAB%', value: player.stats?.qab?.toFixed(1) ?? '-', icon: 'chart-line' },
   ];

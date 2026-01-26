@@ -263,7 +263,10 @@ export default function Lineups() {
       {/* Content */}
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
         {viewMode === 'defense' ? (
-          <DefenseView positions={POSITIONS} assignments={assignments} openPicker={openPicker} />
+          <DefenseView 
+            positions={POSITIONS} 
+            assignments={assignments} 
+            openPicker={openPicker} />
         ) : (
           <OffenseView
             roster={roster}

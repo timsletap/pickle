@@ -109,7 +109,7 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
                 color: isAssigned ? colors.primary : 'rgba(255, 255, 255, 0.8)',
                 fontSize: isAssigned ? 15 : 12,
               }}>
-                {assigned ? `${assigned.jersey ?? ''}` : pos.label}
+                {assigned ? `${assigned.jerseyNumber ?? ''}` : pos.label}
               </Text>
             </Pressable>
 
