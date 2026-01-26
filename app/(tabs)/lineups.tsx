@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAuth } from '../auth-context';
+import DefenseView from '../Lineups/lineupsDefense';
+import OffenseView from '../Lineups/lineupsOffense';
 import PickerDialog from '../Lineups/PickerDialog';
 import RosterScroller from '../Lineups/RosterScroller';
 import StatsDialog from '../Lineups/StatsDialog';
@@ -10,8 +12,6 @@ import styles, { colors } from '../Lineups/styles';
 import { POSITIONS } from '../Lineups/types';
 import { fetchPlayerInfo } from '../realtimeDb';
 import { Player } from '../types';
-import DefenseView from './lineupsDefense';
-import OffenseView from './lineupsOffense';
 
 export default function Lineups() {
   const [roster, setRoster] = useState<Player[]>([]);

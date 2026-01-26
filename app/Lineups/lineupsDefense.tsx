@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import FieldView from '../Lineups/FieldView';
+import FieldView from './FieldView';
 
 type Props = {
   positions: any;
