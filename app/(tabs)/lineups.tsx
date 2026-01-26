@@ -2,10 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { updatePlayerStats } from '../../config/FirebaseConfig';
 import { useAuth } from '../auth-context';
-import BattingOrder from '../Lineups/BattingOrder';
-import FieldView from '../Lineups/FieldView';
 import PickerDialog from '../Lineups/PickerDialog';
 import RosterScroller from '../Lineups/RosterScroller';
 import StatsDialog from '../Lineups/StatsDialog';
@@ -13,6 +10,8 @@ import styles, { colors } from '../Lineups/styles';
 import { POSITIONS } from '../Lineups/types';
 import { fetchPlayerInfo } from '../realtimeDb';
 import { Player } from '../types';
+import DefenseView from './lineupsDefense';
+import OffenseView from './lineupsOffense';
 
 export default function Lineups() {
   const [roster, setRoster] = useState<Player[]>([]);
@@ -85,7 +84,8 @@ export default function Lineups() {
       });
 
       return () => unsub && unsub();
-    }, [user]);
+    }, [user]
+  );
 
   const [sortMode, setSortMode] = useState<'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
@@ -263,32 +263,16 @@ export default function Lineups() {
       {/* Content */}
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
         {viewMode === 'defense' ? (
-          <View style={{ paddingTop: 16 }}>
-            <FieldView positions={POSITIONS} assignments={assignments} openPicker={openPicker} />
-          </View>
+          <DefenseView positions={POSITIONS} assignments={assignments} openPicker={openPicker} />
         ) : (
-          <BattingOrder
+          <OffenseView
             roster={roster}
             sortMode={sortMode}
             setSortMode={setSortMode}
             openStats={openStats}
             battingOrder={battingOrder ?? undefined}
-            onAutoGenerate={async () => {
-              const alg = require('../Lineups/LineupAlgorithm') as typeof import('../Lineups/LineupAlgorithm');
-              const result = alg.generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length)});
-              try {
-                const raw = alg.computeRawMetrics(roster);
-                await Promise.all(roster.map(async (p) => {
-                  const rcv = raw.get(p.id)?.rcv ?? 0;
-                  const merged = { ...(p.stats ?? {}), rcv };
-                  try {
-                    await updatePlayerStats(user!.uid, String(p.id), merged);
-                  } catch (e) {}
-                }));
-              } catch (e) {}
-              setBattingOrder(result.lineup);
-            }}
-            onClearOrder={() => setBattingOrder(null)}
+            setBattingOrder={setBattingOrder}
+            user={user}
           />
         )}
 
