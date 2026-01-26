@@ -206,21 +206,21 @@ export default function Lineups() {
             activeOpacity={0.8}
             style={{
               flex: 1,
-              paddingVertical: 14,
+              paddingVertical: 8,
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 15,
+              borderRadius: 12,
               zIndex: 1,
             }}
           >
             <MaterialCommunityIcons
               name="shield-outline"
-              size={22}
+              size={18}
               color={viewMode === 'defense' ? '#000' : '#00a878'}
               style={{ marginBottom: 4 }}
             />
             <Text style={{
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: '800',
               color: viewMode === 'defense' ? '#000' : '#00a878',
               letterSpacing: 0.8,
@@ -235,21 +235,21 @@ export default function Lineups() {
             activeOpacity={0.8}
             style={{
               flex: 1,
-              paddingVertical: 14,
+              paddingVertical: 8,
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 15,
+              borderRadius: 12,
               zIndex: 1,
             }}
           >
             <MaterialCommunityIcons
               name="baseball-bat"
-              size={22}
+              size={18}
               color={viewMode === 'offense' ? '#000' : '#00a878'}
               style={{ marginBottom: 4 }}
             />
             <Text style={{
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: '800',
               color: viewMode === 'offense' ? '#000' : '#00a878',
               letterSpacing: 0.8,

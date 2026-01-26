@@ -27,6 +27,6 @@ export const POSITIONS: Position[] = [
 
   // Outfield
   { id: "LF", label: "LF", name: "Left Field", top: "10%", left: "20%" },
-  { id: "CF", label: "CF", name: "Center ", top: "3%", left: "50%" },
+  { id: "CF", label: "CF", name: "Center Field", top: "3%", left: "50%" },
   { id: "RF", label: "RF", name: "Right Field", top: "10%", left: "80%" },
 ];

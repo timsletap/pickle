@@ -138,6 +138,7 @@ export default function Import() {
                 if (row['PO'] != null) statsDefensive.po = parse(row['PO']);
                 if (row['Total'] != null) statsDefensive.innings = parse(row['Total']);
                 if (row['DP'] != null) statsDefensive.dp = parse(row['DP']);
+                if (row['E'] != null) statsDefensive.e = parse(row['E']);
 
                 try {
                     if (playerId) {

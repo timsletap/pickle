@@ -2,6 +2,11 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { Player } from '../types';
 import styles, { colors } from './styles';
 
+import { useAuth } from '../auth-context';
+import { fetchPlayerInfo } from '../realtimeDb';
+
+import { useEffect, useState } from 'react';
+
 type Props = {
   sortedRoster: Player[];
   metricMode?: 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings';
@@ -11,23 +16,48 @@ type Props = {
 };
 
 export default function RosterScroller({ sortedRoster, metricMode = 'name', assignments, posById, openStats }: Props) {
-  const getMetric = (p: Player, mode: string) => {
-    const s = p.stats ?? {};
-    const ba = Number(s.ba ?? 0);
-    const obp = Number(s.obp ?? 0);
-    const slg = Number(s.slg ?? 0);
-    const rbi = Number(s.rbi ?? 0);
-    const games = Number(s.games ?? 0);
-    const qab = Number(s.qab ?? 0);
+  const { user } = useAuth();
 
-    if (mode === 'RCV') return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab;
-    if (mode === 'name') return ba;
-    if (mode === 'ba') return ba;
-    if (mode === 'obp') return obp;
-    if (mode === 'slg') return slg;
-    if (mode === 'rbi') return rbi;
-    if (mode === 'games') return games;
-    if (mode === 'qab') return qab;
+  const [players, setPlayers] = useState<Record<string, Player>>({});
+
+  useEffect(() => {
+    if (!user) {
+      setPlayers({});
+      return;
+    }
+    const unsub = fetchPlayerInfo(user.uid, (data) => {
+      if (!data) {
+        setPlayers({});
+        return;
+      }
+      const mapped: Record<string, Player> = {};
+      Object.entries(data).forEach(([id, val]) => {
+        const v = val as any;
+        mapped[id] = {
+          id,
+          name: v.name,
+          positions: v.positions || [],
+          jerseyNumber: v.jerseyNumber ?? undefined,
+          stats: v.stats ?? {},
+          statsDefensive: v.statsDefensive ?? {},
+        };
+      });
+      setPlayers(mapped);
+    });
+    return () => unsub && unsub();
+  }, [user]);
+  
+  const getMetric = (p: Player, mode: string) => {
+    const pData = players[p.id ?? ''];
+    const s = (pData?.statsDefensive) ?? {} as Record<string, any>;
+
+    if (mode === 'tc') return s.tc ?? 0;
+    if (mode === 'etc') return s.etc ?? 0;
+    if (mode === 'a') return s.a ?? 0;
+    if (mode === 'dp') return s.dp ?? 0;
+    if (mode === 'po') return s.po ?? 0;
+    if (mode === 'innings') return s.innings ?? 0;
+
     return 0;
   };
 
@@ -52,12 +82,11 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
       {sortedRoster.map((p) => {
         const assignedEntry = Object.entries(assignments).find(([posId, pl]) => pl?.id === p.id);
         const assignedPos = assignedEntry ? assignedEntry[0] : null;
-        const displayName = (p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()) || '-';
-        const lastInitial = (p.last_name ?? '')[0] ? `${(p.last_name ?? '')[0]}.` : '';
+        const displayName = (p.name ?? '').trim() || '-';
         return (
           <View key={p.id} style={styles.playerCard}>
             <Text style={styles.playerName} numberOfLines={1}>
-              {displayName} {lastInitial}
+              {displayName}
             </Text>
             <Pressable
               onPress={() => openStats(p)}
