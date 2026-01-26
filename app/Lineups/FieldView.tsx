@@ -82,6 +82,7 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
               top: pos.top,
               left: pos.left,
               alignItems: 'center',
+              marginLeft: -22,
             } as any}
           >
             <Pressable
@@ -116,7 +117,7 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
             <Text
               style={{
                 marginTop: 4,
-                fontSize: 9,
+                fontSize: 7,
                 textAlign: 'center',
                 color: isAssigned ? colors.primary : 'rgba(255, 255, 255, 0.6)',
                 fontWeight: '600',
