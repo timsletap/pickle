@@ -63,7 +63,7 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
 
   const renderMetric = (p: Player) => {
     const val = getMetric(p, metricMode ?? 'name');
-    const formatted = (metricMode === 'dp' || metricMode === 'po' || metricMode === 'a' || metricMode === 'tc' || metricMode === 'etc' || metricMode === 'innings')
+    const formatted = (metricMode === 'dp' || metricMode === 'po' || metricMode === 'a' || metricMode === 'tc' || metricMode === 'innings')
       ? `${Math.round(val ?? 0)}`
       : `${(val ?? 0).toFixed(2)}`;
     return <Text style={styles.metricText}>{formatted}</Text>;

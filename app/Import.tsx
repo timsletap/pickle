@@ -3,7 +3,7 @@ import { readAsStringAsync } from 'expo-file-system/legacy';
 import { router } from 'expo-router';
 import Papa from 'papaparse';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, IconButton, Paragraph } from 'react-native-paper';
 
 import { useAuth } from './auth-context';
@@ -65,7 +65,13 @@ export default function Import() {
         setCsvFile({ name, uri });
 
         try {
-            const text = await readAsStringAsync(uri);
+            let text: string;
+            if (Platform.OS === 'web') {
+                const res = await fetch(uri);
+                text = await res.text();
+            } else {
+                text = await readAsStringAsync(uri);
+            }
 
             // drop the first row (often contains whitespace or garbage)
             const lines = text.split(/\r?\n/);
