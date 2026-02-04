@@ -131,12 +131,16 @@ export default function PracticePlansList() {
     }
 
     try {
-      await fetch(`${API_BASE_URL}/api/practice-plans`, {
+      const response = await fetch(`${API_BASE_URL}/api/practice-plans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: userId, name: planName }),
         signal: AbortSignal.timeout(10000)
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       setPlanName("");
       setModalVisible(false);
