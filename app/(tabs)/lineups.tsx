@@ -92,6 +92,7 @@ export default function Lineups() {
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
   const [battingOrder, setBattingOrder] = useState<any[] | null>(null);
+  const [selectedBatSlot, setSelectedBatSlot] = useState<number | null>(null);
 
   const initialAssignments: Record<string, any> = POSITIONS.reduce((acc, p) => ({ ...acc, [p.id]: null }), {});
   const [assignments, setAssignments] = useState<Record<string, any>>(initialAssignments);
@@ -293,6 +294,8 @@ export default function Lineups() {
             openStats={openStats}
             battingOrder={battingOrder ?? undefined}
             setBattingOrder={setBattingOrder}
+            selectedBatSlot={selectedBatSlot}
+            setSelectedBatSlot={setSelectedBatSlot}
             user={user}
           />
         )}
@@ -334,7 +337,34 @@ export default function Lineups() {
             </ScrollView>
           </View>
 
-          <RosterScroller sortedRoster={sortedRoster} metricMode={sortMode} assignments={assignments} posById={posById} openStats={openStats} />
+          <RosterScroller
+            sortedRoster={sortedRoster}
+            metricMode={sortMode}
+            assignments={assignments}
+            posById={posById}
+            openStats={openStats}
+            onPlayerSelect={(p: Player) => {
+              if (selectedBatSlot === null) {
+                openStats(p);
+                return;
+              }
+              const idx = selectedBatSlot;
+              const size = Math.min(9, roster.length);
+              setBattingOrder((prev) => {
+                const base = prev ? [...prev] : Array(size).fill(null);
+                while (base.length < size) base.push(null);
+                // remove any previous occurrences of this player
+                for (let i = 0; i < base.length; i++) {
+                  const entry = base[i] as any;
+                  if (entry && entry.id === p.id) base[i] = null;
+                }
+                // place player in selected slot
+                base[idx] = p;
+                return base;
+              });
+              setSelectedBatSlot(null);
+            }}
+          />
         </View>
       </Animated.View>
 

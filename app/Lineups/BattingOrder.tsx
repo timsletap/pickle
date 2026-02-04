@@ -12,17 +12,19 @@ type Props = {
   battingOrder?: Player[];
   onAutoGenerate?: () => void;
   onClearOrder?: () => void;
+  selectedBatSlot?: number | null;
+  setSelectedBatSlot?: (i: number | null) => void;
 };
 
-export default function BattingOrder({ roster, sortMode, setSortMode, openStats, battingOrder, onAutoGenerate, onClearOrder }: Props) {
+export default function BattingOrder({ roster, sortMode, setSortMode, openStats, battingOrder, onAutoGenerate, onClearOrder, selectedBatSlot, setSelectedBatSlot }: Props) {
   const [posIndexMap, setPosIndexMap] = useState<Record<string, number>>({});
 
-  const displayList = battingOrder ?? roster.slice().sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? ''));
+  const displayList = (battingOrder ?? roster.slice().sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? ''))) as (Player | null)[];
 
   return (
     <View style={styles.battingContainer}>
       <View style={styles.battingHeader}>
-        <Text style={styles.sectionTitle}>Batting Order</Text>
+        <Text style={[styles.sectionTitle, { paddingTop: 20 }]}>Batting Order</Text>
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
             onPress={() => onAutoGenerate && onAutoGenerate()}
@@ -54,25 +56,32 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
           <View style={{ flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' }}>
             <View style={{ width: 40 }} />
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ color: colors.textMuted, width: 80, fontSize: 12, fontWeight: '700' }}>Pos</Text>
+              <Text style={{ color: colors.textMuted, width: 15, fontSize: 12, fontWeight: '700' }}></Text>
+              <Text style={{ color: colors.textMuted, width: 65, fontSize: 12, fontWeight: '700' }}>Pos</Text>
               <Text style={{ color: colors.textMuted, width: 175, fontSize: 12, fontWeight: '700' }}>Name</Text>
               <Text style={{ color: colors.textMuted, width: 60, fontSize: 12, fontWeight: '700' }}>#</Text>
             </View>
           </View>
 
           <ScrollView style={styles.battingList} showsVerticalScrollIndicator={false}>
-            {displayList.map((p: Player, index: number) => (
-              <Pressable
-                key={p.id}
-                onPress={() => openStats(p)}
-                style={({ pressed }) => [styles.battingItem, pressed && { opacity: 0.7 }]}
-              >
-                <View style={styles.battingIndex}>
+            {displayList.map((p: Player | null, index: number) => (
+              <View key={p?.id ?? `slot-${index}`} style={styles.battingItem}>
+                <Pressable
+                  onPress={() => setSelectedBatSlot ? setSelectedBatSlot(index) : null}
+                  style={({ pressed }) => [
+                    styles.battingIndex,
+                    pressed && { opacity: 0.8 },
+                    selectedBatSlot === index && { backgroundColor: colors.primaryDim },
+                  ]}
+                >
                   <Text style={styles.battingIndexText}>{index + 1}</Text>
-                </View>
+                </Pressable>
 
-                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
-                  {p.positions && p.positions.length > 0 ? (
+                <Pressable
+                  onPress={() => p ? openStats(p) : null}
+                  style={({ pressed }) => [{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }, pressed && p && { opacity: 0.7 }]}
+                >
+                  {p && p.positions && p.positions.length > 0 ? (
                     <Pressable
                       onPress={() => {
                         const key = String(p.id);
@@ -89,16 +98,16 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
                       </Text>
                     </Pressable>
                   ) : (
-                    <Text style={{ color: colors.textMuted, width: 64 }}>-</Text>
+                    <Text style={{ color: colors.textMuted, width: 64 }}>{p ? '-' : ''}</Text>
                   )}
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.battingPlayerName}>{p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()}</Text>
+                    <Text style={styles.battingPlayerName}>{p ? (p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()) : '—'}</Text>
                   </View>
-                  <Text style={{ color: colors.primary, width: 60, textAlign: 'right', fontWeight: '700' }}>{p.jersey ?? p.jerseyNumber ?? '-'}</Text>
-                </View>
+                  <Text style={{ color: colors.primary, width: 60, textAlign: 'right', fontWeight: '700' }}>{p ? (p.jersey ?? p.jerseyNumber ?? '-') : '-'}</Text>
 
-                <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primaryBorder} />
-              </Pressable>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primaryBorder} />
+                </Pressable>
+              </View>
             ))}
           </ScrollView>
         </>

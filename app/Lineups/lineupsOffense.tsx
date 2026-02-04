@@ -8,10 +8,12 @@ type Props = {
   openStats: (p: any) => void;
   battingOrder?: any[];
   setBattingOrder: (o: any[] | null) => void;
+  selectedBatSlot?: number | null;
+  setSelectedBatSlot?: (i: number | null) => void;
   user: any;
 };
 
-export default function LineupsOffense({ roster, sortMode, setSortMode, openStats, battingOrder, setBattingOrder, user }: Props) {
+export default function LineupsOffense({ roster, sortMode, setSortMode, openStats, battingOrder, setBattingOrder, selectedBatSlot, setSelectedBatSlot, user }: Props) {
   return (
     <BattingOrder
       roster={roster}
@@ -19,6 +21,8 @@ export default function LineupsOffense({ roster, sortMode, setSortMode, openStat
       setSortMode={setSortMode}
       openStats={openStats}
       battingOrder={battingOrder}
+      selectedBatSlot={selectedBatSlot}
+      setSelectedBatSlot={setSelectedBatSlot}
       onAutoGenerate={async () => {
         const alg = require('../Lineups/LineupAlgorithm') as typeof import('../Lineups/LineupAlgorithm');
         const result = alg.generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length) });

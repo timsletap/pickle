@@ -13,9 +13,10 @@ type Props = {
   assignments: Record<string, Player | null>;
   posById: (id: string) => { id: string; label: string; name: string };
   openStats: (p: Player) => void;
+  onPlayerSelect?: (p: Player) => void;
 };
 
-export default function RosterScroller({ sortedRoster, metricMode = 'name', assignments, posById, openStats }: Props) {
+export default function RosterScroller({ sortedRoster, metricMode = 'name', assignments, posById, openStats, onPlayerSelect }: Props) {
   const { user } = useAuth();
 
   const [players, setPlayers] = useState<Record<string, Player>>({});
@@ -101,7 +102,10 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
               {displayName}
             </Text>
             <Pressable
-              onPress={() => openStats(p)}
+              onPress={() => {
+                if (onPlayerSelect) onPlayerSelect(p);
+                else openStats(p);
+              }}
               style={({ pressed }) => [styles.playerIcon, pressed && styles.pressed]}
             >
               <Text style={styles.playerNumber}>{p.jersey ?? p.jerseyNumber ?? '-'}</Text>
