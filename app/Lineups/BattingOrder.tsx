@@ -1,4 +1,5 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import type { Player } from '../types';
 import styles, { colors } from './styles';
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export default function BattingOrder({ roster, sortMode, setSortMode, openStats, battingOrder, onAutoGenerate, onClearOrder }: Props) {
+  const [posIndexMap, setPosIndexMap] = useState<Record<string, number>>({});
+
   const displayList = battingOrder ?? roster.slice().sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? ''));
 
   return (
@@ -69,7 +72,25 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
                 </View>
 
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
-                  <Text style={{ color: colors.textMuted, width: 64 }}>{(p.positions && p.positions[0]) ? String(p.positions[0]) : '-'}</Text>
+                  {p.positions && p.positions.length > 0 ? (
+                    <Pressable
+                      onPress={() => {
+                        const key = String(p.id);
+                        setPosIndexMap((prev) => {
+                          const cur = prev[key] ?? 0;
+                          const next = (cur + 1) % p.positions!.length;
+                          return { ...prev, [key]: next };
+                        });
+                      }}
+                      style={{ width: 64 }}
+                    >
+                      <Text style={{ color: colors.textMuted }}>
+                        {String(p.positions[posIndexMap[String(p.id)] ?? 0])}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <Text style={{ color: colors.textMuted, width: 64 }}>-</Text>
+                  )}
                   <View style={{ flex: 1 }}>
                     <Text style={styles.battingPlayerName}>{p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()}</Text>
                   </View>
