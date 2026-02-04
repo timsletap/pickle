@@ -22,7 +22,15 @@
       "Bash(node -e \"\nconst bin = require\\(''@expo/ngrok-bin''\\);\nconsole.log\\(''ngrok binary path:'', bin\\);\n\nconst { spawn } = require\\(''child_process''\\);\nconst ngrok = spawn\\(bin, [''--version''], { windowsHide: true }\\);\nngrok.stdout.on\\(''data'', \\(d\\) => console.log\\(''stdout:'', d.toString\\(\\)\\)\\);\nngrok.stderr.on\\(''data'', \\(d\\) => console.log\\(''stderr:'', d.toString\\(\\)\\)\\);\nngrok.on\\(''error'', \\(e\\) => console.log\\(''error:'', e\\)\\);\nngrok.on\\(''exit'', \\(code\\) => console.log\\(''exit code:'', code\\)\\);\n\")",
       "Bash(npx expo:*)",
       "Bash(echo \"powershell not in path\" echo \"PATH check:\" echo $PATH)",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(git -C \"c:/Users/smit3/pickle\" status)",
+      "Bash(git -C \"c:/Users/smit3/pickle\" checkout --ours backend/pickle.db)",
+      "Bash(git -C \"c:/Users/smit3/pickle\" add backend/pickle.db)",
+      "Bash(git -C \"c:/Users/smit3/pickle\" add \"app/\\(tabs\\)/home.tsx\")",
+      "Bash(git -C \"c:/Users/smit3/pickle\" checkout --theirs package-lock.json)",
+      "Bash(git -C \"c:/Users/smit3/pickle\" add package-lock.json)",
+      "Bash(git -C \"c:/Users/smit3/pickle\" add -f backend/pickle.db)",
+      "Bash(git -C \"c:/Users/smit3/pickle\" commit -m \"Merge remote branch - resolve conflicts\")"
     ]
   }
 }
