@@ -225,7 +225,7 @@ export default StyleSheet.create({
     borderRadius: 6,
   },
   battingContainer: {
-    flex: 1,
+    paddingBottom: 20,
     paddingHorizontal: 16,
   },
   battingHeader: {
