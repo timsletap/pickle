@@ -14,12 +14,14 @@ export type Player = {
   };
 };
 
+import type { DimensionValue } from 'react-native';
+
 export type Position = {
   id: string;
   label: string;
   name: string;
-  top: string;
-  left: string;
+  top: DimensionValue;
+  left: DimensionValue;
 };
 
 // Softball field positions - properly spaced for the diamond layout

@@ -1,7 +1,12 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useState } from "react";
-import { FlatList, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, LayoutAnimation, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, UIManager, View } from "react-native";
 import { API_BASE_URL } from "../../config/api";
+
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function PracticePlansList() {
   const [plans, setPlans] = useState<any[]>([]);
@@ -220,6 +225,110 @@ export default function PracticePlansList() {
     setDrillModalVisible(true);
   };
 
+  const performDeletePlan = async (planId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/practice-plans/${planId}`, {
+        method: "DELETE",
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Animate the removal
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+      // Remove from local state
+      setPlans(prev => prev.filter(p => p.id !== planId));
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(planId);
+        return newSet;
+      });
+      alert("Practice plan deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting plan:", error);
+      alert("Failed to delete practice plan. Please try again.");
+    }
+  };
+
+  const deletePlan = async (planId: number, planName: string) => {
+    // Use window.confirm for web, Alert.alert for mobile
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Are you sure you want to delete "${planName}"? This will remove all drills from this plan.`);
+      if (confirmed) {
+        await performDeletePlan(planId);
+      }
+    } else {
+      Alert.alert(
+        "Delete Practice Plan",
+        `Are you sure you want to delete "${planName}"? This will remove all drills from this plan.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => performDeletePlan(planId)
+          }
+        ]
+      );
+    }
+  };
+
+  const performRemoveDrillFromPlan = async (drillId: number) => {
+    if (!selectedPlan) return;
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/practice-plans/${selectedPlan.id}/drills/${drillId}`,
+        {
+          method: "DELETE",
+          signal: AbortSignal.timeout(10000)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Animate the removal
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+      // Refresh plan details
+      await viewPlanDetails(selectedPlan.id);
+      alert("Drill removed from plan!");
+    } catch (error) {
+      console.error("Error removing drill from plan:", error);
+      alert("Failed to remove drill. Please try again.");
+    }
+  };
+
+  const removeDrillFromPlan = async (drillId: number, drillTitle: string) => {
+    if (!selectedPlan) return;
+
+    // Use window.confirm for web, Alert.alert for mobile
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Remove "${drillTitle}" from this practice plan?`);
+      if (confirmed) {
+        await performRemoveDrillFromPlan(drillId);
+      }
+    } else {
+      Alert.alert(
+        "Remove Drill",
+        `Remove "${drillTitle}" from this practice plan?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Remove",
+            style: "destructive",
+            onPress: () => performRemoveDrillFromPlan(drillId)
+          }
+        ]
+      );
+    }
+  };
+
   const filteredPlans = showFavoritesOnly ? plans.filter(p => favorites.has(p.id)) : plans;
 
   if (selectedPlan) {
@@ -262,7 +371,8 @@ export default function PracticePlansList() {
               borderRadius: 12,
               borderWidth: 1,
               borderColor: "rgba(0, 168, 120, 0.15)",
-              flexDirection: "row"
+              flexDirection: "row",
+              alignItems: "center"
             }}>
               <Text style={{ fontSize: 18, fontWeight: "bold", marginRight: 15, color: "#00a878" }}>
                 {index + 1}.
@@ -271,6 +381,18 @@ export default function PracticePlansList() {
                 <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 5, color: "#fff" }}>{item.title}</Text>
                 <Text style={{ fontSize: 12, color: "#00a878", textTransform: "uppercase", fontWeight: "600" }}>{item.skill_focus}</Text>
               </View>
+              <TouchableOpacity
+                onPress={() => removeDrillFromPlan(item.id, item.title)}
+                style={{
+                  backgroundColor: "rgba(255, 59, 48, 0.1)",
+                  padding: 10,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "rgba(255, 59, 48, 0.3)"
+                }}
+              >
+                <MaterialCommunityIcons name="close" size={20} color="#FF3B30" />
+              </TouchableOpacity>
             </View>
           )}
           ListEmptyComponent={
@@ -543,18 +665,33 @@ export default function PracticePlansList() {
                       {new Date(item.created_at).toLocaleDateString()}
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => toggleFavorite(item.id)}
-                    style={{
-                      backgroundColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.2)" : "rgba(255, 193, 7, 0.1)",
-                      padding: 10,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.3)"
-                    }}
-                  >
-                    <Text style={{ fontSize: 22, color: "#FFC107" }}>{favorites.has(item.id) ? "★" : "☆"}</Text>
-                  </TouchableOpacity>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TouchableOpacity
+                      onPress={() => toggleFavorite(item.id)}
+                      style={{
+                        backgroundColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.2)" : "rgba(255, 193, 7, 0.1)",
+                        padding: 10,
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.3)",
+                        marginRight: 8
+                      }}
+                    >
+                      <Text style={{ fontSize: 22, color: "#FFC107" }}>{favorites.has(item.id) ? "★" : "☆"}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => deletePlan(item.id, item.name)}
+                      style={{
+                        backgroundColor: "rgba(255, 59, 48, 0.1)",
+                        padding: 10,
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: "rgba(255, 59, 48, 0.3)"
+                      }}
+                    >
+                      <MaterialCommunityIcons name="trash-can-outline" size={22} color="#FF3B30" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <TouchableOpacity
                   onPress={() => viewPlanDetails(item.id)}

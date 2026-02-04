@@ -7,7 +7,22 @@
       "Bash(tasklist:*)",
       "Bash(gh repo view:*)",
       "Bash(git fetch:*)",
-      "Bash(git filter-branch:*)"
+      "Bash(git filter-branch:*)",
+      "Bash(git push:*)",
+      "Bash(git for-each-ref:*)",
+      "Bash(while read ref)",
+      "Bash(do git update-ref -d \"$ref\")",
+      "Bash(done)",
+      "Bash(npm view:*)",
+      "Bash(find:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(\"c:/Users/smit3/pickle/node_modules/@expo/ngrok-bin-win32-x64/ngrok.exe\" --version)",
+      "Bash(node -e \"\nconst bin = require\\(''@expo/ngrok-bin''\\);\nconsole.log\\(''ngrok binary path:'', bin\\);\n\nconst { spawn } = require\\(''child_process''\\);\nconst ngrok = spawn\\(bin, [''--version''], { windowsHide: true }\\);\nngrok.stdout.on\\(''data'', \\(d\\) => console.log\\(''stdout:'', d.toString\\(\\)\\)\\);\nngrok.stderr.on\\(''data'', \\(d\\) => console.log\\(''stderr:'', d.toString\\(\\)\\)\\);\nngrok.on\\(''error'', \\(e\\) => console.log\\(''error:'', e\\)\\);\nngrok.on\\(''exit'', \\(code\\) => console.log\\(''exit code:'', code\\)\\);\n\")",
+      "Bash(npx expo:*)",
+      "Bash(echo \"powershell not in path\" echo \"PATH check:\" echo $PATH)",
+      "Bash(npx kill-port:*)"
     ]
   }
 }

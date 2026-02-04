@@ -260,6 +260,42 @@ def unfavorite_drill(drill_id: int, user_id: int):
     return {"message": "Drill removed from favorites"}
 
 
+@router.delete("/{drill_id}")
+def delete_drill(drill_id: int):
+    """Delete a drill permanently"""
+    if drill_id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid drill ID")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if drill exists
+        cursor.execute("SELECT id FROM drills WHERE id = ?", (drill_id,))
+        if not cursor.fetchone():
+            conn.close()
+            raise HTTPException(status_code=404, detail="Drill not found")
+
+        # Delete from practice plan drills first
+        cursor.execute("DELETE FROM practice_plan_drills WHERE drill_id = ?", (drill_id,))
+
+        # Delete any favorites for this drill
+        cursor.execute("DELETE FROM drill_favorites WHERE drill_id = ?", (drill_id,))
+
+        # Delete the drill
+        cursor.execute("DELETE FROM drills WHERE id = ?", (drill_id,))
+        conn.commit()
+        conn.close()
+
+        return {"message": "Drill deleted successfully"}
+    except HTTPException:
+        raise
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
 class CreateDrillRequest(BaseModel):
     video_id: str
     title: str

@@ -207,3 +207,71 @@ def unfavorite_practice_plan(plan_id: int, user_id: int):
     conn.commit()
     conn.close()
     return {"message": "Practice plan removed from favorites"}
+
+
+@router.delete("/{plan_id}")
+def delete_practice_plan(plan_id: int):
+    """Delete a practice plan permanently"""
+    if plan_id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid practice plan ID")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if plan exists
+        cursor.execute("SELECT id FROM practice_plans WHERE id = ?", (plan_id,))
+        if not cursor.fetchone():
+            conn.close()
+            raise HTTPException(status_code=404, detail="Practice plan not found")
+
+        # Delete drills associated with this plan
+        cursor.execute("DELETE FROM practice_plan_drills WHERE practice_plan_id = ?", (plan_id,))
+
+        # Delete any favorites for this plan
+        cursor.execute("DELETE FROM practice_plan_favorites WHERE practice_plan_id = ?", (plan_id,))
+
+        # Delete the practice plan
+        cursor.execute("DELETE FROM practice_plans WHERE id = ?", (plan_id,))
+        conn.commit()
+        conn.close()
+
+        return {"message": "Practice plan deleted successfully"}
+    except HTTPException:
+        raise
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/{plan_id}/drills/{drill_id}")
+def remove_drill_from_plan(plan_id: int, drill_id: int):
+    """Remove a drill from a practice plan"""
+    if plan_id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid practice plan ID")
+    if drill_id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid drill ID")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "DELETE FROM practice_plan_drills WHERE practice_plan_id = ? AND drill_id = ?",
+            (plan_id, drill_id)
+        )
+        deleted_count = cursor.rowcount
+        conn.commit()
+        conn.close()
+
+        if deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Drill not found in this practice plan")
+
+        return {"message": "Drill removed from practice plan"}
+    except HTTPException:
+        raise
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

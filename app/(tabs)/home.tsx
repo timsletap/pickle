@@ -147,7 +147,7 @@ export default function Home() {
                 <Text style={styles.heroBrand}>PICKLE</Text>
                 <Text style={styles.pickleEmoji}>🥒</Text>
               </View>
-              <Text style={styles.heroTagline}>Your team's command center</Text>
+              <Text style={styles.heroTagline}>Your team&apos;s command center</Text>
               <View style={styles.heroDivider} />
               <Text style={styles.heroTip}>
                 <Ionicons name="bulb-outline" size={14} color={colors.primary} /> {randomTip}
@@ -176,7 +176,7 @@ export default function Home() {
                 ]}
               >
                 <LinearGradient
-                  colors={action.gradient}
+                  colors={action.gradient as [string, string]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.actionIconContainer}
@@ -197,7 +197,7 @@ export default function Home() {
             transform: [{ translateY: slideAnim }],
           }}
         >
-          <Text style={styles.sectionTitle}>WHAT'S IN THE JAR</Text>
+          <Text style={styles.sectionTitle}>WHAT&apos;S IN THE JAR</Text>
 
           <View style={styles.featureCard}>
             <View style={styles.featureRow}>

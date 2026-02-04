@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { FlatList, Linking, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, LayoutAnimation, Linking, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, UIManager, View } from "react-native";
 import { API_BASE_URL } from "../../config/api";
+
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface Equipment {
   id: number;
@@ -133,11 +138,16 @@ export default function EquipmentList() {
     }
 
     try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
+      // Use window.open for web, Linking for mobile
+      if (Platform.OS === 'web') {
+        window.open(url, '_blank');
       } else {
-        alert("Unable to open this link.");
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url);
+        } else {
+          alert("Unable to open this link.");
+        }
       }
     } catch (error) {
       console.error("Error opening link:", error);
@@ -222,6 +232,57 @@ export default function EquipmentList() {
     }
   };
 
+  const performDelete = async (equipmentId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/equipment/${equipmentId}`, {
+        method: "DELETE",
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Animate the removal
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+      // Remove from local state
+      setEquipment(prev => prev.filter(e => e.id !== equipmentId));
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(equipmentId);
+        return newSet;
+      });
+      alert("Equipment deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting equipment:", error);
+      alert("Failed to delete equipment. Please try again.");
+    }
+  };
+
+  const deleteEquipment = async (equipmentId: number, equipmentTitle: string) => {
+    // Use window.confirm for web, Alert.alert for mobile
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Are you sure you want to delete "${equipmentTitle}"?`);
+      if (confirmed) {
+        await performDelete(equipmentId);
+      }
+    } else {
+      Alert.alert(
+        "Delete Equipment",
+        `Are you sure you want to delete "${equipmentTitle}"?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => performDelete(equipmentId)
+          }
+        ]
+      );
+    }
+  };
+
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
@@ -286,18 +347,33 @@ export default function EquipmentList() {
                   <Text style={{ fontSize: 18, fontWeight: "800", color: "#fff", marginBottom: 4 }}>{item.title}</Text>
                   <Text style={{ fontSize: 12, color: "#666" }}>Click to view</Text>
                 </View>
-                <TouchableOpacity
-                  onPress={() => toggleFavorite(item.id)}
-                  style={{
-                    backgroundColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.2)" : "rgba(255, 193, 7, 0.1)",
-                    padding: 10,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.3)"
-                  }}
-                >
-                  <Text style={{ fontSize: 22, color: "#FFC107" }}>{favorites.has(item.id) ? "★" : "☆"}</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <TouchableOpacity
+                    onPress={() => toggleFavorite(item.id)}
+                    style={{
+                      backgroundColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.2)" : "rgba(255, 193, 7, 0.1)",
+                      padding: 10,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.3)",
+                      marginRight: 8
+                    }}
+                  >
+                    <Text style={{ fontSize: 22, color: "#FFC107" }}>{favorites.has(item.id) ? "★" : "☆"}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => deleteEquipment(item.id, item.title)}
+                    style={{
+                      backgroundColor: "rgba(255, 59, 48, 0.1)",
+                      padding: 10,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: "rgba(255, 59, 48, 0.3)"
+                    }}
+                  >
+                    <MaterialCommunityIcons name="trash-can-outline" size={22} color="#FF3B30" />
+                  </TouchableOpacity>
+                </View>
               </View>
               <TouchableOpacity
                 onPress={() => openLink(item.link)}

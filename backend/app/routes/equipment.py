@@ -340,3 +340,36 @@ def unfavorite_equipment(equipment_id: int, user_id: int):
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/{equipment_id}")
+def delete_equipment(equipment_id: int):
+    """Delete an equipment item permanently"""
+    if equipment_id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid equipment ID")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if equipment exists
+        cursor.execute("SELECT id FROM equipment WHERE id = ?", (equipment_id,))
+        if not cursor.fetchone():
+            conn.close()
+            raise HTTPException(status_code=404, detail="Equipment not found")
+
+        # Delete any favorites for this equipment first
+        cursor.execute("DELETE FROM equipment_favorites WHERE equipment_id = ?", (equipment_id,))
+
+        # Delete the equipment
+        cursor.execute("DELETE FROM equipment WHERE id = ?", (equipment_id,))
+        conn.commit()
+        conn.close()
+
+        return {"message": "Equipment deleted successfully"}
+    except HTTPException:
+        raise
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

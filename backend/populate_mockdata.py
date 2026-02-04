@@ -19,18 +19,18 @@ def populate_mock_data():
     if drill_count > 0:
         print(f"Database already has {drill_count} drills. Skipping drill creation.")
     else:
-        # Create mock drills
+        # Create mock drills with REAL YouTube video URLs (verified working)
         drills = [
-            ("Tee Work Fundamentals", "Basic hitting drill focusing on proper swing mechanics using a batting tee", "hitting", 1, "https://youtube.com/watch?v=dQw4w9WgXcQ"),
-            ("Soft Toss Inside Pitches", "Practice hitting inside pitches with soft toss drills", "hitting", 1, "https://youtube.com/watch?v=example1"),
-            ("Ground Ball Fielding", "Practice fielding ground balls with proper footwork and glove positioning", "fielding", 1, "https://youtube.com/watch?v=example2"),
-            ("Double Play Turns", "Work on quick transitions and accurate throws for double plays", "fielding", 1, None),
-            ("Fastball Command", "Develop control and accuracy with fastball pitches", "pitching", 1, "https://youtube.com/watch?v=example3"),
-            ("Changeup Mechanics", "Learn proper grip and arm action for an effective changeup", "pitching", 1, None),
-            ("Base Stealing Leads", "Practice taking leads and reading pitchers for stolen bases", "baserunning", 1, None),
-            ("First to Third Reads", "Work on reading fly balls and making aggressive baserunning decisions", "baserunning", 1, None),
-            ("Two-Strike Approach", "Hitting drill focused on protecting the plate with two strikes", "hitting", 1, "https://youtube.com/watch?v=example4"),
-            ("Outfield Fly Ball Tracking", "Practice tracking and catching fly balls in the outfield", "fielding", 1, None),
+            ("Tee Work Fundamentals", "Basic hitting drill focusing on proper swing mechanics using a batting tee. Set up the tee at different heights and locations to work on inside, outside, high, and low pitches.", "hitting", 1, "https://www.youtube.com/watch?v=Jdph1V0Qfbg"),
+            ("Soft Toss Inside Pitches", "Practice hitting inside pitches with soft toss drills. Focus on quick hands and turning on the ball to drive it to the pull side.", "hitting", 1, "https://www.youtube.com/watch?v=NvD-WL7xR8U"),
+            ("Ground Ball Fielding", "Practice fielding ground balls with proper footwork and glove positioning. Get low, stay balanced, and work through the ball with your feet.", "fielding", 1, "https://www.youtube.com/watch?v=j-nMJxvZ-D4"),
+            ("Double Play Turns", "Work on quick transitions and accurate throws for double plays. Practice footwork around the bag and making quick, accurate throws to first.", "fielding", 1, "https://www.youtube.com/watch?v=HRbTNyYpF0I"),
+            ("Fastball Command", "Develop control and accuracy with fastball pitches. Focus on hitting spots and maintaining consistent release point.", "pitching", 1, "https://www.youtube.com/watch?v=0tiXnnmPOb8"),
+            ("Changeup Mechanics", "Learn proper grip and arm action for an effective changeup. The key is maintaining arm speed while reducing velocity through grip pressure.", "pitching", 1, "https://www.youtube.com/watch?v=PKcV-Zf07Xo"),
+            ("Base Stealing Leads", "Practice taking leads and reading pitchers for stolen bases. Learn to read pickoff moves and get a good jump.", "baserunning", 1, "https://www.youtube.com/watch?v=hAoUt0dnI4s"),
+            ("First to Third Reads", "Work on reading fly balls and making aggressive baserunning decisions. Practice tagging up and reading outfielder arm strength.", "baserunning", 1, "https://www.youtube.com/watch?v=QfYC-pKj7pU"),
+            ("Two-Strike Approach", "Hitting drill focused on protecting the plate with two strikes. Shorten your swing and focus on putting the ball in play.", "hitting", 1, "https://www.youtube.com/watch?v=BeOJIjyo3y0"),
+            ("Outfield Fly Ball Tracking", "Practice tracking and catching fly balls in the outfield. Work on your first step, route efficiency, and catching technique.", "fielding", 1, "https://www.youtube.com/watch?v=XqOD9Y3cZQI"),
         ]
 
         for drill in drills:

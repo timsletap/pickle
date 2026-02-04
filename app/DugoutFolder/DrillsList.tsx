@@ -1,7 +1,12 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Dimensions, FlatList, Image, Linking, Modal, Platform, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Dimensions, FlatList, Image, LayoutAnimation, Linking, Modal, Platform, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, UIManager, View } from "react-native";
 import { API_BASE_URL } from "../../config/api";
+
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface Drill {
   id: number;
@@ -267,17 +272,26 @@ export default function DrillsList() {
 
     const videoId = getYouTubeVideoId(url);
     if (videoId) {
-      // Open in-app video player
-      setCurrentVideoUrl(`https://www.youtube.com/embed/${videoId}`);
-      setVideoModalVisible(true);
+      // On web, open YouTube directly in new tab for better experience
+      if (Platform.OS === 'web') {
+        window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+      } else {
+        // Open in-app video player for mobile
+        setCurrentVideoUrl(`https://www.youtube.com/embed/${videoId}`);
+        setVideoModalVisible(true);
+      }
     } else {
       // Fallback to external browser
       try {
-        const supported = await Linking.canOpenURL(url);
-        if (supported) {
-          await Linking.openURL(url);
+        if (Platform.OS === 'web') {
+          window.open(url, '_blank');
         } else {
-          alert("Unable to open this video.");
+          const supported = await Linking.canOpenURL(url);
+          if (supported) {
+            await Linking.openURL(url);
+          } else {
+            alert("Unable to open this video.");
+          }
         }
       } catch (error) {
         console.error("Error opening video:", error);
@@ -290,6 +304,57 @@ export default function DrillsList() {
     if (!url || typeof url !== 'string') return null;
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
     return match ? match[1] : null;
+  };
+
+  const performDeleteDrill = async (drillId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/drills/${drillId}`, {
+        method: "DELETE",
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Animate the removal
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+      // Remove from local state
+      setDrills(prev => prev.filter(d => d.id !== drillId));
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(drillId);
+        return newSet;
+      });
+      alert("Drill deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting drill:", error);
+      alert("Failed to delete drill. Please try again.");
+    }
+  };
+
+  const deleteDrill = async (drillId: number, drillTitle: string) => {
+    // Use window.confirm for web, Alert.alert for mobile
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Are you sure you want to delete "${drillTitle}"?`);
+      if (confirmed) {
+        await performDeleteDrill(drillId);
+      }
+    } else {
+      Alert.alert(
+        "Delete Drill",
+        `Are you sure you want to delete "${drillTitle}"?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => performDeleteDrill(drillId)
+          }
+        ]
+      );
+    }
   };
 
   const filteredDrills = showFavoritesOnly ? drills.filter((d: any) => favorites.has(d.id)) : drills;
@@ -532,18 +597,33 @@ export default function DrillsList() {
                         </Text>
                       </View>
                     </View>
-                    <TouchableOpacity
-                      onPress={() => toggleFavorite(item.id)}
-                      style={{
-                        backgroundColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.2)" : "rgba(255, 193, 7, 0.1)",
-                        padding: 10,
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.3)"
-                      }}
-                    >
-                      <Text style={{ fontSize: 22, color: "#FFC107" }}>{favorites.has(item.id) ? "★" : "☆"}</Text>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: "column", alignItems: "center" }}>
+                      <TouchableOpacity
+                        onPress={() => toggleFavorite(item.id)}
+                        style={{
+                          backgroundColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.2)" : "rgba(255, 193, 7, 0.1)",
+                          padding: 10,
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          borderColor: favorites.has(item.id) ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.3)",
+                          marginBottom: 8
+                        }}
+                      >
+                        <Text style={{ fontSize: 22, color: "#FFC107" }}>{favorites.has(item.id) ? "★" : "☆"}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => deleteDrill(item.id, item.title)}
+                        style={{
+                          backgroundColor: "rgba(255, 59, 48, 0.1)",
+                          padding: 10,
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          borderColor: "rgba(255, 59, 48, 0.3)"
+                        }}
+                      >
+                        <MaterialCommunityIcons name="trash-can-outline" size={22} color="#FF3B30" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
                   {item.video_url && (
