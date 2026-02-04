@@ -367,13 +367,24 @@ export default function Lineups() {
               setBattingOrder((prev) => {
                 const base = prev ? [...prev] : Array(size).fill(null);
                 while (base.length < size) base.push(null);
-                // remove any previous occurrences of this player
-                for (let i = 0; i < base.length; i++) {
-                  const entry = base[i] as any;
-                  if (entry && entry.id === p.id) base[i] = null;
+
+                // find if this player is already in the lineup
+                const prevIndex = base.findIndex((entry: any) => entry && entry.id === p.id);
+                if (prevIndex === idx) {
+                  // already in desired slot
+                  return base;
                 }
-                // place player in selected slot
-                base[idx] = p;
+
+                if (prevIndex >= 0) {
+                  // swap the players between prevIndex and idx
+                  const tmp = base[idx];
+                  base[idx] = p;
+                  base[prevIndex] = tmp ?? null;
+                } else {
+                  // player not previously in lineup: place in slot (no duplicates exist)
+                  base[idx] = p;
+                }
+
                 return base;
               });
               setSelectedBatSlot(null);
