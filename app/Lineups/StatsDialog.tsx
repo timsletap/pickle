@@ -13,13 +13,16 @@ export default function StatsDialog({ visible, player, closeStats }: Props) {
   if (!visible || !player) return null;
 
   const stats = [
-    { label: 'Jersey', value: player.jersey ?? '-', icon: 'tshirt-crew' },
-    { label: 'Batting Avg', value: player.stats?.ba?.toFixed(3) ?? '-', icon: 'baseball-bat' },
-    { label: 'On-Base %', value: player.stats?.obp?.toFixed(3) ?? '-', icon: 'percent' },
-    { label: 'Slugging', value: player.stats?.slg?.toFixed(3) ?? '-', icon: 'flash' },
+    { label: 'Name', value: player.name ?? '-', icon: 'account' },
+    { label: 'Jersey', value: player.jerseyNumber ?? '-', icon: 'tshirt-crew' },
+    { label: 'Batting Avg', value: player.stats?.ba?.toFixed(2) ?? '-', icon: 'baseball-bat' },
+    { label: 'On-Base %', value: player.stats?.obp?.toFixed(2) ?? '-', icon: 'percent' },
+    { label: 'Slugging', value: player.stats?.slg?.toFixed(2) ?? '-', icon: 'flash' },
     { label: 'Games', value: player.stats?.games ?? '-', icon: 'calendar-check' },
     { label: 'QAB%', value: player.stats?.qab?.toFixed(1) ?? '-', icon: 'chart-line' },
   ];
+
+  const initials = `${player.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '-'}`;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={closeStats}>
@@ -38,13 +41,10 @@ export default function StatsDialog({ visible, player, closeStats }: Props) {
               borderColor: colors.primary,
               marginBottom: 12,
             }}>
-              <Text style={{ color: colors.primary, fontSize: 24, fontWeight: '900' }}>
-                {player.jersey ?? '-'}
-              </Text>
-            </View>
-            <Text style={[styles.modalTitle, { textAlign: 'center' }]}>
-              {player.first_name} {player.last_name}
+            <Text style={{ color: colors.primary, fontSize: 24, fontWeight: '900' }}>
+              {initials || '-'}
             </Text>
+            </View>
             <Text style={[styles.modalSubtitle, { textAlign: 'center' }]}>
               PLAYER STATS
             </Text>

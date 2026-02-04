@@ -82,7 +82,8 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
               top: pos.top,
               left: pos.left,
               alignItems: 'center',
-            }}
+              marginLeft: -22,
+            } as any}
           >
             <Pressable
               onPress={() => openPicker(pos.id)}
@@ -109,14 +110,14 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
                 color: isAssigned ? colors.primary : 'rgba(255, 255, 255, 0.8)',
                 fontSize: isAssigned ? 15 : 12,
               }}>
-                {assigned ? `${assigned.jersey ?? ''}` : pos.label}
+                {assigned ? `${assigned.jerseyNumber ?? ''}` : pos.label}
               </Text>
             </Pressable>
 
             <Text
               style={{
                 marginTop: 4,
-                fontSize: 9,
+                fontSize: 7,
                 textAlign: 'center',
                 color: isAssigned ? colors.primary : 'rgba(255, 255, 255, 0.6)',
                 fontWeight: '600',
@@ -124,7 +125,7 @@ export default function FieldView({ positions, assignments, openPicker }: Props)
               }}
               numberOfLines={1}
             >
-              {assigned ? `${assigned.first_name} ${assigned.last_name.charAt(0)}.` : pos.name}
+              {assigned ? `${assigned.first_name ?? ''} ${(assigned.last_name ?? '')[0] ? `${(assigned.last_name ?? '')[0]}.` : ''}`.trim() : pos.name}
             </Text>
           </View>
         );

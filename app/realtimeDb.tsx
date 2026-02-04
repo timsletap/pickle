@@ -18,7 +18,14 @@ export function fetchPlayerInfo(
   const db = getDatabase(app);
   const playersRef = ref(db, `players/${userId}`);
   const unsubscribe = onValue(playersRef, (snapshot) => {
-    callback(snapshot.exists() ? (snapshot.val() as Record<string, { name: string; positions?: string[]; jerseyNumber?: number }>) : null);
+    const data = snapshot.exists()
+      ? (snapshot.val() as Record<string, { name: string; positions?: string[]; jerseyNumber?: number }>)
+      : null;
+
+    // Defer invoking the user callback to avoid temporal-dead-zone issues
+    // where callers may reference the returned `unsub` variable inside
+    // the callback that could be invoked synchronously in some environments.
+    Promise.resolve().then(() => callback(data));
   });
 
   return () => unsubscribe();
@@ -70,6 +77,26 @@ export async function savePlayerStats(
   else {
     const newRef = push(playersRef);
     await set(newRef, { stats });
+    return;
+  }
+}
+
+export async function savePlayerStatsDefensive(
+    userId: string, 
+    statsDefensive: Record<string, any>,
+    playerId?: string
+): Promise<void> {
+  const db = getDatabase(app);
+  const playersRef = ref(db, `players/${userId}`);
+
+  if (playerId) {
+    const playerRef = ref(db, `players/${userId}/${playerId}/statsDefensive`);
+    await set(playerRef, statsDefensive);
+    return;
+  }
+  else {
+    const newRef = push(playersRef);
+    await set(newRef, { statsDefensive: statsDefensive });
     return;
   }
 }

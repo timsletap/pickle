@@ -1,22 +1,24 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { updatePlayerStats } from '../../config/FirebaseConfig';
-import BattingOrder from '../Lineups/BattingOrder';
-import FieldView from '../Lineups/FieldView';
+import { useAuth } from '../auth-context';
+import DefenseView from '../Lineups/lineupsDefense';
+import OffenseView from '../Lineups/lineupsOffense';
 import PickerDialog from '../Lineups/PickerDialog';
 import RosterScroller from '../Lineups/RosterScroller';
 import StatsDialog from '../Lineups/StatsDialog';
 import styles, { colors } from '../Lineups/styles';
-import { POSITIONS, Player } from '../Lineups/types';
-import { useAuth } from '../auth-context';
+import { POSITIONS } from '../Lineups/types';
 import { fetchPlayerInfo } from '../realtimeDb';
+import { Player } from '../types';
 
 export default function Lineups() {
   const [roster, setRoster] = useState<Player[]>([]);
   const { user } = useAuth();
+
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -58,45 +60,40 @@ export default function Lineups() {
       return;
     }
 
-    const unsub = fetchPlayerInfo(user.uid, (playersRecord) => {
-      if (!playersRecord) {
-        setRoster([]);
+    const unsub = fetchPlayerInfo(user.uid, (data) => {
+      if (!data) {
+        setPlayers([]);
+        setLoading(false);
         return;
       }
 
-      const players: Player[] = Object.entries(playersRecord).map(([key, value], idx) => {
-        const fullName = (value.name || "").trim();
-        const parts = fullName.split(/\s+/);
-        const first_name = parts.shift() || "";
-        const last_name = parts.join(' ');
-
-        const id: string | number = /^[0-9]+$/.test(key) ? parseInt(key, 10) : key;
-
-        return {
-          id,
-          first_name,
-          last_name,
-          jersey: value.jerseyNumber ?? undefined,
-          stats: value.stats ?? undefined,
-        } as Player;
+      const arr = Object.entries(data).map(([id, val]) => {
+        const v = val as any;
+          return { 
+            id, 
+            name: v.name, 
+            positions: v.positions || [], 
+            jerseyNumber: v.jerseyNumber ?? undefined,
+            stats: v.stats || {}, 
+            statsDefensive: v.statsDefensive || {} 
+          } as Player;
+        });
+        arr.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+        setPlayers(arr);
+        setRoster(arr);
+        setLoading(false);
       });
 
-      setRoster(players);
-    });
+      return () => unsub && unsub();
+    }, [user]
+  );
 
-    return () => {
-      try {
-        unsub();
-      } catch (e) {
-        // ignore
-      }
-    };
-  }, [user]);
-
-  const [sortMode, setSortMode] = useState<'name' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab'>('name');
+  const [sortMode, setSortMode] = useState<'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
   const [battingOrder, setBattingOrder] = useState<any[] | null>(null);
+  const [selectedBatSlot, setSelectedBatSlot] = useState<number | null>(null);
+  const initializedRef = useRef(false);
 
   const initialAssignments: Record<string, any> = POSITIONS.reduce((acc, p) => ({ ...acc, [p.id]: null }), {});
   const [assignments, setAssignments] = useState<Record<string, any>>(initialAssignments);
@@ -121,31 +118,62 @@ export default function Lineups() {
   const openStats = (player: any) => setStatsDialog({ visible: true, player });
   const closeStats = () => setStatsDialog({ visible: false, player: null });
 
+  // On first render (when roster loads) set default batting order to alphabetical
+  useEffect(() => {
+    if (initializedRef.current) return;
+    if (!roster || roster.length === 0) return;
+    initializedRef.current = true;
+    const size = Math.min(9, roster.length);
+    const base: (any | null)[] = [...roster]
+      .sort((a: any, b: any) => (a.name ?? '').localeCompare(b.name ?? ''))
+      .slice(0, size);
+    while (base.length < size) base.push(null);
+    setBattingOrder(base);
+  }, [roster]);
+
   const getMetric = (p: any, mode: string) => {
-    const s = p.stats ?? {};
-    if (mode === 'ba') return s.ba ?? 0;
-    if (mode === 'obp') return s.obp ?? 0;
-    if (mode === 'slg') return s.slg ?? 0;
-    if (mode === 'rbi') return s.rbi ?? 0;
-    if (mode === 'games') return s.games ?? 0;
-    if (mode === 'qab') return s.qab ?? 0;
+    const sDefensive = p.statsDefensive ?? {};
+    const sOffensive = p.stats ?? {};
+    if (mode === 'tc') return sDefensive.tc ?? 0;
+    if (mode === 'etc') return sDefensive.etc ?? 0;
+    if (mode === 'a') return sDefensive.a ?? 0;
+    if (mode === 'dp') return sDefensive.dp ?? 0;
+    if (mode === 'po') return sDefensive.po ?? 0;
+    if (mode === 'innings') return sDefensive.innings ?? 0;
+    if (mode === 'ba') return sOffensive.ba ?? 0;
+    if (mode === 'obp') return sOffensive.obp ?? 0;
+    if (mode === 'slg') return sOffensive.slg ?? 0;
+    if (mode === 'rbi') return sOffensive.rbi ?? 0;
+    if (mode === 'games') return sOffensive.games ?? 0;
+    if (mode === 'qab') return sOffensive.qab ?? 0;
     return 0;
   };
 
-  const sortedRoster = [...roster].sort((a: any, b: any) => {
-    if (sortMode === 'name') return a.last_name.localeCompare(b.last_name);
-    return getMetric(b, sortMode) - getMetric(a, sortMode);
-  });
+  type SortKey = 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab';
+  const defensiveSortOptions: { key: SortKey; label: string }[] = [
+    { key: 'name', label: 'Name' },
+    { key: 'tc', label: 'TC' },
+    { key: 'etc', label: 'ETC' },
+    { key: 'a', label: 'A' },
+    { key: 'dp', label: 'DP' },
+    { key: 'po', label: 'PO' },
+    { key: 'innings', label: 'Innings' },
+  ];
 
-  const sortOptions: { key: typeof sortMode; label: string }[] = [
+  const offensiveSortOptions: { key: SortKey; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'ba', label: 'BA' },
     { key: 'obp', label: 'OBP' },
     { key: 'slg', label: 'SLG' },
     { key: 'rbi', label: 'RBI' },
-    { key: 'games', label: 'Games' },
-    { key: 'qab', label: 'QAB' },
+    { key: 'games', label: 'GP' },
+    { key: 'qab', label: 'QAB%' },
   ];
+
+  const sortedRoster = [...roster].sort((a: any, b: any) => {
+    if (sortMode === 'name') return (a.name ?? '').localeCompare(b.name ?? '');
+    return getMetric(b, sortMode) - getMetric(a, sortMode);
+  });
 
   return (
     <View style={styles.page}>
@@ -211,21 +239,21 @@ export default function Lineups() {
             activeOpacity={0.8}
             style={{
               flex: 1,
-              paddingVertical: 14,
+              paddingVertical: 8,
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 15,
+              borderRadius: 12,
               zIndex: 1,
             }}
           >
             <MaterialCommunityIcons
               name="shield-outline"
-              size={22}
+              size={18}
               color={viewMode === 'defense' ? '#000' : '#00a878'}
               style={{ marginBottom: 4 }}
             />
             <Text style={{
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: '800',
               color: viewMode === 'defense' ? '#000' : '#00a878',
               letterSpacing: 0.8,
@@ -240,21 +268,21 @@ export default function Lineups() {
             activeOpacity={0.8}
             style={{
               flex: 1,
-              paddingVertical: 14,
+              paddingVertical: 8,
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 15,
+              borderRadius: 12,
               zIndex: 1,
             }}
           >
             <MaterialCommunityIcons
               name="baseball-bat"
-              size={22}
+              size={18}
               color={viewMode === 'offense' ? '#000' : '#00a878'}
               style={{ marginBottom: 4 }}
             />
             <Text style={{
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: '800',
               color: viewMode === 'offense' ? '#000' : '#00a878',
               letterSpacing: 0.8,
@@ -268,32 +296,21 @@ export default function Lineups() {
       {/* Content */}
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
         {viewMode === 'defense' ? (
-          <View style={{ paddingTop: 16 }}>
-            <FieldView positions={POSITIONS} assignments={assignments} openPicker={openPicker} />
-          </View>
+          <DefenseView 
+            positions={POSITIONS} 
+            assignments={assignments} 
+            openPicker={openPicker} />
         ) : (
-          <BattingOrder
+          <OffenseView
             roster={roster}
             sortMode={sortMode}
             setSortMode={setSortMode}
             openStats={openStats}
             battingOrder={battingOrder ?? undefined}
-            onAutoGenerate={async () => {
-              const alg = require('../Lineups/LineupAlgorithm') as typeof import('../Lineups/LineupAlgorithm');
-              const result = alg.generateOptimalLineup(roster, { lineupSize: Math.min(9, roster.length)});
-              try {
-                const raw = alg.computeRawMetrics(roster);
-                await Promise.all(roster.map(async (p) => {
-                  const rcv = raw.get(p.id)?.rcv ?? 0;
-                  const merged = { ...(p.stats ?? {}), rcv };
-                  try {
-                    await updatePlayerStats(user!.uid, String(p.id), merged);
-                  } catch (e) {}
-                }));
-              } catch (e) {}
-              setBattingOrder(result.lineup);
-            }}
-            onClearOrder={() => setBattingOrder(null)}
+            setBattingOrder={setBattingOrder}
+            selectedBatSlot={selectedBatSlot}
+            setSelectedBatSlot={setSelectedBatSlot}
+            user={user}
           />
         )}
 
@@ -307,7 +324,7 @@ export default function Lineups() {
           {/* Sort Buttons */}
           <View style={styles.sortRow}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {sortOptions.map((opt) => (
+              {(viewMode === 'defense' ? defensiveSortOptions : offensiveSortOptions).map((opt) => (
                 <TouchableOpacity
                   key={opt.key}
                   onPress={() => setSortMode(opt.key)}
@@ -334,7 +351,45 @@ export default function Lineups() {
             </ScrollView>
           </View>
 
-          <RosterScroller sortedRoster={sortedRoster} metricMode={sortMode} assignments={assignments} posById={posById} openStats={openStats} />
+          <RosterScroller
+            sortedRoster={sortedRoster}
+            metricMode={sortMode}
+            assignments={assignments}
+            posById={posById}
+            openStats={openStats}
+            onPlayerSelect={(p: Player) => {
+              if (selectedBatSlot === null) {
+                openStats(p);
+                return;
+              }
+              const idx = selectedBatSlot;
+              const size = Math.min(9, roster.length);
+              setBattingOrder((prev) => {
+                const base = prev ? [...prev] : Array(size).fill(null);
+                while (base.length < size) base.push(null);
+
+                // find if this player is already in the lineup
+                const prevIndex = base.findIndex((entry: any) => entry && entry.id === p.id);
+                if (prevIndex === idx) {
+                  // already in desired slot
+                  return base;
+                }
+
+                if (prevIndex >= 0) {
+                  // swap the players between prevIndex and idx
+                  const tmp = base[idx];
+                  base[idx] = p;
+                  base[prevIndex] = tmp ?? null;
+                } else {
+                  // player not previously in lineup: place in slot (no duplicates exist)
+                  base[idx] = p;
+                }
+
+                return base;
+              });
+              setSelectedBatSlot(null);
+            }}
+          />
         </View>
       </Animated.View>
 

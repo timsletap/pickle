@@ -72,16 +72,10 @@ export default function Profile() {
       route: "/Team",
     },
     {
-      title: "Statistics",
-      description: "View performance metrics",
-      icon: "stats-chart-outline",
-      route: "/Stats",
-    },
-    {
       title: "Import Data",
       description: "Upload stats from file",
       icon: "cloud-upload-outline",
-      route: "/Statistics",
+      route: "/Import",
     },
   ];
 

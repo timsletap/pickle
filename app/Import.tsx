@@ -3,11 +3,11 @@ import { readAsStringAsync } from 'expo-file-system/legacy';
 import { router } from 'expo-router';
 import Papa from 'papaparse';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, IconButton, Paragraph } from 'react-native-paper';
 
 import { useAuth } from './auth-context';
-import { fetchPlayerInfo, savePlayerInfo, savePlayerStats } from './realtimeDb';
+import { fetchPlayerInfo, savePlayerInfo, savePlayerStats, savePlayerStatsDefensive } from './realtimeDb';
 
 type CsvDocument = {
     name?: string;
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backButton: { position: 'absolute', left: 12, top: 70, zIndex: 60 },
 });
 
-export default function Statistics() {
+export default function Import() {
     const [csvFile, setCsvFile] = useState<CsvDocument | null>(null);
     const [parsedData, setParsedData] = useState<any[]>([]);
     const [headers, setHeaders] = useState<string[]>([]);
@@ -65,7 +65,13 @@ export default function Statistics() {
         setCsvFile({ name, uri });
 
         try {
-            const text = await readAsStringAsync(uri);
+            let text: string;
+            if (Platform.OS === 'web') {
+                const res = await fetch(uri);
+                text = await res.text();
+            } else {
+                text = await readAsStringAsync(uri);
+            }
 
             // drop the first row (often contains whitespace or garbage)
             const lines = text.split(/\r?\n/);
@@ -115,6 +121,9 @@ export default function Statistics() {
 
                 const parse = (v: any) => (v === '' || v == null ? null : Number(v));
                 const stats: any = {};
+                const statsDefensive: any = {};
+
+                // offensive stats
                 if (row['AVG'] != null) stats.ba = parse(row['AVG']);
                 if (row['OBP'] != null) stats.obp = parse(row['OBP']);
                 if (row['SLG'] != null) stats.slg = parse(row['SLG']);
@@ -122,9 +131,25 @@ export default function Statistics() {
                 if (row['GP'] != null) stats.games = parse(row['GP']);
                 if (row['QAB%'] != null) stats.qab = parse(row['QAB%']);
 
+                // defensive stats
+                if (row['TC'] != null) statsDefensive.tc = parse(row['TC']);
+                if (row['E'] != null && row['TC'] != null) {
+                    const tc = parse(row['TC']);
+                    const e = parse(row['E']);
+                    if (tc != null && e != null && tc > 0) {
+                        statsDefensive.etc = e/tc;
+                    }
+                }
+                if (row['A'] != null) statsDefensive.a = parse(row['A']);
+                if (row['PO'] != null) statsDefensive.po = parse(row['PO']);
+                if (row['Total'] != null) statsDefensive.innings = parse(row['Total']);
+                if (row['DP'] != null) statsDefensive.dp = parse(row['DP']);
+                if (row['E'] != null) statsDefensive.e = parse(row['E']);
+
                 try {
                     if (playerId) {
                         await savePlayerStats(user.uid, stats, playerId);
+                        await savePlayerStatsDefensive(user.uid, statsDefensive, playerId);
                     } 
                     else {
                         const playerObj = {
@@ -138,6 +163,7 @@ export default function Statistics() {
                         );
                         
                         await savePlayerStats(user.uid, stats, newId);
+                        await savePlayerStatsDefensive(user.uid, statsDefensive, newId);
                         playerId = newId;
                     }
                     return { ok: true, playerId };

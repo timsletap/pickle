@@ -28,7 +28,8 @@ export function computeRawMetrics(players: Player[]): Map<string | number, Metri
     const games = s.games ?? 0;
     const qab = s.qab ?? 0;
 
-    const rcv = 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab;
+    const rcvRaw = 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab;
+    const rcv = Number(rcvRaw.toFixed(2));
 
     map.set(p.id, { rcv });
   });

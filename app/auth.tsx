@@ -92,7 +92,7 @@ export default function AuthScreen() {
           return;
         }
       }
-      router.replace("/(tabs)/profile");
+      router.replace("/(tabs)/home");
     } catch (err: any) {
       setError(err.message || "Authentication failed");
     }

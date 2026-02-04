@@ -4,9 +4,8 @@ import { Dimensions, Keyboard, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, Chip, Dialog, FAB, IconButton, List, Portal, Text, TextInput, useTheme } from "react-native-paper";
 import Carousel from "react-native-reanimated-carousel";
 import { useAuth } from "./auth-context";
-import { deletePlayer, fetchPlayerInfo, savePlayerInfo } from "./realtimeDb";
+import { deletePlayer, fetchPlayerInfo, savePlayerInfo, savePlayerStats } from "./realtimeDb";
 
-// Change for Nishant
 export default function TeamsScreen() {
   const { user } = useAuth();
   const theme = useTheme();
@@ -19,11 +18,18 @@ export default function TeamsScreen() {
   const [name, setName] = useState("");
   const [positions, setPositions] = useState<string[]>([]);
   const [jerseyText, setJerseyText] = useState("");
+  // Stats editor state (strings to allow empty inputs)
+  const [baText, setBaText] = useState("");
+  const [obpText, setObpText] = useState("");
+  const [slgText, setSlgText] = useState("");
+  const [rbiText, setRbiText] = useState("");
+  const [gamesText, setGamesText] = useState("");
+  const [qabText, setQabText] = useState("");
 
   const { width: SCREEN_WIDTH } = Dimensions.get("window");
   // Larger card sizing for clearer player display. Subtract extra margin to avoid edge cutoff.
-  const CARD_WIDTH = Math.min(420, SCREEN_WIDTH - 48);
-  const CARD_HEIGHT = 380;
+  const CARD_WIDTH = Math.min(400, SCREEN_WIDTH - 32);
+  const CARD_HEIGHT = 450;
 
   const KNOWN_POSITIONS = [
     "P",
@@ -78,6 +84,12 @@ export default function TeamsScreen() {
     setName("");
     setPositions([]);
     setJerseyText("");
+    setBaText("");
+    setObpText("");
+    setSlgText("");
+    setRbiText("");
+    setGamesText("");
+    setQabText("");
     setDialogVisible(true);
   };
 
@@ -86,6 +98,13 @@ export default function TeamsScreen() {
     setName(p.name);
     setPositions((p.positions || []).slice());
     setJerseyText(p.jerseyNumber != null ? String(p.jerseyNumber) : "");
+    const s = p.stats || {};
+    setBaText(s.ba != null ? String(s.ba) : "");
+    setObpText(s.obp != null ? String(s.obp) : "");
+    setSlgText(s.slg != null ? String(s.slg) : "");
+    setRbiText(s.rbi != null ? String(s.rbi) : "");
+    setGamesText(s.games != null ? String(s.games) : "");
+    setQabText(s.qab != null ? String(s.qab) : "");
     setDialogVisible(true);
   };
 
@@ -99,7 +118,28 @@ export default function TeamsScreen() {
     Keyboard.dismiss();
 
     try {
-      await savePlayerInfo(user.uid, { name: trimmed, positions: positionsArr, jerseyNumber: jersey }, editingId ?? undefined);
+      // parse stats values
+      const ba = baText.trim() ? parseFloat(baText.trim()) : undefined;
+      const obp = obpText.trim() ? parseFloat(obpText.trim()) : undefined;
+      const slg = slgText.trim() ? parseFloat(slgText.trim()) : undefined;
+      const rbi = rbiText.trim() ? parseInt(rbiText.trim(), 10) : undefined;
+      const games = gamesText.trim() ? parseInt(gamesText.trim(), 10) : undefined;
+      const qab = qabText.trim() ? parseFloat(qabText.trim()) : undefined;
+
+      const statsObj: Record<string, any> = {};
+      if (ba !== undefined) statsObj.ba = ba;
+      if (obp !== undefined) statsObj.obp = obp;
+      if (slg !== undefined) statsObj.slg = slg;
+      if (rbi !== undefined) statsObj.rbi = rbi;
+      if (games !== undefined) statsObj.games = games;
+      if (qab !== undefined) statsObj.qab = qab;
+
+      // save player info and get the player id (new or existing)
+      const playerId = await savePlayerInfo(user.uid, { name: trimmed, positions: positionsArr, jerseyNumber: jersey }, editingId ?? undefined);
+      // only save stats if any were provided
+      if (Object.keys(statsObj).length > 0) {
+        await savePlayerStats(user.uid, statsObj, playerId);
+      }
       closeDialog();
     } catch (err) {
       console.error("Failed to save player", err);
@@ -167,18 +207,9 @@ export default function TeamsScreen() {
                         <Text style={styles.cardText}>
                           {`Positions: ${item.positions?.join(", ") || "N/A"}`}
                         </Text>
-                        <Text style={styles.cardText}>
+                        <Text style={[styles.cardText, { paddingBottom: 24 }]}>
                           {`Jersey Number: ${item.jerseyNumber != null ? item.jerseyNumber : "N/A"}`}
                         </Text>
-
-                        <View
-                          style={{
-                            marginTop: 8,
-                            borderTopWidth: 1,
-                            borderTopColor: "#ccc",
-                            paddingTop: 8,
-                          }}
-                        />
 
                         <Text style={styles.cardText}>
                           {`Games: ${GAMES}`}
@@ -198,19 +229,48 @@ export default function TeamsScreen() {
                         <Text style={styles.cardText}>
                           {`QAB%: ${QAB}`}
                         </Text>
+                        {/*}
                         <Text style={styles.cardHint}>
                           Tap card to edit player
                         </Text>
+                        */}
                       </View>
                     }
 
                     //onPress={() => openEdit(item)}
                     style={[
                       styles.card,
-                      { width: CARD_WIDTH - 32, height: CARD_HEIGHT - 32, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1.5, borderColor: 'rgba(0,168,120,0.18)' },
+                      { width: CARD_WIDTH - 32, 
+                        height: CARD_HEIGHT - 32, 
+                        borderRadius: 20, 
+                        backgroundColor: 'rgba(0,0,0,0.45)', 
+                        borderWidth: 1.5, 
+                        borderColor: '#00a878',
+                        shadowColor: '#00a878',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 10,
+                      }
                     ]}
-                    titleStyle={{ fontSize: 20, fontWeight: "600", color: '#fff' }}
+                    titleStyle={{ fontSize: 36, fontWeight: "600", color: '#fff' , marginBottom: 24 }}
                     descriptionStyle={{ fontSize: 16, color: '#cfeecf' }}
+                  />
+                  <IconButton
+                    icon="pencil"
+                    size={24}
+                    iconColor="#00a878"
+                    containerColor="transparent"
+                    onPress={() => openEdit(item)}
+                    style={styles.editIcon}
+                  />
+                  <IconButton
+                    icon="delete"
+                    size={24}
+                    iconColor="#9e0022"
+                    containerColor="transparent"
+                    onPress={() => handleDelete()}
+                    style={styles.deleteIcon}
                   />
                 </View>
               );
@@ -254,9 +314,16 @@ export default function TeamsScreen() {
               returnKeyType="done"
              //onSubmitEditing={handleSave}
             />
+
+            <TextInput label="Batting Average (BA)" value={baText} onChangeText={setBaText} keyboardType="numeric" returnKeyType="done" />
+            <TextInput label="On-Base % (OBP)" value={obpText} onChangeText={setObpText} keyboardType="numeric" returnKeyType="done" />
+            <TextInput label="Slugging % (SLG)" value={slgText} onChangeText={setSlgText} keyboardType="numeric" returnKeyType="done" />
+            <TextInput label="RBI" value={rbiText} onChangeText={setRbiText} keyboardType="numeric" returnKeyType="done" />
+            <TextInput label="Games" value={gamesText} onChangeText={setGamesText} keyboardType="numeric" returnKeyType="done" />
+            <TextInput label="Quality At-Bat % (QAB%)" value={qabText} onChangeText={setQabText} keyboardType="numeric" returnKeyType="done" />
           </Dialog.Content>
           <Dialog.Actions>
-            {editingId ? <Button textColor={theme.colors.error} onPress={handleDelete}>Delete</Button> : <Button onPress={closeDialog}>Cancel</Button>}
+            <Button onPress={closeDialog}>Cancel</Button>
             <Button onPress={handleSave}>{editingId ? "Save" : "Create"}</Button>
           </Dialog.Actions>
         </Dialog>
@@ -271,7 +338,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    paddingTop: 96,
+    paddingTop: 160,
+    //justifyContent: "center",
   },
   headerRow: {
     marginBottom: 8,
@@ -307,9 +375,35 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     elevation: 2, // android shadow
   },
+  editIcon: {
+    position: 'absolute',
+    top: 300,
+    right: 24,
+    zIndex: 10,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    borderRadius: 16,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  deleteIcon: {
+    position: 'absolute',
+    top: 346,
+    right: 24,
+    zIndex: 10,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    borderRadius: 16,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
   cardText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 24,
     marginBottom: 4,
   },
   cardHint: {
