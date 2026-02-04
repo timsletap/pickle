@@ -123,7 +123,6 @@ export default StyleSheet.create({
   rosterContainer: {
     paddingHorizontal: 16,
     justifyContent: 'flex-end',
-    paddingBottom: 0,
   },
   sectionTitle: {
     fontSize: 18,
@@ -162,7 +161,7 @@ export default StyleSheet.create({
     color: colors.primary,
   },
   rosterScroll: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     alignItems: 'flex-end',
   },
   playerCard: {

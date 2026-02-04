@@ -40,7 +40,14 @@ export default function LineupsOffense({ roster, sortMode, setSortMode, openStat
         } catch (e) {}
         setBattingOrder(result.lineup);
       }}
-      onClearOrder={() => setBattingOrder(null)}
+      onClearOrder={() => {
+        const size = Math.min(9, roster.length);
+        const base: (any | null)[] = [...roster]
+          .sort((a: any, b: any) => (a.name ?? '').localeCompare(b.name ?? ''))
+          .slice(0, size);
+        while (base.length < size) base.push(null);
+        setBattingOrder(base);
+      }}
     />
   );
 }

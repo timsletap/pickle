@@ -31,7 +31,7 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
             style={[styles.actionButton, styles.actionButtonPrimary]}
             activeOpacity={0.8}
           >
-            <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>Auto-generate</Text>
+          <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>Auto-generate</Text>
           </TouchableOpacity>
           {onClearOrder && (
             <TouchableOpacity
