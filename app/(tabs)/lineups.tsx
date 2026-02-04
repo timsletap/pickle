@@ -93,6 +93,7 @@ export default function Lineups() {
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
   const [battingOrder, setBattingOrder] = useState<any[] | null>(null);
   const [selectedBatSlot, setSelectedBatSlot] = useState<number | null>(null);
+  const initializedRef = useRef(false);
 
   const initialAssignments: Record<string, any> = POSITIONS.reduce((acc, p) => ({ ...acc, [p.id]: null }), {});
   const [assignments, setAssignments] = useState<Record<string, any>>(initialAssignments);
@@ -116,6 +117,19 @@ export default function Lineups() {
 
   const openStats = (player: any) => setStatsDialog({ visible: true, player });
   const closeStats = () => setStatsDialog({ visible: false, player: null });
+
+  // On first render (when roster loads) set default batting order to alphabetical
+  useEffect(() => {
+    if (initializedRef.current) return;
+    if (!roster || roster.length === 0) return;
+    initializedRef.current = true;
+    const size = Math.min(9, roster.length);
+    const base: (any | null)[] = [...roster]
+      .sort((a: any, b: any) => (a.name ?? '').localeCompare(b.name ?? ''))
+      .slice(0, size);
+    while (base.length < size) base.push(null);
+    setBattingOrder(base);
+  }, [roster]);
 
   const getMetric = (p: any, mode: string) => {
     const sDefensive = p.statsDefensive ?? {};

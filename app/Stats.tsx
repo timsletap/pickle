@@ -91,7 +91,7 @@ export default function StatsScreen() {
     const rbi = Number(s.rbi ?? 0);
     const games = Number(s.games ?? 0);
     const qab = Number(s.qab ?? 0);
-    return 0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab;
+    return Number((0.35 * obp + 0.25 * slg + 0.15 * ba + (games > 0 ? rbi / games : 0) + 0.10 * qab).toFixed(2));
   };
 
   // Compute displayed players based on the single selected stat.

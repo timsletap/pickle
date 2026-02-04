@@ -57,9 +57,11 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
             <View style={{ width: 40 }} />
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ color: colors.textMuted, width: 15, fontSize: 12, fontWeight: '700' }}></Text>
-              <Text style={{ color: colors.textMuted, width: 65, fontSize: 12, fontWeight: '700' }}>Pos</Text>
-              <Text style={{ color: colors.textMuted, width: 175, fontSize: 12, fontWeight: '700' }}>Name</Text>
-              <Text style={{ color: colors.textMuted, width: 60, fontSize: 12, fontWeight: '700' }}>#</Text>
+              <Text style={{ color: colors.textMuted, width: 45, fontSize: 12, fontWeight: '700' }}>Pos</Text>
+              <Text style={{ color: colors.textMuted, width: 120, fontSize: 12, fontWeight: '700' }}>Name</Text>
+              <Text style={{ color: colors.textMuted, width: 60, fontSize: 12, fontWeight: '700' }}>RCV</Text>
+              <View style={{ flex: 1 }} />
+              <Text style={{ color: colors.textMuted, paddingRight: 40, textAlign: 'right', width: 60, fontSize: 12, fontWeight: '700' }}>#</Text>
             </View>
           </View>
 
@@ -67,7 +69,7 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
             {displayList.map((p: Player | null, index: number) => (
               <View key={p?.id ?? `slot-${index}`} style={styles.battingItem}>
                 <Pressable
-                  onPress={() => setSelectedBatSlot ? setSelectedBatSlot(index) : null}
+                  onPress={() => setSelectedBatSlot?.(index)}
                   style={({ pressed }) => [
                     styles.battingIndex,
                     pressed && { opacity: 0.8 },
@@ -91,19 +93,23 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
                           return { ...prev, [key]: next };
                         });
                       }}
-                      style={{ width: 64 }}
+                        style={{ width: 45 }}
                     >
                       <Text style={{ color: colors.textMuted }}>
                         {String(p.positions[posIndexMap[String(p.id)] ?? 0])}
                       </Text>
                     </Pressable>
                   ) : (
-                    <Text style={{ color: colors.textMuted, width: 64 }}>{p ? '-' : ''}</Text>
+                    <Text style={{ color: colors.textMuted, width: 45 }}>{p ? '-' : ''}</Text>
                   )}
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.battingPlayerName}>{p ? (p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()) : '—'}</Text>
+                  <View style={{ width: 90 }}>
+                    <Text style={[styles.battingPlayerName, { flexWrap: 'wrap' }]}>{p ? (p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()) : '—'}</Text>
                   </View>
-                  <Text style={{ color: colors.primary, width: 60, textAlign: 'right', fontWeight: '700' }}>{p ? (p.jersey ?? p.jerseyNumber ?? '-') : '-'}</Text>
+                  <Text style={{ color: colors.primary, width: 60, textAlign: 'right', fontWeight: '700' }}>
+                    {p ? (Number.isFinite(Number(p.stats?.rcv)) ? Number(p.stats!.rcv).toFixed(2) : '-') : '-'}
+                  </Text>
+                  <View style={{ flex: 1 }} />
+                  <Text style={{ color: colors.primary, paddingRight: 0, textAlign: 'right', fontWeight: '700' }}>{p ? (p.jersey ?? p.jerseyNumber ?? '-') : '-'}</Text>
 
                   <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primaryBorder} />
                 </Pressable>
