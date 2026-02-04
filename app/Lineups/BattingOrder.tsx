@@ -46,26 +46,41 @@ export default function BattingOrder({ roster, sortMode, setSortMode, openStats,
           <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 12 }}>No players to display</Text>
         </View>
       ) : (
-        <ScrollView style={styles.battingList} showsVerticalScrollIndicator={false}>
-          {displayList.map((p: Player, index: number) => (
-            <Pressable
-              key={p.id}
-              onPress={() => openStats(p)}
-              style={({ pressed }) => [styles.battingItem, pressed && { opacity: 0.7 }]}
-            >
-              <View style={styles.battingIndex}>
-                <Text style={styles.battingIndexText}>{index + 1}</Text>
-              </View>
-              <View style={styles.battingPlayerInfo}>
-                <Text style={styles.battingPlayerName}>{p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()}</Text>
-                <Text style={styles.battingPlayerStats}>
-                  #{p.jersey ?? p.jerseyNumber ?? '-'} — RCV {(() => { const r = p.stats?.rcv; return r != null ? r.toFixed(2) : '-'; })()}
-                </Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primaryBorder} />
-            </Pressable>
-          ))}
-        </ScrollView>
+        <>
+          {/* Column headers to mimic a physical lineup card */}
+          <View style={{ flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' }}>
+            <View style={{ width: 40 }} />
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ color: colors.textMuted, width: 80, fontSize: 12, fontWeight: '700' }}>Pos</Text>
+              <Text style={{ color: colors.textMuted, width: 175, fontSize: 12, fontWeight: '700' }}>Name</Text>
+              <Text style={{ color: colors.textMuted, width: 60, fontSize: 12, fontWeight: '700' }}>#</Text>
+            </View>
+          </View>
+
+          <ScrollView style={styles.battingList} showsVerticalScrollIndicator={false}>
+            {displayList.map((p: Player, index: number) => (
+              <Pressable
+                key={p.id}
+                onPress={() => openStats(p)}
+                style={({ pressed }) => [styles.battingItem, pressed && { opacity: 0.7 }]}
+              >
+                <View style={styles.battingIndex}>
+                  <Text style={styles.battingIndexText}>{index + 1}</Text>
+                </View>
+
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
+                  <Text style={{ color: colors.textMuted, width: 64 }}>{(p.positions && p.positions[0]) ? String(p.positions[0]) : '-'}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.battingPlayerName}>{p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()}</Text>
+                  </View>
+                  <Text style={{ color: colors.primary, width: 60, textAlign: 'right', fontWeight: '700' }}>{p.jersey ?? p.jerseyNumber ?? '-'}</Text>
+                </View>
+
+                <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primaryBorder} />
+              </Pressable>
+            ))}
+          </ScrollView>
+        </>
       )}
     </View>
   );

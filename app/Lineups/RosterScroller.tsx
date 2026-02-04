@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 
 type Props = {
   sortedRoster: Player[];
-  metricMode?: 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings';
+  metricMode?: 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab';
   assignments: Record<string, Player | null>;
   posById: (id: string) => { id: string; label: string; name: string };
   openStats: (p: Player) => void;
@@ -49,21 +49,31 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
   
   const getMetric = (p: Player, mode: string) => {
     const pData = players[p.id ?? ''];
-    const s = (pData?.statsDefensive) ?? {} as Record<string, any>;
+    const sd = (pData?.statsDefensive) ?? {} as Record<string, any>;
+    const so = (pData?.stats) ?? {} as Record<string, any>;
 
-    if (mode === 'tc') return s.tc ?? 0;
-    if (mode === 'etc') return s.etc ?? 0;
-    if (mode === 'a') return s.a ?? 0;
-    if (mode === 'dp') return s.dp ?? 0;
-    if (mode === 'po') return s.po ?? 0;
-    if (mode === 'innings') return s.innings ?? 0;
+    if (mode === 'tc') return sd.tc ?? 0;
+    if (mode === 'etc') return sd.etc ?? 0;
+    if (mode === 'a') return sd.a ?? 0;
+    if (mode === 'dp') return sd.dp ?? 0;
+    if (mode === 'po') return sd.po ?? 0;
+    if (mode === 'innings') return sd.innings ?? 0;
+
+    // offensive metrics
+    if (mode === 'ba') return so.ba ?? 0;
+    if (mode === 'obp') return so.obp ?? 0;
+    if (mode === 'slg') return so.slg ?? 0;
+    if (mode === 'rbi') return so.rbi ?? 0;
+    if (mode === 'games') return so.games ?? 0;
+    if (mode === 'qab') return so.qab ?? 0;
 
     return 0;
   };
 
   const renderMetric = (p: Player) => {
     const val = getMetric(p, metricMode ?? 'name');
-    const formatted = (metricMode === 'dp' || metricMode === 'po' || metricMode === 'a' || metricMode === 'tc' || metricMode === 'innings')
+    const intMetrics = ['dp','po','a','tc','innings','rbi','games'];
+    const formatted = intMetrics.includes(metricMode ?? '')
       ? `${Math.round(val ?? 0)}`
       : `${(val ?? 0).toFixed(2)}`;
     return <Text style={styles.metricText}>{formatted}</Text>;

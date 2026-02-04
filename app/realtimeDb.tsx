@@ -18,7 +18,14 @@ export function fetchPlayerInfo(
   const db = getDatabase(app);
   const playersRef = ref(db, `players/${userId}`);
   const unsubscribe = onValue(playersRef, (snapshot) => {
-    callback(snapshot.exists() ? (snapshot.val() as Record<string, { name: string; positions?: string[]; jerseyNumber?: number }>) : null);
+    const data = snapshot.exists()
+      ? (snapshot.val() as Record<string, { name: string; positions?: string[]; jerseyNumber?: number }>)
+      : null;
+
+    // Defer invoking the user callback to avoid temporal-dead-zone issues
+    // where callers may reference the returned `unsub` variable inside
+    // the callback that could be invoked synchronously in some environments.
+    Promise.resolve().then(() => callback(data));
   });
 
   return () => unsubscribe();

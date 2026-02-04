@@ -73,7 +73,8 @@ export default function Lineups() {
             id, 
             name: v.name, 
             positions: v.positions || [], 
-            jerseyNumber: v.jerseyNumber ?? undefined, 
+            jerseyNumber: v.jerseyNumber ?? undefined,
+            stats: v.stats || {}, 
             statsDefensive: v.statsDefensive || {} 
           } as Player;
         });
@@ -87,7 +88,7 @@ export default function Lineups() {
     }, [user]
   );
 
-  const [sortMode, setSortMode] = useState<'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings'>('name');
+  const [sortMode, setSortMode] = useState<'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab'>('name');
   const [viewMode, setViewMode] = useState<'defense' | 'offense'>('defense');
   const [statsDialog, setStatsDialog] = useState<{ visible: boolean; player: any }>({ visible: false, player: null });
   const [battingOrder, setBattingOrder] = useState<any[] | null>(null);
@@ -116,18 +117,25 @@ export default function Lineups() {
   const closeStats = () => setStatsDialog({ visible: false, player: null });
 
   const getMetric = (p: any, mode: string) => {
-    const s = p.statsDefensive ?? {};
-    if (mode === 'tc') return s.tc ?? 0;
-    if (mode === 'etc') return s.etc ?? 0;
-    if (mode === 'a') return s.a ?? 0;
-    if (mode === 'dp') return s.dp ?? 0;
-    if (mode === 'po') return s.po ?? 0;
-    if (mode === 'innings') return s.innings ?? 0;
+    const sDefensive = p.statsDefensive ?? {};
+    const sOffensive = p.stats ?? {};
+    if (mode === 'tc') return sDefensive.tc ?? 0;
+    if (mode === 'etc') return sDefensive.etc ?? 0;
+    if (mode === 'a') return sDefensive.a ?? 0;
+    if (mode === 'dp') return sDefensive.dp ?? 0;
+    if (mode === 'po') return sDefensive.po ?? 0;
+    if (mode === 'innings') return sDefensive.innings ?? 0;
+    if (mode === 'ba') return sOffensive.ba ?? 0;
+    if (mode === 'obp') return sOffensive.obp ?? 0;
+    if (mode === 'slg') return sOffensive.slg ?? 0;
+    if (mode === 'rbi') return sOffensive.rbi ?? 0;
+    if (mode === 'games') return sOffensive.games ?? 0;
+    if (mode === 'qab') return sOffensive.qab ?? 0;
     return 0;
   };
 
-  type SortKey = 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings';
-  const sortOptions: { key: SortKey; label: string }[] = [
+  type SortKey = 'name' | 'tc' | 'etc' | 'a' | 'dp' | 'po' | 'innings' | 'ba' | 'obp' | 'slg' | 'rbi' | 'games' | 'qab';
+  const defensiveSortOptions: { key: SortKey; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'tc', label: 'TC' },
     { key: 'etc', label: 'ETC' },
@@ -135,6 +143,16 @@ export default function Lineups() {
     { key: 'dp', label: 'DP' },
     { key: 'po', label: 'PO' },
     { key: 'innings', label: 'Innings' },
+  ];
+
+  const offensiveSortOptions: { key: SortKey; label: string }[] = [
+    { key: 'name', label: 'Name' },
+    { key: 'ba', label: 'BA' },
+    { key: 'obp', label: 'OBP' },
+    { key: 'slg', label: 'SLG' },
+    { key: 'rbi', label: 'RBI' },
+    { key: 'games', label: 'GP' },
+    { key: 'qab', label: 'QAB%' },
   ];
 
   const sortedRoster = [...roster].sort((a: any, b: any) => {
@@ -289,7 +307,7 @@ export default function Lineups() {
           {/* Sort Buttons */}
           <View style={styles.sortRow}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {sortOptions.map((opt) => (
+              {(viewMode === 'defense' ? defensiveSortOptions : offensiveSortOptions).map((opt) => (
                 <TouchableOpacity
                   key={opt.key}
                   onPress={() => setSortMode(opt.key)}
