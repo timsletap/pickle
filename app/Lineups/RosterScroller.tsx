@@ -71,6 +71,8 @@ export default function RosterScroller({ sortedRoster, metricMode = 'name', assi
   };
 
   const renderMetric = (p: Player) => {
+    if (metricMode === 'name') return null;
+
     const val = getMetric(p, metricMode ?? 'name');
     const intMetrics = ['dp','po','a','tc','innings','rbi','games'];
     const formatted = intMetrics.includes(metricMode ?? '')

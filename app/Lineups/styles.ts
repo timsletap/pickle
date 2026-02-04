@@ -121,8 +121,9 @@ export default StyleSheet.create({
     maxHeight: 300,
   },
   rosterContainer: {
-    flex: 1,
     paddingHorizontal: 16,
+    justifyContent: 'flex-end',
+    paddingBottom: 0,
   },
   sectionTitle: {
     fontSize: 18,
@@ -162,6 +163,7 @@ export default StyleSheet.create({
   },
   rosterScroll: {
     paddingVertical: 8,
+    alignItems: 'flex-end',
   },
   playerCard: {
     alignItems: 'center',
@@ -173,6 +175,9 @@ export default StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.cardBorder,
+    maxHeight: 90,
+    justifyContent: 'flex-start',
+    overflow: 'hidden',
   },
   playerIcon: {
     width: 32,
